@@ -35,6 +35,7 @@ namespace Free_Sharp_Player {
 		static extern bool AllocConsole();
 
 		Mp3Streamer theStreamer;
+		System.Threading.Timer BufferTimer;
 
 		public MainWindow() {
 			InitializeComponent();
@@ -62,10 +63,20 @@ namespace Free_Sharp_Player {
 				//Todo: timeout, check for valid return data, find the adress in more dynamic way.
 				address = responseData[2].Split("=".ToCharArray())[1];
 
-				Console.WriteLine("Address: " + address + ":" + port);
+				Console.WriteLine("Address: " + address);
 			}
 
-			theStreamer = new Mp3Streamer(address);
+			theStreamer = new Mp3Streamer(address, 120);
+			//theStreamer.Play();
+			BufferLength.Maximum = 100;
+			PlayLength.Maximum = 120;
+
+			BufferTimer = new System.Threading.Timer((o) => {
+				this.Dispatcher.Invoke(() => {
+					BufferLength.Value = theStreamer.BufferFillPercent;
+					PlayLength.Value = theStreamer.Pos ;
+				});
+			}, null, 0, 250);
 
 		}
 
@@ -100,14 +111,17 @@ namespace Free_Sharp_Player {
 		private void Play_Click(object sender, RoutedEventArgs e) {
 			// bufferedWaveProvider
 			//Play();
+			theStreamer.Play();
 		}
 
 		private void Pause_Click(object sender, RoutedEventArgs e) {
 			//Pause();
+			theStreamer.Pause();
 		}
 
 		private void Stop_Click(object sender, RoutedEventArgs e) {
 			//StopPlayback();
+			theStreamer.Stop();
 		}
 	}
 }
