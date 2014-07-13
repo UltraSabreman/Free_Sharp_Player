@@ -38,6 +38,7 @@
       <HintPath>..\..\..\..\..\..\..\Libraries\Naudio\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,7 +58,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ReadFullyStream.cs" />
-    <Compile Include="Streamer.cs" />
+    <Compile Include="ShoutcastStream.cs" />
+    <Compile Include="MP3Stream.cs" />
+    <Compile Include="Util.cs" />
+    <Compile Include="ValueConverters.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
