@@ -39,7 +39,13 @@ namespace Free_Sharp_Player {
 		public MainWindow() {
 			InitializeComponent();
 
-			//AllocConsole();
+			AllocConsole();
+			var payload = new Dictionary<string, object>() {
+				{ "action", "queue" },
+			};
+
+			var thing = HttpPostRequest.SecureAPICall(payload);
+
 
 			BufferLength.Maximum = 100;
 			//PlayLength.Maximum = 120;
