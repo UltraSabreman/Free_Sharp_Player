@@ -2,8 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:local="clr-namespace:Free_Sharp_Player"
-        Title="MainWindow" Height="130" Width="470"
-		 KeyUp="Window_KeyUp" ResizeMode="NoResize" Closed="Window_Closed">
+        Title="MainWindow" Height="373" Width="470"
+		 KeyUp="Window_KeyUp" Closed="Window_Closed">
 	<Window.Resources>
 		<local:SliderToVolumeConverter x:Key="TestConverter"/>
 	</Window.Resources>
@@ -15,7 +15,8 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="30"/>
 			<RowDefinition Height="30"/>
-			<RowDefinition Height="30*"/>
+			<RowDefinition Height="30"/>
+			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 		<Label Content="The Most Talented Flyers In ALL Of Equestria" Name="StreamTitleLabel" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
 		<Label Content="AcousticBrony" Name="StreamArtistLabel" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
@@ -41,6 +42,21 @@
 		</Grid>
 
 		<ProgressBar Name="BufferLength" Grid.Row="2" Grid.ColumnSpan="1" Margin="5,5,5,5"/>
+		
+		<DataGrid Name="PlayList" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding TrackList}" >
+			<DataGrid.Columns>
+				<DataGridTextColumn Header="Time" Binding="{Binding Time}" />
+
+				<DataGridTextColumn Header="Artist" />
+				<DataGridTextColumn Header="Title" />
+				<DataGridTextColumn Header="Duration" />
+				<DataGridTextColumn Header="Plays" />
+				<DataGridTextColumn Header="Requests" />
+				<DataGridTextColumn Header="Rating" />
+				<DataGridTextColumn Header="Favorites" />
+				<DataGridTextColumn Header="Your Rating" />
+			</DataGrid.Columns>
+		</DataGrid>
 
 	</Grid>
 </Window>

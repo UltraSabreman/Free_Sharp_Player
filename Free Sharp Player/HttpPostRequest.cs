@@ -15,6 +15,20 @@ namespace Free_Sharp_Player {
 	class HttpPostRequest {
 		private static String Address ="";
 		private static String ApiKey;
+
+		public static List<String> GetAvalibleActions() {
+			return new List<String>() {
+				"client-ip",
+				"debug",
+				"playlist",
+				"radio-info",
+				"video-info",
+				"queue",
+				"playlist",
+				"site-section"
+			};
+		}
+
 		static HttpPostRequest() {
 			var payload = new Dictionary<string,object>() {
 				{ "action", "client-ip" },
@@ -23,7 +37,8 @@ namespace Free_Sharp_Player {
 			var temp = thing["data"] as Dictionary<String, Object>;
 			Address = temp["IP"].ToString();
 
-			using (StreamReader r = new StreamReader(File.OpenRead("apikey.txt"))) {
+			//TODO: make this AES encryptind string stored in code for *release* only.
+			using (StreamReader r = new StreamReader(File.OpenRead("Misc\\apikey.txt"))) {
 				ApiKey = r.ReadLine();
 			}
 		}
@@ -61,19 +76,24 @@ namespace Free_Sharp_Player {
 			StringBuilder PostData = new StringBuilder();
 			String timeStamp = ((Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
 
-			PostData.Append("appID=").Append("ultrasaberman.freesharpplayer");
+			PostData.Append("appID=").Append(Configs.Properties["AppID"].ToString());
 			PostData.Append("&timestamp=").Append(timeStamp);
 
 			StringBuilder payloadBuilder = new StringBuilder();
-			foreach (String s in Payload.Keys)
-				payloadBuilder.Append("payload%5b").Append(HttpUtility.UrlEncode(s)).Append("%5d=").Append(Payload[s].ToString());
+			StringBuilder payloadShaVersion = new StringBuilder();
+			foreach (String s in Payload.Keys) {
+				payloadBuilder.Append("payload%5b").Append(HttpUtility.UrlEncode(s)).Append("%5d=").Append(Payload[s].ToString()).Append("&");
+				payloadShaVersion.Append(HttpUtility.UrlEncode(s)).Append("=").Append(Payload[s].ToString()).Append("&");
+			}
+			payloadBuilder.Remove(payloadBuilder.Length - 1, 1);
+			payloadShaVersion.Remove(payloadShaVersion.Length - 1, 1);
 			PostData.Append("&").Append(payloadBuilder.ToString());
 
 			// JsonConvert.SerializeObject(new asdf() { action = "debug" }, Formatting.None);
 
-			String plainSig = "ultrasaberman.freesharpplayer" + ApiKey + timeStamp + payloadBuilder.ToString() + Address;
-			Byte[] sigBytes = Encoding.UTF8.GetBytes(plainSig.ToCharArray());
-			Byte[] shaBytes = SHA256.Create().ComputeHash(sigBytes, 0, sigBytes.Length);
+			String plainSig = "ultrasaberman.freesharpplayer" + ApiKey + timeStamp + payloadShaVersion.ToString() + Address;
+			Byte[] sigBytes = Encoding.ASCII.GetBytes(plainSig.ToCharArray());
+			Byte[] shaBytes = SHA256.Create().ComputeHash(sigBytes);
 
 			StringBuilder hex = new StringBuilder(shaBytes.Length * 2);
 			foreach (byte b in shaBytes)
@@ -91,7 +111,14 @@ namespace Free_Sharp_Player {
 			using (Stream stream = httpWReq.GetRequestStream())
 				stream.Write(data, 0, data.Length);
 
-			String response = new StreamReader(((HttpWebResponse)httpWReq.GetResponse()).GetResponseStream()).ReadToEnd();
+			HttpWebResponse resp;
+			try {
+				resp = (HttpWebResponse)httpWReq.GetResponse();
+			} catch (WebException e) {
+				resp = (HttpWebResponse)e.Response;
+			}
+
+			String response = new StreamReader(resp.GetResponseStream()).ReadToEnd();
 
 			return ParseReturn(response);
 		}

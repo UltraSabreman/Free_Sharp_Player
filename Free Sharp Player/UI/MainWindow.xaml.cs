@@ -23,6 +23,7 @@ using NAudio.Wave;
 using System.Diagnostics;
 using System.Timers;
 
+//TODO: hanlde network disconnects
 
 namespace Free_Sharp_Player {
 	using Timer = System.Threading.Timer;
@@ -41,7 +42,7 @@ namespace Free_Sharp_Player {
 
 			AllocConsole();
 			var payload = new Dictionary<string, object>() {
-				{ "action", "queue" },
+				{ "action", "radio-info" },
 			};
 
 			var thing = HttpPostRequest.SecureAPICall(payload);
