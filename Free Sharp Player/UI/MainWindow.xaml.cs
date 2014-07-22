@@ -27,6 +27,7 @@ using System.Timers;
 
 namespace Free_Sharp_Player {
 	using Timer = System.Threading.Timer;
+	using Newtonsoft.Json;
 
 	public partial class MainWindow : Window {
 		[DllImport("kernel32")]
@@ -36,17 +37,23 @@ namespace Free_Sharp_Player {
 
 		MP3Stream theStreamer;
 		Timer BufferTimer;
+		PlaylistViewModel ListModel;
 
 		public MainWindow() {
 			InitializeComponent();
 
 			AllocConsole();
 			var payload = new Dictionary<string, object>() {
-				{ "action", "radio-info" },
+				{ "action", "playlist" },
 			};
 
-			var thing = HttpPostRequest.SecureAPICall(payload);
+			String playListData = HttpPostRequest.SecureAPICall(payload)["data"].ToString();
+			Util.Print(playListData);
 
+
+			ListModel = (JsonConvert.DeserializeObject(playListData, typeof(PlaylistViewModel)) as PlaylistViewModel);
+
+			PlayList.DataContext = ListModel;
 
 			BufferLength.Maximum = 100;
 			//PlayLength.Maximum = 120;

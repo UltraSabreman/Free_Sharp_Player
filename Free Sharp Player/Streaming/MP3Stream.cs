@@ -47,7 +47,7 @@ namespace Free_Sharp_Player {
 			this.address = address;
 			bufferSizeSec = BufferSize;
 
-			Volume = 1.0f;
+			Volume = 0.0f;
 		}
 
 		public void Play() {

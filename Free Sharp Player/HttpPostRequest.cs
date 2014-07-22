@@ -29,13 +29,20 @@ namespace Free_Sharp_Player {
 			};
 		}
 
+		class TestIP {
+			public String IP = "";
+		}
+
 		static HttpPostRequest() {
 			var payload = new Dictionary<string,object>() {
 				{ "action", "client-ip" },
 			};
 			var thing = APICall(payload);
-			var temp = thing["data"] as Dictionary<String, Object>;
-			Address = temp["IP"].ToString();
+			String temp = thing["data"].ToString();
+			//var temp = thing["data"] as Dictionary<String, Object>;
+			//Address = temp["IP"].ToString();
+
+			Address = (JsonConvert.DeserializeObject(temp, typeof(TestIP)) as TestIP).IP;
 
 			//TODO: make this AES encryptind string stored in code for *release* only.
 			using (StreamReader r = new StreamReader(File.OpenRead("Misc\\apikey.txt"))) {
@@ -128,9 +135,9 @@ namespace Free_Sharp_Player {
 
 			var test = JsonConvert.DeserializeObject(msg) as JObject;
 			foreach (JProperty p in test.Properties()) {
-				if (p.Value.GetType() == typeof(JObject))
+				/*if (p.Value.GetType() == typeof(JObject))
 					outd[p.Name] = ParseReturn(p.Value.ToString());
-				else
+				else*/
 					outd[p.Name] = p.Value.ToString();
 			}
 

@@ -42,13 +42,13 @@
 		</Grid>
 
 		<ProgressBar Name="BufferLength" Grid.Row="2" Grid.ColumnSpan="1" Margin="5,5,5,5"/>
-		
-		<DataGrid Name="PlayList" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding TrackList}" >
-			<DataGrid.Columns>
-				<DataGridTextColumn Header="Time" Binding="{Binding Time}" />
 
-				<DataGridTextColumn Header="Artist" />
-				<DataGridTextColumn Header="Title" />
+		<DataGrid Name="PlayList" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding Played}" >
+			<!--<DataGrid.Columns>
+				<DataGridTextColumn Header="Time" />
+
+				<DataGridTextColumn Header="Artist" Binding="{Binding Artist}" />
+				<DataGridTextColumn Header="Title" Binding="{Binding Title}" />
 				<DataGridTextColumn Header="Duration" />
 				<DataGridTextColumn Header="Plays" />
 				<DataGridTextColumn Header="Requests" />
@@ -56,7 +56,9 @@
 				<DataGridTextColumn Header="Favorites" />
 				<DataGridTextColumn Header="Your Rating" />
 			</DataGrid.Columns>
+			-->
 		</DataGrid>
+			
 
 	</Grid>
 </Window>
