@@ -16,6 +16,8 @@ namespace Free_Sharp_Player {
 		/// To change both fore and back colors, path two console colors then another object (ie: print(ConsoleColor.Red, ConsoleColor.White, "this will be red on white")).
 		/// </summary>
 		/// <param name="stuff">Console colors, and objects to print.</param>
+		public static void PrintLine() { PrintLine(null); }
+		public static void PrintLine(params object[] stuff) { Print(stuff); Console.WriteLine(); }
 		public static void Print(params object[] stuff) {
 			if (stuff == null) {
 				Console.WriteLine();
@@ -46,6 +48,34 @@ namespace Free_Sharp_Player {
 			}
 		}
 
+		public static void DumpException(Exception e) {
+			Func<int, String> getEquals = (count) => {
+				String s = "";
+				for (int i = 0; i < count; i++)
+					s += "=";
+
+				return s;
+			};
+
+			PrintLine(ConsoleColor.White, ConsoleColor.Red, "====EXCEPTION====");
+			PrintLine(ConsoleColor.White, "=MSG: ", ConsoleColor.Red, e.Message);
+			PrintLine(ConsoleColor.White, "=SRC: ", ConsoleColor.Red, e.Source);
+			PrintLine(ConsoleColor.White, "=TGT: ", ConsoleColor.Red, e.TargetSite);
+			PrintLine(ConsoleColor.White, "=ST : ", ConsoleColor.Red, e.StackTrace);
+			e = e.InnerException;
+			int ind = 1;
+			while (e != null) {
+				String eq = getEquals(ind++);
+				PrintLine(ConsoleColor.White, ConsoleColor.Red, eq + "===EXCEPTION====");
+				PrintLine(ConsoleColor.White, eq + "MSG: ", ConsoleColor.Red, e.Message);
+				PrintLine(ConsoleColor.White, eq + "SRC: ", ConsoleColor.Red, e.Source);
+				PrintLine(ConsoleColor.White, eq + "TGT: ", ConsoleColor.Red, e.TargetSite);
+				PrintLine(ConsoleColor.White, eq + "ST : ", ConsoleColor.Red, e.StackTrace);
+				e = e.InnerException;
+			}
+
+			PrintLine(ConsoleColor.White, ConsoleColor.Red, "=================");
+		}
 
 		public static Object DictKeyChain(DataDict dict, params String[] keys) {
 			Object curDic = dict;

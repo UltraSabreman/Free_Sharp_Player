@@ -29,7 +29,7 @@
 		<Grid Grid.Row="1" Grid.Column="1" IsEnabled="False">
 			<Button Content="-" Name="VoteUpButton" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Width="20" Padding="0,0,0,2" />
 			<Button Content="+" Name="VoteDownButton" HorizontalAlignment="right" Margin="0,0,10,0" VerticalAlignment="Center" Width="20" Padding="0,0,0,2"/>
-			<Label Content="44444" Name="CurrentVotes" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+			<Label Content="{Binding rating}"  Name="CurrentVotes" HorizontalAlignment="Center" VerticalAlignment="Center" />
 		</Grid>
 
 		<Grid Grid.Row="2" Grid.Column="1">
@@ -43,22 +43,17 @@
 
 		<ProgressBar Name="BufferLength" Grid.Row="2" Grid.ColumnSpan="1" Margin="5,5,5,5"/>
 
-		<DataGrid Name="PlayList" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding Played}" >
-			<!--<DataGrid.Columns>
-				<DataGridTextColumn Header="Time" />
+		<Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" >
+			<Grid.RowDefinitions>
+				<RowDefinition Height="30*"/>
+				<RowDefinition Height="10*"/>
+				<RowDefinition Height="50*"/>
+			</Grid.RowDefinitions>
 
-				<DataGridTextColumn Header="Artist" Binding="{Binding Artist}" />
-				<DataGridTextColumn Header="Title" Binding="{Binding Title}" />
-				<DataGridTextColumn Header="Duration" />
-				<DataGridTextColumn Header="Plays" />
-				<DataGridTextColumn Header="Requests" />
-				<DataGridTextColumn Header="Rating" />
-				<DataGridTextColumn Header="Favorites" />
-				<DataGridTextColumn Header="Your Rating" />
-			</DataGrid.Columns>
-			-->
-		</DataGrid>
-			
+			<DataGrid Name="Queue" ItemsSource="{Binding Queue}" />
+			<DataGrid Name="Playing" Grid.Row="1" ItemsSource="{Binding Playing}" HeadersVisibility="None" />
+			<DataGrid Name="PlayList" Grid.Row="2"  ItemsSource="{Binding Played}" HeadersVisibility="None" />
+		</Grid>
 
 	</Grid>
 </Window>

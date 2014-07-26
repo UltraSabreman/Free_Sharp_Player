@@ -12,6 +12,7 @@ namespace Free_Sharp_Player {
 	/// </summary>
 	public class ShoutcastStream : Stream {
 
+		private long position;
 		private int metaInt;
 		private int receivedBytes;
 		private Stream netStream;
@@ -40,6 +41,10 @@ namespace Free_Sharp_Player {
 
 			response = (HttpWebResponse)request.GetResponse();
 
+			foreach (String k in response.Headers.Keys)
+				Util.PrintLine(k, ": ", response.Headers[k]);
+			
+
 			metaInt = int.Parse(response.Headers["Icy-MetaInt"] ?? "0");
 			receivedBytes = 0;
 
@@ -48,12 +53,18 @@ namespace Free_Sharp_Player {
 			connected = true;
 		}
 
+		public ShoutcastStream(Stream inStream) {
+			netStream = inStream;
+		}
+
 		/// <summary>
 		/// Parses the received Meta Info
 		/// </summary>
 		/// <param name="metaInfo"></param>
 		private void ParseMetaInfo(byte[] metaInfo) {
 			string metaString = Encoding.ASCII.GetString(metaInfo);
+
+			Util.PrintLine(metaString);
 
 			Match m = Regex.Match(metaString, "StreamTitle='(.*)';.*");
 			string newStreamTitle = m.Groups[1].Value.Trim();
@@ -125,7 +136,8 @@ namespace Free_Sharp_Player {
 		/// </summary>
 		public override long Position {
 			get {
-				throw new NotSupportedException();
+				return position;
+				//throw new NotSupportedException();
 			}
 			set {
 				throw new NotSupportedException();
@@ -141,31 +153,36 @@ namespace Free_Sharp_Player {
 		/// <returns>The number of bytes read from the ShoutcastStream.</returns>
 		public override int Read(byte[] buffer, int offset, int count) {
 			try {
-				if (receivedBytes == metaInt && metaInt != 0) {
-					int metaLen = netStream.ReadByte();
-					if (metaLen > 0) {
-						byte[] metaInfo = new byte[metaLen * 16];
-						int len = 0;
-						while ((len += netStream.Read(metaInfo, len, metaInfo.Length - len)) < metaInfo.Length) ;
-						ParseMetaInfo(metaInfo);
+				int totalBytesRead = 0;
+				Byte[] aheadBuffer = new Byte[4096];
+				while (totalBytesRead < count) {
+					if (receivedBytes == metaInt && metaInt != 0) {
+						int metaLen = netStream.ReadByte();
+						if (metaLen > 0) {
+							byte[] metaInfo = new byte[metaLen * 16];
+							int len = 0;
+							while ((len += netStream.Read(metaInfo, len, metaInfo.Length - len)) < metaInfo.Length) ;
+							ParseMetaInfo(metaInfo);
+						}
+						receivedBytes = 0;
 					}
-					receivedBytes = 0;
-				}
 
-				int bytesLeft = ((metaInt - receivedBytes) > count) ? count : (metaInt - receivedBytes);
-				//int bytesRead = 0;
-				//while (bytesRead < count) {
-					//int result = ReadAll(buffer, offset, bytesLeft);
-					int result = netStream.Read(buffer, offset, bytesLeft);
+					int bytesLeft = ((metaInt - receivedBytes) > count) ? count : (metaInt - receivedBytes);
+
+					int result = netStream.Read(aheadBuffer, 0, bytesLeft);
 					receivedBytes += result;
-				//	bytesRead += result;
-				//}
-				return result;
+					totalBytesRead += result;
+
+					position += result;
+				}
+				return totalBytesRead;
 			} catch (Exception e) {
 				connected = false;
-				Console.WriteLine(e.Message);
-				return -1;
+				Util.DumpException(e);
+				return 0;
 			}
+
+			//return netStream.Read(buffer, offset, count);
 		}
 	
 		/// <summary>

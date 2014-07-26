@@ -52,6 +52,7 @@ namespace Free_Sharp_Player {
 				if (readAheadAvailableBytes > 0) {
 					int toCopy = Math.Min(readAheadAvailableBytes, bytesRequired);
 					Array.Copy(readAheadBuffer, readAheadOffset, buffer, offset + bytesRead, toCopy);
+					pos += toCopy;
 					bytesRead += toCopy;
 					readAheadOffset += toCopy;
 				} else {
@@ -63,7 +64,6 @@ namespace Free_Sharp_Player {
 					}
 				}
 			}
-			pos += bytesRead;
 			return bytesRead;
 		}
 

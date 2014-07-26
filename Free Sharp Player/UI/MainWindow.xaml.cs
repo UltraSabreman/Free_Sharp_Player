@@ -53,7 +53,19 @@ namespace Free_Sharp_Player {
 
 			ListModel = (JsonConvert.DeserializeObject(playListData, typeof(PlaylistViewModel)) as PlaylistViewModel);
 
+			payload = new Dictionary<string, object>() {
+				{ "action", "radio-info" },
+			};
+
+			playListData = HttpPostRequest.SecureAPICall(payload)["data"].ToString();
+			Util.Print(playListData);
+
+			RadioInfo testinfo = (JsonConvert.DeserializeObject(playListData, typeof(RadioInfo)) as RadioInfo);
+
 			PlayList.DataContext = ListModel;
+			Queue.DataContext = ListModel;
+			Playing.DataContext = ListModel;
+			CurrentVotes.DataContext = testinfo;
 
 			BufferLength.Maximum = 100;
 			//PlayLength.Maximum = 120;

@@ -63,7 +63,9 @@ namespace Free_Sharp_Player {
 			while (waveOut == null)
 				Thread.Sleep(250);
 
-			waveOut.Play();
+			try {
+				waveOut.Play();
+			} catch (Exception) { }
 		}
 
 		public void Pause() {
@@ -112,20 +114,13 @@ namespace Free_Sharp_Player {
 
 			try {
 				using (ShoutcastStream theStream = new ShoutcastStream(address)) {
-					theStream.StreamTitleChanged += (o, e) => {
-						StreamTitle = theStream.StreamTitle;
-
-						if (OnStreamTitleChange != null) {
-							int pos = StreamTitle.IndexOf(" - ");
-							String title = StreamTitle.Substring(pos + 3, StreamTitle.Length - pos - 3);
-							String artist = StreamTitle.Substring(0, pos);
-							OnStreamTitleChange(title, artist);
-						}
-					};
-
+					
 					ReadFullyStream readFullyStream = new ReadFullyStream(theStream);
+					//ShoutcastStream readFullyStream = new ShoutcastStream(theStream, metaInt);
 
+					int i = 0;
 					do {
+						i++;
 						//Pos = theStream.Position;
 						if (IsBufferNearlyFull()) 
 							Thread.Sleep(500);
@@ -136,23 +131,25 @@ namespace Free_Sharp_Player {
 							} catch (EndOfStreamException) {
 								EndOfStream = true;
 								// reached the end of the MP3 file / stream
-								break;
-							} 
-							if (decompressor == null || (oldSampleRate != -1 && oldSampleRate != frame.SampleRate)) {
-								// don't think these details matter too much - just help ACM select the right codec
-								// however, the buffered provider doesn't know what sample rate it is working at
-								// until we have a frame
-								decompressor = CreateFrameDecompressor(frame);
-								
-								bufferedWaveProvider = new BufferedWaveProvider(decompressor.OutputFormat);
-								bufferedWaveProvider.BufferDuration = TimeSpan.FromSeconds(bufferSizeSec); // allow us to get well ahead of ourselves
-								oldSampleRate = frame.SampleRate;
-								//this.bufferedWaveProvider.BufferedDuration = 250;
+								break ;
 							}
+							if (frame != null) {
+								if (decompressor == null || (oldSampleRate != -1 && oldSampleRate != frame.SampleRate)) {
+									// don't think these details matter too much - just help ACM select the right codec
+									// however, the buffered provider doesn't know what sample rate it is working at
+									// until we have a frame
+									decompressor = CreateFrameDecompressor(frame);
 
-							
-							int decompressed = decompressor.DecompressFrame(frame, buffer, 0);
-							bufferedWaveProvider.AddSamples(buffer, 0, decompressed);
+									bufferedWaveProvider = new BufferedWaveProvider(decompressor.OutputFormat);
+									bufferedWaveProvider.BufferDuration = TimeSpan.FromSeconds(bufferSizeSec); // allow us to get well ahead of ourselves
+									oldSampleRate = frame.SampleRate;
+									//this.bufferedWaveProvider.BufferedDuration = 250;
+								}
+
+
+								int decompressed = decompressor.DecompressFrame(frame, buffer, 0);
+								bufferedWaveProvider.AddSamples(buffer, 0, decompressed);
+							}
 						}
 
 					} while (PlaybackState != StreamingPlaybackState.Stopped);
