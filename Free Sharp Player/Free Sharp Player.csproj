@@ -66,7 +66,8 @@
     <Compile Include="Configs.cs" />
     <Compile Include="HttpPostRequest.cs" />
     <Compile Include="RadioInfo.cs" />
-    <Compile Include="UI\PlaylistViewModel.cs" />
+    <Compile Include="UI\ViewModels\PlayingModel.cs" />
+    <Compile Include="UI\ViewModels\PlaylistViewModel.cs" />
     <Compile Include="UI\PropChanged.cs" />
     <Compile Include="Streaming\ReadFullyStream.cs" />
     <Compile Include="Streaming\ShoutcastStream.cs" />

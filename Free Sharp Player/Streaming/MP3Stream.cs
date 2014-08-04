@@ -47,7 +47,7 @@ namespace Free_Sharp_Player {
 			this.address = address;
 			bufferSizeSec = BufferSize;
 
-			Volume = 0.0f;
+			Volume = 0.5f;
 		}
 
 		public void Play() {
@@ -114,6 +114,10 @@ namespace Free_Sharp_Player {
 
 			try {
 				using (ShoutcastStream theStream = new ShoutcastStream(address)) {
+					theStream.StreamTitleChanged += (o,a) => {
+						if (OnStreamTitleChange != null)
+							OnStreamTitleChange(theStream.StreamTitle, "");
+					};
 					
 					ReadFullyStream readFullyStream = new ReadFullyStream(theStream);
 					//ShoutcastStream readFullyStream = new ShoutcastStream(theStream, metaInt);

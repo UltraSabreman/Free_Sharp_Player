@@ -26,7 +26,7 @@ using System.Timers;
 //TODO: hanlde network disconnects
 
 namespace Free_Sharp_Player {
-	using Timer = System.Threading.Timer;
+	using Timer = System.Timers.Timer;
 	using Newtonsoft.Json;
 
 	public partial class MainWindow : Window {
@@ -35,55 +35,37 @@ namespace Free_Sharp_Player {
 
 		public enum StreamQuality {Low, Normal, High};
 
-		MP3Stream theStreamer;
-		Timer BufferTimer;
-		PlaylistViewModel ListModel;
+		private MP3Stream theStreamer;
+		private PlayingModel currentSong;
 
 		public MainWindow() {
 			InitializeComponent();
 
 			AllocConsole();
-			var payload = new Dictionary<string, object>() {
+			/*var payload = new Dictionary<string, object>() {
 				{ "action", "playlist" },
+			};
+
+			String playListData = HttpPostRequest.SecureAPICall(payload)["data"].ToString();
+			Util.Print(playListData);*/
+
+
+			//ListModel = (JsonConvert.DeserializeObject(playListData, typeof(PlaylistViewModel)) as PlaylistViewModel);
+
+			/*var payload = new Dictionary<string, object>() {
+				{ "action", "radio-info" },
 			};
 
 			String playListData = HttpPostRequest.SecureAPICall(payload)["data"].ToString();
 			Util.Print(playListData);
 
+			RadioInfo testinfo = (JsonConvert.DeserializeObject(playListData, typeof(RadioInfo)) as RadioInfo);*/
 
-			ListModel = (JsonConvert.DeserializeObject(playListData, typeof(PlaylistViewModel)) as PlaylistViewModel);
+			currentSong = new PlayingModel(this);
 
-			payload = new Dictionary<string, object>() {
-				{ "action", "radio-info" },
-			};
+			ConnectToStream(StreamQuality.Normal);		
 
-			playListData = HttpPostRequest.SecureAPICall(payload)["data"].ToString();
-			Util.Print(playListData);
 
-			RadioInfo testinfo = (JsonConvert.DeserializeObject(playListData, typeof(RadioInfo)) as RadioInfo);
-
-			PlayList.DataContext = ListModel;
-			Queue.DataContext = ListModel;
-			Playing.DataContext = ListModel;
-			CurrentVotes.DataContext = testinfo;
-
-			BufferLength.Maximum = 100;
-			//PlayLength.Maximum = 120;
-
-			ConnectToStream(StreamQuality.Normal);
-
-			BufferTimer = new Timer((o) => {
-				this.Dispatcher.Invoke(() => {
-					if (BufferLength == null) {
-						Thread.CurrentThread.Abort();
-						return;
-					}
-					BufferLength.Value = theStreamer.BufferFillPercent;
-					//PlayLength.Value = theStreamer.Pos ;
-				});
-			}, null, 0, 250);
-
-			Play_Click(null, null);
 		}
 
 		private void ConnectToStream(StreamQuality Quality) {
@@ -108,8 +90,7 @@ namespace Free_Sharp_Player {
 					theStreamer = new MP3Stream(address, 30);
 					theStreamer.OnStreamTitleChange += (t, a) => {
 						this.Dispatcher.Invoke(new Action(() => {
-							StreamTitleLabel.Content = t;
-							StreamArtistLabel.Content = a;
+							currentSong.StreamTitle = t;
 						}));
 					};
 					Connected = true;
@@ -117,20 +98,21 @@ namespace Free_Sharp_Player {
 			}
 
 		}
-		
-		private void Play_Click(object sender, RoutedEventArgs e) {
+
+		private void btn_PlayPause_Click(object sender, RoutedEventArgs e) {
 			if (theStreamer.PlaybackState == MP3Stream.StreamingPlaybackState.Playing) {
 				theStreamer.Pause();
-				PlayButton.Content = "►";
+				btn_PlayPause.Content =
+				btn_PlayPause.Content = "▶";
 			} else {
 				theStreamer.Play();
-				PlayButton.Content = "▌▐";
+				btn_PlayPause.Content = "▌▐";
 			}
 		}
 
 		private void Stop_Click(object sender, RoutedEventArgs e) {
 			theStreamer.Stop();
-			PlayButton.Content = "►";
+			//PlayButton.Content = "►";
 		}
 
 		private void Window_KeyUp(object sender, KeyEventArgs e) {
@@ -144,12 +126,28 @@ namespace Free_Sharp_Player {
 		}
 
 		private void Window_Closed(object sender, EventArgs e) {
-			BufferTimer.Dispose();
 			theStreamer.Stop();
 			Application.Current.Shutdown();
 		}
 
+		private void Grid_MouseDown(object sender, MouseButtonEventArgs e) {
+			if (e.ChangedButton == MouseButton.Left)
+				this.DragMove();
+		}
 
-		
+		private void Grid_MouseUp(object sender, MouseButtonEventArgs e) {
+		}
+
+		private void btn_Volume_Click(object sender, RoutedEventArgs e) {
+
+		}
+
+		private void btn_Extra_Click(object sender, RoutedEventArgs e) {
+
+		}
+
+		private void lbl_TrackName_MouseUp(object sender, MouseButtonEventArgs e) {
+
+		}
 	}
 }
