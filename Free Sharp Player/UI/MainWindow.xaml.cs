@@ -28,6 +28,7 @@ using System.Timers;
 namespace Free_Sharp_Player {
 	using Timer = System.Timers.Timer;
 	using Newtonsoft.Json;
+	using System.Windows.Media.Animation;
 
 	public partial class MainWindow : Window {
 		[DllImport("kernel32")]
@@ -138,8 +139,21 @@ namespace Free_Sharp_Player {
 		private void Grid_MouseUp(object sender, MouseButtonEventArgs e) {
 		}
 
+		private bool VolumeOpen = false;
 		private void btn_Volume_Click(object sender, RoutedEventArgs e) {
+			VolumeOpen = !VolumeOpen;
+			ThicknessAnimation testan;
+			if (VolumeOpen) {
+				testan = new ThicknessAnimation(new Thickness(0, 130, 0, 0), new Thickness(0, 0, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+			} else {
+				testan = new ThicknessAnimation(new Thickness(0, 0, 0, 0), new Thickness(0, 130, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+			}
 
+			Storyboard test = new Storyboard();
+			test.Children.Add(testan);
+			Storyboard.SetTargetName(testan, VolumeSlider.Name);
+			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.MarginProperty));
+			test.Begin(VolumeSlider);
 		}
 
 		private void btn_Extra_Click(object sender, RoutedEventArgs e) {
