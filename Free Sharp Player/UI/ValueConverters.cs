@@ -21,7 +21,7 @@ namespace Free_Sharp_Player {
 	public class BoolToMuteIcon : IValueConverter {
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
 			bool val = (bool)value;
-			return val ? "X" : "M";
+			return val ? "UM" : "M";
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {

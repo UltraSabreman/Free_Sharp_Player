@@ -18,6 +18,9 @@ namespace Free_Sharp_Player {
 		public delegate void TitleChange(String title, String artist);
 		public event TitleChange OnStreamTitleChange;
 
+		public delegate void BufferChange(int pos);
+		public event BufferChange OnBufferChange;
+
 		public StreamingPlaybackState PlaybackState { get; private set; }
 		public bool EndOfStream { get; private set; }
 		public float BufferFillPercent { get; private set; }
@@ -25,6 +28,7 @@ namespace Free_Sharp_Player {
 		public float Pos { get; private set; }
 		public String StreamTitle { get; private set; }
 
+		private int oldBufferLen = 0;
 		private int bufferSizeSec = 0;
 		private IWavePlayer waveOut;
 		private Timer waveLoader;
@@ -125,7 +129,16 @@ namespace Free_Sharp_Player {
 					int i = 0;
 					do {
 						i++;
-						//Pos = theStream.Position;
+						try {
+							double t = (double)bufferedWaveProvider.BufferedBytes / (double)bufferedWaveProvider.BufferLength;
+							int posnow = (int)(t * 100);
+							if (oldBufferLen != posnow && OnBufferChange != null)
+								OnBufferChange(posnow);
+						} catch (Exception) {
+							if (OnBufferChange != null)
+								OnBufferChange(0);
+						}
+
 						if (IsBufferNearlyFull()) 
 							Thread.Sleep(500);
 						else {

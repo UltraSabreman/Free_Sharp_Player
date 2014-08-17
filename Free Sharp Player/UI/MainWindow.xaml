@@ -20,13 +20,34 @@
 		</Grid>
 		
 		<Grid Width="30" Height="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,30,0">
-			<Grid Name="VolumeSlider" Background="LightGray" Margin="0,120,0,0">
+			<Grid Name="VolumeSlider" Background="#e6e6e6" Margin="0,120,0,0">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="*"/>
 					<RowDefinition Height="30"/>
 				</Grid.RowDefinitions>
 				<Slider Name="sldr_VolumeSlider" Orientation="Vertical" Maximum="100" Margin="0,3,0,3" Value="{Binding Volume}" HorizontalAlignment="Center"/>
 				<Button Name="btn_MuteButton" Grid.Row="1" Content="{Binding Mute, Converter={StaticResource BoolToMuteConverter}}" BorderThickness="0"/>
+			</Grid>
+		</Grid>
+		
+		<Grid Width="120" Height="60" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+			<Grid Name="ExtrasMenu" Background="#e6e6e6" Margin="0,60,0,0" >
+				<Grid.RowDefinitions>
+					<RowDefinition Height="30"/>
+					<RowDefinition Height="30"/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="30"/>
+					<ColumnDefinition Width="30"/>
+					<ColumnDefinition Width="30"/>
+					<ColumnDefinition Width="30"/>
+				</Grid.ColumnDefinitions>
+				<Button Name="btn_Like" Content="C" Grid.Column="0" Foreground="DarkGreen" FontFamily="Wingdings" FontSize="24" BorderThickness="0"/>
+				<Button Name="btn_Dislike" Content="D" Grid.Column="3" Foreground="DarkRed" FontFamily="Wingdings" FontSize="24" BorderThickness="0"/>
+				<Label Name="lbl_Votes" Content="1337" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+				<Button Name="btn_Favor" Content="«" Grid.Row="1" Foreground="#dfd000" FontFamily="wingdings" FontSize="24" BorderThickness="0" />
+				<Button Name="btn_Request" Content="Request" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="0" />
+				<Button Name="btn_Settings" Content="⚙" Grid.Row="1" Grid.Column="3" BorderThickness="0" FontSize="19"  />
 			</Grid>
 		</Grid>
 		<Grid Name="Player" Grid.Row="1">

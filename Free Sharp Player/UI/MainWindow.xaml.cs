@@ -36,8 +36,7 @@ namespace Free_Sharp_Player {
 
 		public enum StreamQuality {Low, Normal, High};
 
-		private MP3Stream theStreamer;
-
+		public MP3Stream theStreamer;
 
 		private MainModel mainModel;
 		private VolumeModel volumeModel;
@@ -66,10 +65,10 @@ namespace Free_Sharp_Player {
 
 			RadioInfo testinfo = (JsonConvert.DeserializeObject(playListData, typeof(RadioInfo)) as RadioInfo);*/
 
+			ConnectToStream(StreamQuality.Normal);
+
 			mainModel = new MainModel(this);
 			volumeModel = new VolumeModel(this);
-
-			ConnectToStream(StreamQuality.Normal);		
 		}
 
 		public MP3Stream.StreamingPlaybackState GetStreamState() {
