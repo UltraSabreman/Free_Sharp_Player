@@ -66,13 +66,14 @@
     <Compile Include="Configs.cs" />
     <Compile Include="HttpPostRequest.cs" />
     <Compile Include="RadioInfo.cs" />
-    <Compile Include="UI\ViewModels\PlayingModel.cs" />
-    <Compile Include="UI\ViewModels\PlaylistViewModel.cs" />
+    <Compile Include="UI\ViewModels\MainModel.cs" />
+    <Compile Include="UI\ViewModels\PlaylistModel.cs" />
     <Compile Include="UI\PropChanged.cs" />
     <Compile Include="Streaming\ReadFullyStream.cs" />
     <Compile Include="Streaming\ShoutcastStream.cs" />
     <Compile Include="Streaming\MP3Stream.cs" />
     <Compile Include="Track.cs" />
+    <Compile Include="UI\ViewModels\VolumeModel.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="UI\ValueConverters.cs" />
     <Page Include="UI\MainWindow.xaml">

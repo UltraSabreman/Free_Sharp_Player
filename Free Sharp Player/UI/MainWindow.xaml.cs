@@ -37,10 +37,14 @@ namespace Free_Sharp_Player {
 		public enum StreamQuality {Low, Normal, High};
 
 		private MP3Stream theStreamer;
-		private PlayingModel currentSong;
+
+
+		private MainModel mainModel;
+		private VolumeModel volumeModel;
 
 		public MainWindow() {
 			InitializeComponent();
+
 
 			AllocConsole();
 			/*var payload = new Dictionary<string, object>() {
@@ -62,11 +66,26 @@ namespace Free_Sharp_Player {
 
 			RadioInfo testinfo = (JsonConvert.DeserializeObject(playListData, typeof(RadioInfo)) as RadioInfo);*/
 
-			currentSong = new PlayingModel(this);
+			mainModel = new MainModel(this);
+			volumeModel = new VolumeModel(this);
 
 			ConnectToStream(StreamQuality.Normal);		
+		}
 
+		public MP3Stream.StreamingPlaybackState GetStreamState() {
+			return theStreamer.PlaybackState;
+		}
 
+		public void Play() { theStreamer.Play(); }
+		public void Pause() { theStreamer.Pause(); }
+		public void Stop() { theStreamer.Stop(); }
+
+		public void SetVolume(double Volume) {
+			if (Volume < 0 || Volume > 100) throw new ArgumentOutOfRangeException("Volume", Volume, "Volume must be between 0 and 100");
+
+			if (theStreamer == null) throw new NullReferenceException("The stream must be initilized.");
+
+			theStreamer.Volume = (float)Volume / 100;
 		}
 
 		private void ConnectToStream(StreamQuality Quality) {
@@ -91,7 +110,7 @@ namespace Free_Sharp_Player {
 					theStreamer = new MP3Stream(address, 30);
 					theStreamer.OnStreamTitleChange += (t, a) => {
 						this.Dispatcher.Invoke(new Action(() => {
-							currentSong.StreamTitle = t;
+							mainModel.StreamTitle = t;
 						}));
 					};
 					Connected = true;
@@ -100,30 +119,10 @@ namespace Free_Sharp_Player {
 
 		}
 
-		private void btn_PlayPause_Click(object sender, RoutedEventArgs e) {
-			if (theStreamer.PlaybackState == MP3Stream.StreamingPlaybackState.Playing) {
-				theStreamer.Pause();
-				btn_PlayPause.Content =
-				btn_PlayPause.Content = "▶";
-			} else {
-				theStreamer.Play();
-				btn_PlayPause.Content = "▌▐";
-			}
-		}
-
-		private void Stop_Click(object sender, RoutedEventArgs e) {
-			theStreamer.Stop();
-			//PlayButton.Content = "►";
-		}
 
 		private void Window_KeyUp(object sender, KeyEventArgs e) {
 			if (e.Key == Key.Escape)
 				Application.Current.Shutdown();
-		}
-
-		private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-			if (theStreamer == null) return;
-			theStreamer.Volume = (float)(sender as Slider).Value / 100;
 		}
 
 		private void Window_Closed(object sender, EventArgs e) {
@@ -134,34 +133,6 @@ namespace Free_Sharp_Player {
 		private void Grid_MouseDown(object sender, MouseButtonEventArgs e) {
 			if (e.ChangedButton == MouseButton.Left)
 				this.DragMove();
-		}
-
-		private void Grid_MouseUp(object sender, MouseButtonEventArgs e) {
-		}
-
-		private bool VolumeOpen = false;
-		private void btn_Volume_Click(object sender, RoutedEventArgs e) {
-			VolumeOpen = !VolumeOpen;
-			ThicknessAnimation testan;
-			if (VolumeOpen) {
-				testan = new ThicknessAnimation(new Thickness(0, 130, 0, 0), new Thickness(0, 0, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-			} else {
-				testan = new ThicknessAnimation(new Thickness(0, 0, 0, 0), new Thickness(0, 130, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-			}
-
-			Storyboard test = new Storyboard();
-			test.Children.Add(testan);
-			Storyboard.SetTargetName(testan, VolumeSlider.Name);
-			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.MarginProperty));
-			test.Begin(VolumeSlider);
-		}
-
-		private void btn_Extra_Click(object sender, RoutedEventArgs e) {
-
-		}
-
-		private void lbl_TrackName_MouseUp(object sender, MouseButtonEventArgs e) {
-
 		}
 	}
 }

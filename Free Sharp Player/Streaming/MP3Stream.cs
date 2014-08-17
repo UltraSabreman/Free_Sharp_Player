@@ -12,7 +12,7 @@ using System.Windows;
 
 namespace Free_Sharp_Player {
 	using Timer = System.Timers.Timer;
-	class MP3Stream {
+	public class MP3Stream {
 		public enum StreamingPlaybackState { Stopped, Playing, Buffering, Paused }
 
 		public delegate void TitleChange(String title, String artist);
