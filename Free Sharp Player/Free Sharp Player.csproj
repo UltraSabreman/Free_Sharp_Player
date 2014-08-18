@@ -66,6 +66,7 @@
     <Compile Include="Configs.cs" />
     <Compile Include="HttpPostRequest.cs" />
     <Compile Include="RadioInfo.cs" />
+    <Compile Include="UI\ViewModels\ExtraMenuModel.cs" />
     <Compile Include="UI\ViewModels\MainModel.cs" />
     <Compile Include="UI\ViewModels\PlaylistModel.cs" />
     <Compile Include="UI\PropChanged.cs" />

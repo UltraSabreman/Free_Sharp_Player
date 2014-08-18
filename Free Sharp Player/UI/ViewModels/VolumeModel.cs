@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Free_Sharp_Player {
 	class VolumeModel : ViewModelNotifier {
@@ -31,11 +32,19 @@ namespace Free_Sharp_Player {
 			window.sldr_VolumeSlider.ValueChanged += sldr_VolumeSlider_ValueChanged;
 			window.btn_MuteButton.Click += btn_MuteButton_Click;
 
+			window.sldr_VolumeSlider.MouseLeave += ResetCapture;
+			window.btn_MuteButton.Click += ResetCapture;
+
 			Volume = 100; //TODO: save/load this
+		}
+
+		private void ResetCapture(object o, object e) {
+			Mouse.Capture(window.VolumeSlider, CaptureMode.SubTree);
 		}
 
 		private void sldr_VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
 			window.SetVolume(window.sldr_VolumeSlider.Value);
+
 		}
 
 		private void btn_MuteButton_Click(object sender, RoutedEventArgs e) {

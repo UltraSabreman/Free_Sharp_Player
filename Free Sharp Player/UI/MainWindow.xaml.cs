@@ -40,6 +40,7 @@ namespace Free_Sharp_Player {
 
 		private MainModel mainModel;
 		private VolumeModel volumeModel;
+		private ExtraMenuModel extraModel;
 
 		public MainWindow() {
 			InitializeComponent();
@@ -56,19 +57,12 @@ namespace Free_Sharp_Player {
 
 			//ListModel = (JsonConvert.DeserializeObject(playListData, typeof(PlaylistViewModel)) as PlaylistViewModel);
 
-			/*var payload = new Dictionary<string, object>() {
-				{ "action", "radio-info" },
-			};
-
-			String playListData = HttpPostRequest.SecureAPICall(payload)["data"].ToString();
-			Util.Print(playListData);
-
-			RadioInfo testinfo = (JsonConvert.DeserializeObject(playListData, typeof(RadioInfo)) as RadioInfo);*/
 
 			ConnectToStream(StreamQuality.Normal);
 
 			mainModel = new MainModel(this);
 			volumeModel = new VolumeModel(this);
+			extraModel = new ExtraMenuModel(this);
 		}
 
 		public MP3Stream.StreamingPlaybackState GetStreamState() {
@@ -110,7 +104,19 @@ namespace Free_Sharp_Player {
 					theStreamer.OnStreamTitleChange += (t, a) => {
 						this.Dispatcher.Invoke(new Action(() => {
 							mainModel.StreamTitle = t;
+
+							var payload = new Dictionary<string, object>() {
+								{ "action", "radio-info" },
+							};
+
+							String playListData = HttpPostRequest.SecureAPICall(payload)["data"].ToString();
+							Util.Print(playListData);
+
+							RadioInfo radioInfo = (JsonConvert.DeserializeObject(playListData, typeof(RadioInfo)) as RadioInfo);
+
+							extraModel.Votes = (int)radioInfo.rating;
 						}));
+
 					};
 					Connected = true;
 				} catch (Exception) { }

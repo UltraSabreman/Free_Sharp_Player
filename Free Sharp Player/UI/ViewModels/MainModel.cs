@@ -53,19 +53,19 @@ namespace Free_Sharp_Player {
 		}
 
 		private void HandleClickOutsideOfVolume(object sender, MouseButtonEventArgs e) {
+			Console.WriteLine("OutVolClick");
 			window.VolumeSlider.ReleaseMouseCapture();
 			window.VolumeSlider.RemoveHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick);
 
-			Console.WriteLine("OutVolClick");
 
 			if (!window.btn_Volume.IsMouseOver && VolumeOpen)
 				btn_Volume_Click(null, null);
 		}
 
 		private void HandleClickOutsideOfExtras(object sender, MouseButtonEventArgs e) {
+			Console.WriteLine("OutExtClick");
 			window.ExtrasMenu.ReleaseMouseCapture();
 			window.ExtrasMenu.RemoveHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick);
-			Console.WriteLine("OutExtClick");
 
 			if (!window.btn_Extra.IsMouseOver && ExtrasOpen)
 				btn_Extra_Click(null, null);

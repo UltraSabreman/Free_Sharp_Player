@@ -11,12 +11,50 @@
 	</Window.Resources>
 	<Grid MouseDown="Grid_MouseDown">
 		<Grid.RowDefinitions>
-			<RowDefinition Height="*"/>
+			<RowDefinition Height="78"/>
 			<RowDefinition Height="30"/>
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 		<Grid Name="Queue" >
-			
+			<ListView Background="#e6e6e6" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Padding="0" ClipToBounds="False">
+				
+				<ListView.ItemTemplate>
+					<DataTemplate>
+						<Border Height="15" BorderBrush="LightGray" Width="494" BorderThickness="0" Margin="-3,0,-3,-5">
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="40"/>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="40"/>
+									<ColumnDefinition Width="30"/>
+									<ColumnDefinition Width="30"/>
+									<ColumnDefinition Width="30"/>
+									<ColumnDefinition Width="30"/>
+								</Grid.ColumnDefinitions>
+								<Label Name="lbl_QueueTime" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="10:23"/>
+								<Label Name="lbl_WholeTile" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding title}"/>
+								<Label Name="lbl_Duration" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="2" Content="{Binding Duration}"/>
+								<Label Name="lbl_Plays" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="3" Content="{Binding Plays}"/>
+								<Label Name="lbl_Requests" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="4" Content="{Binding Requests}"/>
+								<Label Name="lbl_Rating" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="5" Content="{Binding rating}"/>
+								<Grid Grid.Column="6">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="15"/>
+										<ColumnDefinition Width="15"/>
+									</Grid.ColumnDefinitions>
+								</Grid>
+
+							</Grid>
+						</Border>
+					</DataTemplate>
+				</ListView.ItemTemplate>
+
+				<UISpace:Track artist="SomeGuy"  title="A Long ish title that is long" Duration="300" Forced="0" Plays="56" rating="2345" Requests="45"/>
+				<UISpace:Track artist="SomeGuy2" title="A Long ish title that is long2" Duration="300" Forced="1" Plays="56" rating="1337" Requests="45"/>
+				<UISpace:Track artist="SomeGuy3" title="A Long ish title that is long2" Duration="300" Forced="1" Plays="56" rating="1337" Requests="45"/>
+				<UISpace:Track artist="SomeGuy4" title="A Long ish title that is long2" Duration="300" Forced="1" Plays="56" rating="1337" Requests="45"/>
+				<UISpace:Track artist="SomeGuy5" title="A Long ish title that is long2" Duration="300" Forced="1" Plays="56" rating="1337" Requests="45"/>
+			</ListView>
 		</Grid>
 		
 		<Grid Width="30" Height="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,30,0">
@@ -44,7 +82,7 @@
 				</Grid.ColumnDefinitions>
 				<Button Name="btn_Like" Content="C" Grid.Column="0" Foreground="DarkGreen" FontFamily="Wingdings" FontSize="24" BorderThickness="0"/>
 				<Button Name="btn_Dislike" Content="D" Grid.Column="3" Foreground="DarkRed" FontFamily="Wingdings" FontSize="24" BorderThickness="0"/>
-				<Label Name="lbl_Votes" Content="1337" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+				<Label Name="lbl_Votes" Content="{Binding Votes}" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
 				<Button Name="btn_Favor" Content="«" Grid.Row="1" Foreground="#dfd000" FontFamily="wingdings" FontSize="24" BorderThickness="0" />
 				<Button Name="btn_Request" Content="Request" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="0" />
 				<Button Name="btn_Settings" Content="⚙" Grid.Row="1" Grid.Column="3" BorderThickness="0" FontSize="19"  />
