@@ -29,4 +29,19 @@ namespace Free_Sharp_Player {
 			throw new NotImplementedException();
 		}
 	}
+
+	public class DoubleTimeToString : IValueConverter {
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+			double ticks = (double)value; //convert form seconds to nanoseconds
+
+			System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+			dtDateTime = dtDateTime.AddSeconds(ticks).ToLocalTime();
+			return dtDateTime.ToString("h:mm");
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+			// Do the conversion from visibility to bool
+			throw new NotImplementedException();
+		}
+	}
 }

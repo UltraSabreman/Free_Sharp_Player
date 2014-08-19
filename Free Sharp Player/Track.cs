@@ -13,6 +13,8 @@ namespace Free_Sharp_Player {
 
 		public String title { get { return GetProp<String>(); } set { SetProp(value); } }
 
+		public String WholeTitle { get { return artist + " - " + title; } set { } }
+
 		public int Duration { get; set; }
 		public int Plays { get; set; }
 

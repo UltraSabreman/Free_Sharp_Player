@@ -35,34 +35,41 @@ namespace Free_Sharp_Player {
 		static extern bool AllocConsole();
 
 		public enum StreamQuality {Low, Normal, High};
-
+		Timer doubleClickCheck = new Timer(750);
+		bool isDoubleClicking = false;
 		public MP3Stream theStreamer;
 
 		private MainModel mainModel;
 		private VolumeModel volumeModel;
 		private ExtraMenuModel extraModel;
+		private PlaylistModel playlistModel;
 
 		public MainWindow() {
 			InitializeComponent();
 
+			doubleClickCheck.Elapsed += (o, e) => {
+				isDoubleClicking = false;
+			};
+
 
 			AllocConsole();
-			/*var payload = new Dictionary<string, object>() {
+			var payload = new Dictionary<string, object>() {
 				{ "action", "playlist" },
 			};
 
 			String playListData = HttpPostRequest.SecureAPICall(payload)["data"].ToString();
-			Util.Print(playListData);*/
+			Util.Print(playListData);
 
 
-			//ListModel = (JsonConvert.DeserializeObject(playListData, typeof(PlaylistViewModel)) as PlaylistViewModel);
-
+			playlistModel = (JsonConvert.DeserializeObject(playListData, typeof(PlaylistModel)) as PlaylistModel);
+			playlistModel.SetWindow(this);
 
 			ConnectToStream(StreamQuality.Normal);
 
 			mainModel = new MainModel(this);
 			volumeModel = new VolumeModel(this);
 			extraModel = new ExtraMenuModel(this);
+			//playlistModel = new PlaylistModel(this);
 		}
 
 		public MP3Stream.StreamingPlaybackState GetStreamState() {
@@ -136,8 +143,25 @@ namespace Free_Sharp_Player {
 		}
 
 		private void Grid_MouseDown(object sender, MouseButtonEventArgs e) {
-			if (e.ChangedButton == MouseButton.Left)
+			if (e.ChangedButton == MouseButton.Left) {
 				this.DragMove();
+				if (!isDoubleClicking) {
+					isDoubleClicking = true;
+					doubleClickCheck.Start();
+				} else {
+					playlistModel.AnimateLists();
+					isDoubleClicking = false;
+					doubleClickCheck.Stop();
+
+				}
+			}
 		}
+
+
+		private void Grid_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+
+		}
+
+
 	}
 }
