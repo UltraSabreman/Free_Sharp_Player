@@ -9,7 +9,7 @@ namespace Free_Sharp_Player {
 	class Track : ViewModelNotifier {
 		public int TrackID { get; set; }
 
-		public String artist { get { return GetProp<String>(); } set { SetProp(value); } }
+		public String artist { get { return GetProp<String>(); } set { SetProp(value + " "); } }
 
 		public String title { get { return GetProp<String>(); } set { SetProp(value); } }
 
@@ -29,8 +29,8 @@ namespace Free_Sharp_Player {
 		public int vote { get { return GetProp<int>(); } set { SetProp(value); } }
 
 		public double RequestTime { get; set; }
-		public int Forced { get; set; }
-		public String Requester { get; set; }
+		public int forced { get { return GetProp<int>(); } set { SetProp(value); } }
+		public String Requester { get { return GetProp<String>(); } set { SetProp(value); } }
 		public int Priority { get; set; }
 
 		public static Track Parse(String s) {

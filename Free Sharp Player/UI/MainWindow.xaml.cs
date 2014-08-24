@@ -53,23 +53,13 @@ namespace Free_Sharp_Player {
 
 
 			AllocConsole();
-			var payload = new Dictionary<string, object>() {
-				{ "action", "playlist" },
-			};
-
-			String playListData = HttpPostRequest.SecureAPICall(payload)["data"].ToString();
-			Util.Print(playListData);
-
-
-			playlistModel = (JsonConvert.DeserializeObject(playListData, typeof(PlaylistModel)) as PlaylistModel);
-			playlistModel.SetWindow(this);
-
-			ConnectToStream(StreamQuality.Normal);
 
 			mainModel = new MainModel(this);
 			volumeModel = new VolumeModel(this);
 			extraModel = new ExtraMenuModel(this);
-			//playlistModel = new PlaylistModel(this);
+			playlistModel = new PlaylistModel(this);
+
+			ConnectToStream(StreamQuality.Normal);
 		}
 
 		public MP3Stream.StreamingPlaybackState GetStreamState() {
@@ -108,6 +98,9 @@ namespace Free_Sharp_Player {
 
 				try {
 					theStreamer = new MP3Stream(address, 30);
+					theStreamer.OnBufferChange += (i) => {
+						mainModel.BufferLen = i;
+					};
 					theStreamer.OnStreamTitleChange += (t, a) => {
 						this.Dispatcher.Invoke(new Action(() => {
 							mainModel.StreamTitle = t;

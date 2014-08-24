@@ -14,7 +14,7 @@ namespace Free_Sharp_Player {
 		public ExtraMenuModel(MainWindow win) {
 			window = win;
 
-			window.ExtrasMenu.DataContext = this;
+			window.Extras.DataContext = this;
 
 			window.btn_Like.Click += ResetCapture;
 			window.btn_Dislike.Click += ResetCapture;
@@ -26,7 +26,7 @@ namespace Free_Sharp_Player {
 
 
 		private void ResetCapture(object o, object e) {
-			Mouse.Capture(window.ExtrasMenu, CaptureMode.SubTree);
+			Mouse.Capture(window.Extras, CaptureMode.SubTree);
 		}
 	}
 }

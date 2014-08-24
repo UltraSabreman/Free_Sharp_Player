@@ -10,7 +10,7 @@ using System.Windows.Media.Animation;
 
 namespace Free_Sharp_Player {
 	public class MainModel : ViewModelNotifier {
-		public String StreamTitle { get { return GetProp<String>(); } set { SetProp(value); } }
+		public String StreamTitle { get { return GetProp<String>(); } set { SetProp(value); DoMarquee(); } }
 		public int PosInBuffer { get { return GetProp<int>(); } set { SetProp(value); } }
 		public int BufferLen { get { return GetProp<int>(); } set { SetProp(value); } }
 
@@ -28,7 +28,7 @@ namespace Free_Sharp_Player {
 
 			window.bar_Buffer.DataContext = this;
 			window.bar_BufferWindow.DataContext = this;
-			window.lbl_TrackName.DataContext = this;
+			window.txt_TrackName.DataContext = this;
 
 			window.btn_PlayPause.Click += btn_PlayPause_Click;
 			window.btn_Volume.Click += btn_Volume_Click;
@@ -37,10 +37,30 @@ namespace Free_Sharp_Player {
 			VolumeOutClick = new MouseButtonEventHandler(HandleClickOutsideOfVolume);
 			ExtrasOutClick = new MouseButtonEventHandler(HandleClickOutsideOfExtras);
 
-			window.theStreamer.OnBufferChange += (i) => {
-				BufferLen = i;
-			};
+			window.UpdateLayout();
 		}
+
+		private void DoMarquee() {
+			DoubleAnimation doubleAnimation = new DoubleAnimation();
+			Canvas canvas = window.can_TrackName;
+			TextBlock text = window.txt_TrackName;
+			TextBlock text2 = window.txt_TrackName2;
+
+			if (canvas != null && text != null && text.ActualWidth >= canvas.ActualWidth) {
+				text2.Visibility = Visibility.Visible;
+				//todo better marquee math here.
+				DoubleAnimation anim = new DoubleAnimation(0, (text.ActualWidth + canvas.ActualWidth / 2), new Duration(new TimeSpan(0, 0, 10)));
+				DoubleAnimation anim2 = new DoubleAnimation(-(text.ActualWidth + canvas.ActualWidth / 2), 0, new Duration(new TimeSpan(0, 0, 10)));
+				anim.RepeatBehavior = RepeatBehavior.Forever;
+				anim2.RepeatBehavior = RepeatBehavior.Forever;
+
+				text.BeginAnimation(Canvas.RightProperty, anim);
+				text2.BeginAnimation(Canvas.RightProperty, anim2);
+			} else
+				text2.Visibility = Visibility.Hidden;
+
+		}
+
 
 		private void btn_PlayPause_Click(object sender, RoutedEventArgs e) {
 			if (window.GetStreamState() == MP3Stream.StreamingPlaybackState.Playing) {
@@ -54,8 +74,8 @@ namespace Free_Sharp_Player {
 
 		private void HandleClickOutsideOfVolume(object sender, MouseButtonEventArgs e) {
 			Console.WriteLine("OutVolClick");
-			window.VolumeSlider.ReleaseMouseCapture();
-			window.VolumeSlider.RemoveHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick);
+			window.Volume.ReleaseMouseCapture();
+			window.Volume.RemoveHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick);
 
 
 			if (!window.btn_Volume.IsMouseOver && VolumeOpen)
@@ -64,8 +84,8 @@ namespace Free_Sharp_Player {
 
 		private void HandleClickOutsideOfExtras(object sender, MouseButtonEventArgs e) {
 			Console.WriteLine("OutExtClick");
-			window.ExtrasMenu.ReleaseMouseCapture();
-			window.ExtrasMenu.RemoveHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick);
+			window.Extras.ReleaseMouseCapture();
+			window.Extras.RemoveHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick);
 
 			if (!window.btn_Extra.IsMouseOver && ExtrasOpen)
 				btn_Extra_Click(null, null);
@@ -75,8 +95,8 @@ namespace Free_Sharp_Player {
 			VolumeOpen = !VolumeOpen;
 			ThicknessAnimation testan;
 			if (VolumeOpen) {
-				Mouse.Capture(window.VolumeSlider, CaptureMode.SubTree);
-				window.VolumeSlider.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick, true);
+				Mouse.Capture(window.Volume, CaptureMode.SubTree);
+				window.Volume.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick, true);
 				
 				testan = new ThicknessAnimation(new Thickness(0, 120, 0, 0), new Thickness(0, 0, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
 			} else {
@@ -85,9 +105,9 @@ namespace Free_Sharp_Player {
 
 			Storyboard test = new Storyboard();
 			test.Children.Add(testan);
-			Storyboard.SetTargetName(testan, window.VolumeSlider.Name);
+			Storyboard.SetTargetName(testan, window.Volume.Name);
 			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.MarginProperty));
-			test.Begin(window.VolumeSlider);
+			test.Begin(window.Volume);
 		}
 
 
@@ -96,8 +116,8 @@ namespace Free_Sharp_Player {
 			ExtrasOpen = !ExtrasOpen;
 			ThicknessAnimation testan;
 			if (ExtrasOpen) {
-				Mouse.Capture(window.ExtrasMenu, CaptureMode.SubTree);
-				window.ExtrasMenu.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick, true);
+				Mouse.Capture(window.Extras, CaptureMode.SubTree);
+				window.Extras.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick, true);
 
 				testan = new ThicknessAnimation(new Thickness(0, 60, 0, 0), new Thickness(0, 0, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
 			} else {
@@ -106,9 +126,9 @@ namespace Free_Sharp_Player {
 
 			Storyboard test = new Storyboard();
 			test.Children.Add(testan);
-			Storyboard.SetTargetName(testan, window.ExtrasMenu.Name);
+			Storyboard.SetTargetName(testan, window.Extras.Name);
 			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.MarginProperty));
-			test.Begin(window.ExtrasMenu);
+			test.Begin(window.Extras);
 		}
 
 

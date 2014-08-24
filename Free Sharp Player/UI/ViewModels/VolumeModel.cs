@@ -25,7 +25,7 @@ namespace Free_Sharp_Player {
 		public VolumeModel(MainWindow win) {
 			window = win;
 
-			window.VolumeSlider.DataContext = this;
+			window.Volume.DataContext = this;
 
 			Mute = false;
 
@@ -39,7 +39,7 @@ namespace Free_Sharp_Player {
 		}
 
 		private void ResetCapture(object o, object e) {
-			Mouse.Capture(window.VolumeSlider, CaptureMode.SubTree);
+			Mouse.Capture(window.Volume, CaptureMode.SubTree);
 		}
 
 		private void sldr_VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
