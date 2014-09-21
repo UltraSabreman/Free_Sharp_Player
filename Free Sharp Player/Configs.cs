@@ -21,7 +21,8 @@ namespace Free_Sharp_Player {
 
 		//Here you can define defaults for all values. This is a string-object dictionary so anything can be used for a value.
 		private static ConfigMap Settings = new ConfigMap() {
-			{ "AppID", "ultrasaberman.freesharpplayer" }
+			{ "AppID", "ultrasaberman.freesharpplayer" },
+			{ "MaxBufferLenSec", 300}
 		};
 
 		/// <summary>
