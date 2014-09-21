@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace Free_Sharp_Player {
-	class Track : ViewModelNotifier {
+	public class Track : ViewModelNotifier {
 		public int TrackID { get; set; }
 
 		public String artist { get { return GetProp<String>(); } set { SetProp(value + " "); } }
@@ -32,6 +32,11 @@ namespace Free_Sharp_Player {
 		public int forced { get { return GetProp<int>(); } set { SetProp(value); } }
 		public String Requester { get { return GetProp<String>(); } set { SetProp(value); } }
 		public int Priority { get; set; }
+
+		public Track() {
+			Duration = -1;
+			LastPlayed = -1;
+		}
 
 		public static Track Parse(String s) {
 			return JsonConvert.DeserializeObject(s) as Track;

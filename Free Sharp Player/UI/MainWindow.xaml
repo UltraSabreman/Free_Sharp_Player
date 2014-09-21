@@ -114,6 +114,7 @@
 			</Grid>
 			<Grid Name="Progress" Grid.Column="1">
 				<ProgressBar Name="bar_Buffer" Foreground="Gray" Maximum="100" Value="{Binding BufferLen}" BorderThickness="0" />
+				<ProgressBar Name="bar_SongTime" Foreground="#22cccc" Maximum="100" Value="{Binding SongProgress}" BorderThickness="0" Margin="0,28,0,0" ToolTip="{Binding SongProgressText}"/>
 				<ProgressBar Name="bar_BufferWindow" Foreground="#22cccc" Background="Transparent" Maximum="100" Value="{Binding PosInBuffer}"  BorderThickness="0"/>
 				<Canvas Name="can_TrackName" ClipToBounds="True" Margin="4,0,4,0">
 					<TextBlock Name="txt_TrackName" Text="{Binding StreamTitle}" Margin="0,7,0,0"/>

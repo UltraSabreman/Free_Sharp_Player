@@ -24,6 +24,17 @@ using System.Diagnostics;
 using System.Timers;
 
 //TODO: hanlde network disconnects
+//TODO: sanity check duration value on now playing.
+//tODO: make icons for times show up on main bar when epxaneded? (or not
+//make extra menu apear on right click of anything.
+//replace extra icon with app icon?
+//how to handle requester?
+//Elipse song names in playlist/queue (wiht alpha gradient?)
+//add calculated song progress bar somehwre in playing (and time to?)
+//make votes easier to see?
+//prevent player from going of screen when dragged (rest like that pandora client)
+//when playlist expands, move the player away from the screen edge the needed amount (possibly back when collapses).
+
 
 namespace Free_Sharp_Player {
 	using Timer = System.Timers.Timer;
@@ -38,6 +49,8 @@ namespace Free_Sharp_Player {
 		Timer doubleClickCheck = new Timer(750);
 		bool isDoubleClicking = false;
 		public MP3Stream theStreamer;
+
+		Timer Updater = new Timer(1000);
 
 		private MainModel mainModel;
 		private VolumeModel volumeModel;
@@ -59,8 +72,21 @@ namespace Free_Sharp_Player {
 			extraModel = new ExtraMenuModel(this);
 			playlistModel = new PlaylistModel(this);
 
+			Updater.Elapsed += mainModel.Tick;
+			Updater.Elapsed += volumeModel.Tick;
+			Updater.Elapsed += extraModel.Tick;
+			Updater.Elapsed += playlistModel.Tick;
+			Updater.Elapsed += MainTick;
+			Updater.AutoReset = true;
+
 			ConnectToStream(StreamQuality.Normal);
+			Updater.Start();
 		}
+
+		public void MainTick(Object o, EventArgs e) {
+			mainModel.UpdateSongProgress(playlistModel.Playing, playlistModel.Played[0], theStreamer.BufferLen);
+		}
+
 
 		public MP3Stream.StreamingPlaybackState GetStreamState() {
 			return theStreamer.PlaybackState;
@@ -103,7 +129,7 @@ namespace Free_Sharp_Player {
 					};
 					theStreamer.OnStreamTitleChange += (t, a) => {
 						this.Dispatcher.Invoke(new Action(() => {
-							mainModel.StreamTitle = t;
+							//mainModel.StreamTitle = t;
 
 							var payload = new Dictionary<string, object>() {
 								{ "action", "radio-info" },
@@ -113,7 +139,7 @@ namespace Free_Sharp_Player {
 							Util.Print(playListData);
 
 							RadioInfo radioInfo = (JsonConvert.DeserializeObject(playListData, typeof(RadioInfo)) as RadioInfo);
-
+							//TODO move me to view model.
 							extraModel.Votes = (int)radioInfo.rating;
 						}));
 

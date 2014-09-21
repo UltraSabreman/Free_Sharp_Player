@@ -15,6 +15,8 @@ namespace Free_Sharp_Player {
 	public class MP3Stream {
 		public enum StreamingPlaybackState { Stopped, Playing, Buffering, Paused }
 
+		private StreamQueue queue = new StreamQueue();
+
 		public delegate void TitleChange(String title, String artist);
 		public event TitleChange OnStreamTitleChange;
 
@@ -26,6 +28,8 @@ namespace Free_Sharp_Player {
 		public float BufferFillPercent { get; private set; }
 		public float Volume { get; set; }
 		public float Pos { get; private set; }
+
+		public TimeSpan BufferLen { get { return bufferedWaveProvider == null ? new TimeSpan(0) : bufferedWaveProvider.BufferedDuration; } }
 		public String StreamTitle { get; private set; }
 
 		private int oldBufferLen = 0;

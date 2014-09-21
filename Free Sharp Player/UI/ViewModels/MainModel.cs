@@ -10,9 +10,11 @@ using System.Windows.Media.Animation;
 
 namespace Free_Sharp_Player {
 	public class MainModel : ViewModelNotifier {
-		public String StreamTitle { get { return GetProp<String>(); } set { SetProp(value); DoMarquee(); } }
 		public int PosInBuffer { get { return GetProp<int>(); } set { SetProp(value); } }
 		public int BufferLen { get { return GetProp<int>(); } set { SetProp(value); } }
+		public int SongLength { get { return GetProp<int>(); } set { SetProp(value); } }
+		public int SongProgress { get { return GetProp<int>(); } set { SetProp(value); } }
+		public String SongProgressText { get { return GetProp<String>(); } set { SetProp(value); } }
 
 		private MainWindow window;
 
@@ -28,7 +30,7 @@ namespace Free_Sharp_Player {
 
 			window.bar_Buffer.DataContext = this;
 			window.bar_BufferWindow.DataContext = this;
-			window.txt_TrackName.DataContext = this;
+			window.bar_SongTime.DataContext = this;
 
 			window.btn_PlayPause.Click += btn_PlayPause_Click;
 			window.btn_Volume.Click += btn_Volume_Click;
@@ -40,24 +42,20 @@ namespace Free_Sharp_Player {
 			window.UpdateLayout();
 		}
 
-		private void DoMarquee() {
-			DoubleAnimation doubleAnimation = new DoubleAnimation();
-			Canvas canvas = window.can_TrackName;
-			TextBlock text = window.txt_TrackName;
-			TextBlock text2 = window.txt_TrackName2;
+		public void UpdateSongProgress(Track song, Track lastSong, TimeSpan bufferLen) {
+			if (song.Duration == -1 || song.LastPlayed == -1) {
+				SongProgress = 1;
+				SongProgressText = "No Duration Avalible";
+			} else {
 
-			if (canvas != null && text != null && text.ActualWidth >= canvas.ActualWidth) {
-				text2.Visibility = Visibility.Visible;
-				//todo better marquee math here.
-				DoubleAnimation anim = new DoubleAnimation(0, (text.ActualWidth + canvas.ActualWidth / 2), new Duration(new TimeSpan(0, 0, 10)));
-				DoubleAnimation anim2 = new DoubleAnimation(-(text.ActualWidth + canvas.ActualWidth / 2), 0, new Duration(new TimeSpan(0, 0, 10)));
-				anim.RepeatBehavior = RepeatBehavior.Forever;
-				anim2.RepeatBehavior = RepeatBehavior.Forever;
+				DateTime songStart = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc).AddSeconds(song.LastPlayed + bufferLen.TotalSeconds + 120).ToLocalTime();
+				TimeSpan duration = DateTime.Now - songStart;
+				SongProgress = (int)((duration.TotalSeconds / (song.Duration + bufferLen.TotalSeconds)) * 100);
+				SongProgressText = (int)duration.TotalMinutes + ":" + duration.Seconds;
+			}
+		}
 
-				text.BeginAnimation(Canvas.RightProperty, anim);
-				text2.BeginAnimation(Canvas.RightProperty, anim2);
-			} else
-				text2.Visibility = Visibility.Hidden;
+		public void Tick(Object o, EventArgs e) {
 
 		}
 

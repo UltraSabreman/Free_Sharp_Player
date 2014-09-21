@@ -35,7 +35,11 @@ namespace Free_Sharp_Player {
 			window.sldr_VolumeSlider.MouseLeave += ResetCapture;
 			window.btn_MuteButton.Click += ResetCapture;
 
-			Volume = 100; //TODO: save/load this
+			Volume = 25; //TODO: save/load this
+		}
+
+		public void Tick(Object o, EventArgs e) {
+
 		}
 
 		private void ResetCapture(object o, object e) {

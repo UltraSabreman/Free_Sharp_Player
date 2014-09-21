@@ -24,6 +24,9 @@ namespace Free_Sharp_Player {
 
 		}
 
+		public void Tick(Object o, EventArgs e) {
+
+		}
 
 		private void ResetCapture(object o, object e) {
 			Mouse.Capture(window.Extras, CaptureMode.SubTree);
