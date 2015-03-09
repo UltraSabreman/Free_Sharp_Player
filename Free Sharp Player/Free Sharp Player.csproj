@@ -67,8 +67,6 @@
     <Compile Include="DataPackages\PlaylistData.cs" />
     <Compile Include="HttpPostRequest.cs" />
     <Compile Include="RadioInfo.cs" />
-    <Compile Include="Streaming\StreamFrame.cs" />
-    <Compile Include="Streaming\StreamQueue.cs" />
     <Compile Include="UI\ViewModels\ExtraMenuModel.cs" />
     <Compile Include="UI\ViewModels\MainModel.cs" />
     <Compile Include="UI\ViewModels\PlaylistModel.cs" />
@@ -119,11 +117,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Misc\App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Misc\ApiKey.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

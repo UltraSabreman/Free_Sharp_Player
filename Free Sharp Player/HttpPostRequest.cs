@@ -14,18 +14,13 @@ using System.IO;
 namespace Free_Sharp_Player {
 	class HttpPostRequest {
 		private static String Address ="";
-		private static String ApiKey;
 
 		public static List<String> GetAvalibleActions() {
 			return new List<String>() {
-				"client-ip",
-				"debug",
-				"playlist",
-				"radio-info",
-				"video-info",
-				"queue",
-				"playlist",
-				"site-section"
+				"getRadioInfo",
+				"getTrack",
+				"getVoteStatus",
+				"setVote",
 			};
 		}
 
@@ -45,9 +40,9 @@ namespace Free_Sharp_Player {
 			Address = (JsonConvert.DeserializeObject(temp, typeof(TestIP)) as TestIP).IP;
 
 			//TODO: make this AES encryptind string stored in code for *release* only.
-			using (StreamReader r = new StreamReader(File.OpenRead("Misc\\apikey.txt"))) {
+			/*using (StreamReader r = new StreamReader(File.OpenRead("Misc\\apikey.txt"))) {
 				ApiKey = r.ReadLine();
-			}
+			}*/
 		}
 
 		public static Dictionary<String, Object> APICall(Dictionary<String, Object> Payload) {
@@ -65,7 +60,7 @@ namespace Free_Sharp_Player {
 
 			PostData.Append("&signature=");
 
-			HttpWebRequest httpWReq = (HttpWebRequest)WebRequest.Create("http://everfree.net/api/");
+			HttpWebRequest httpWReq = (HttpWebRequest)WebRequest.Create("http://canterlothill.com/api/v1/");
 			byte[] data = Encoding.ASCII.GetBytes(PostData.ToString());
 
 			httpWReq.Method = "POST";
@@ -79,7 +74,7 @@ namespace Free_Sharp_Player {
 
 			return ParseReturn(response);
 		}
-		public static Dictionary<String, Object> SecureAPICall(Dictionary<String, Object> Payload) {
+		/*public static Dictionary<String, Object> SecureAPICall(Dictionary<String, Object> Payload) {
 			StringBuilder PostData = new StringBuilder();
 			String timeStamp = ((Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
 
@@ -128,7 +123,7 @@ namespace Free_Sharp_Player {
 			String response = new StreamReader(resp.GetResponseStream()).ReadToEnd();
 
 			return ParseReturn(response);
-		}
+		}*/
 
 		private static Dictionary<String, Object> ParseReturn(String msg) {
 			var outd = new Dictionary<String, Object>();
