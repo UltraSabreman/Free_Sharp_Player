@@ -11,7 +11,7 @@ namespace Free_Sharp_Player {
 		public Error error;
 
 
-		class Error {
+		public class Error {
 			public int code { get; set; }
 			public String message { get; set; }
 		}
