@@ -14,9 +14,9 @@ using System.Windows.Media.Animation;
 namespace Free_Sharp_Player {
 	class PlaylistModel : ViewModelNotifier {
 		public String StreamTitle { get { return GetProp<String>(); } set { SetProp(value); DoMarquee(); } }
-		public ObservableCollection<Track> Played { get { return GetProp<ObservableCollection<Track>>(); } set { SetProp(value); } }
-		public ObservableCollection<Track> Queue { get { return GetProp<ObservableCollection<Track>>(); } set { SetProp(value); } }
-		public Track Playing { get { return GetProp<Track>(); } set { SetProp(value); } }
+		public ObservableCollection<getTrack.Data.Track> Played { get { return GetProp<ObservableCollection<getTrack.Data.Track>>(); } set { SetProp(value); } }
+		public ObservableCollection<getTrack.Data.Track> Queue { get { return GetProp<ObservableCollection<getTrack.Data.Track>>(); } set { SetProp(value); } }
+		public getTrack.Data.Track Playing { get { return GetProp<getTrack.Data.Track>(); } set { SetProp(value); } }
 
 		private double MaxQueueHight;
 		private double MaxPlayedHight;
@@ -54,22 +54,23 @@ namespace Free_Sharp_Player {
 		}
 
 		public void Tick(Object o, EventArgs e) {
-			var payload = new Dictionary<string, object>() {
+			//TODO: playlist and other bs
+			
+			/*var payload = new Dictionary<string, object>() {
 				{ "action", "playlist" },
 			};
 
-			String playListData = HttpPostRequest.SecureAPICall(payload)["data"].ToString();
+			String playListData = HttpPostRequest.APICall(payload)["data"].ToString();
 			Util.Print(playListData);
 
 
 			PlaylistData temp = (JsonConvert.DeserializeObject(playListData, typeof(PlaylistData)) as PlaylistData);
-			//TODO: make this copy over instead of replace the pbjects? 
-			Played = new ObservableCollection<Track>(temp.Played);
-			Queue = new ObservableCollection<Track>(temp.Queue);
+			//Played = new ObservableCollection<getTrack.Data.Track>(temp.Played);
+			//Queue = new ObservableCollection<getTrack.Data.Track>(temp.Queue);
 			Playing = temp.Playing;
 
 			StreamTitle = Playing.WholeTitle;
-
+			*/
 			UpdateSize();
 		}
 
@@ -99,8 +100,14 @@ namespace Free_Sharp_Player {
 
 
 		public void UpdateSize() {
-			MaxQueueHight = (Queue.Count * 20);
-			MaxPlayedHight = (Played.Count * 20);
+			if (Queue != null)
+				MaxQueueHight = (Queue.Count * 20);
+			else
+				MaxQueueHight = 0;
+			if (Played != null)
+				MaxPlayedHight = (Played.Count * 20);
+			else
+				MaxPlayedHight = 0;
 		}
 
 		public void AnimateLists() {

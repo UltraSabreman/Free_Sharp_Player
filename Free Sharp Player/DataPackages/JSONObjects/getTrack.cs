@@ -54,7 +54,7 @@ namespace Free_Sharp_Player {
 
 			public class Vars {
 				public String artist;
-				public String track;
+				public String Track;
 				public int page;
 				public int limit;
 				public String rating;

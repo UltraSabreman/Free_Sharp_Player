@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Free_Sharp_Player {
+	using Newtonsoft.Json;
+	using Newtonsoft.Json.Linq;
 	using DataDict = Dictionary<String, Object>;
 	static class Util {
 		public static void Print() { Print(null); }
@@ -89,6 +91,19 @@ namespace Free_Sharp_Player {
 
 			return curDic;
 		}
+
+
+		private static Dictionary<String, Object> StringToDict(String msg) {
+			var outd = new Dictionary<String, Object>();
+
+			var test = JsonConvert.DeserializeObject(msg) as JObject;
+			foreach (JProperty p in test.Properties())
+				outd[p.Name] = p.Value.ToString();
+
+
+			return outd;
+		}
+
 		public static bool ToggleAllowUnsafeHeaderParsing(bool enable) {
 			//Get the assembly that contains the internal class
 			Assembly assembly = Assembly.GetAssembly(typeof(SettingsSection));

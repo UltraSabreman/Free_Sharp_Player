@@ -64,11 +64,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Configs.cs" />
-    <Compile Include="DataPackages\JSONObjects\JsonBase.cs" />
-    <Compile Include="DataPackages\JSONObjects\RadioInfo.cs" />
-    <Compile Include="DataPackages\JSONObjects\Track.cs" />
-    <Compile Include="DataPackages\JSONObjects\vote.cs" />
-    <Compile Include="DataPackages\JSONObjects\voteStatus.cs" />
+    <Compile Include="DataPackages\JSONObjects\JSONBase.cs" />
+    <Compile Include="DataPackages\JSONObjects\getRadioInfo.cs" />
+    <Compile Include="DataPackages\JSONObjects\getTrack.cs" />
+    <Compile Include="DataPackages\JSONObjects\setVote.cs" />
+    <Compile Include="DataPackages\JSONObjects\getVoteStatus.cs" />
     <Compile Include="DataPackages\PlaylistData.cs" />
     <Compile Include="HttpPostRequest.cs" />
     <Compile Include="UI\ViewModels\ExtraMenuModel.cs" />

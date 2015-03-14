@@ -84,7 +84,8 @@ namespace Free_Sharp_Player {
 		}
 
 		public void MainTick(Object o, EventArgs e) {
-			mainModel.UpdateSongProgress(playlistModel.Playing, playlistModel.Played[0], theStreamer.BufferLen);
+			//TODO: main song tick
+			//mainModel.UpdateSongProgress(playlistModel.Playing, playlistModel.Played[0], theStreamer.BufferLen);
 		}
 
 
@@ -109,12 +110,22 @@ namespace Free_Sharp_Player {
 			bool Connected = false;
 
 			while (!Connected) {
+
+				var payload = new Dictionary<string, object>() {
+								{ "action", "getRadioInfo" },
+							};
+
+				String playListData = HttpPostRequest.APICall(payload);
+
+				getRadioInfo temp = (JsonConvert.DeserializeObject(playListData, typeof(getRadioInfo)) as getRadioInfo);
+	
 				using (WebClient wb = new WebClient()) {
 					NameValueCollection data = new NameValueCollection();
-					data["sid"] = (Quality == StreamQuality.Normal ? "1" : (Quality == StreamQuality.Low ? "3" : "2"));
+					String tempAddr = temp.data.servers.medQuality.Split("?".ToCharArray())[0];
+					data["sid"] = temp.data.servers.medQuality.Split("=".ToCharArray())[1];//(Quality == StreamQuality.Normal ? "1" : (Quality == StreamQuality.Low ? "3" : "2"));
 
 					//TODO: add ui to alert people this is loading
-					Byte[] response = wb.UploadValues("http://radio.everfreeradio.com:5800/listen.pls", "POST", data);
+					Byte[] response = wb.UploadValues(tempAddr, "POST", data);
 
 					string[] responseData = System.Text.Encoding.UTF8.GetString(response, 0, response.Length).Split("\n".ToCharArray(), StringSplitOptions.None);
 
@@ -122,25 +133,32 @@ namespace Free_Sharp_Player {
 					address = responseData[2].Split("=".ToCharArray())[1];
 				}
 
+
+
 				try {
 					theStreamer = new MP3Stream(address, 30);
 					theStreamer.OnBufferChange += (i) => {
 						mainModel.BufferLen = i;
 					};
 					theStreamer.OnStreamTitleChange += (t, a) => {
+						//TODO: Handle playlist and shit
+						//TODO: handle address change.
 						this.Dispatcher.Invoke(new Action(() => {
 							//mainModel.StreamTitle = t;
 
-							var payload = new Dictionary<string, object>() {
+							/*var payload = new Dictionary<string, object>() {
 								{ "action", "radio-info" },
 							};
 
-							String playListData = HttpPostRequest.SecureAPICall(payload)["data"].ToString();
-							Util.Print(playListData);
+							String playListData = HttpPostRequest.APICall(payload)["data"].ToString();
 
-							RadioInfo radioInfo = (JsonConvert.DeserializeObject(playListData, typeof(RadioInfo)) as RadioInfo);
+
+
+							getRadioInfo temp = (JsonConvert.DeserializeObject(playListData, typeof(getRadioInfo)) as getRadioInfo);
+							Util.Print(playListData);*/
+							address = temp.data.servers.medQuality;
 							//TODO move me to view model.
-							extraModel.Votes = (int)radioInfo.rating;
+							//extraModel.Votes = (int)radioInfo.rating;
 						}));
 
 					};

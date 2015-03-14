@@ -42,7 +42,8 @@ namespace Free_Sharp_Player {
 			window.UpdateLayout();
 		}
 
-		public void UpdateSongProgress(Track song, Track lastSong, TimeSpan bufferLen) {
+		//TODO: Update Duration
+		/*public void UpdateSongProgress(getTrack.Data.Track song, getTrack.Data.Track lastSong, TimeSpan bufferLen) {
 			if (song.Duration == -1 || song.LastPlayed == -1) {
 				SongProgress = 1;
 				SongProgressText = "No Duration Avalible";
@@ -53,7 +54,7 @@ namespace Free_Sharp_Player {
 				SongProgress = (int)((duration.TotalSeconds / (song.Duration + bufferLen.TotalSeconds)) * 100);
 				SongProgressText = (int)duration.TotalMinutes + ":" + duration.Seconds;
 			}
-		}
+		}*/
 
 		public void Tick(Object o, EventArgs e) {
 
