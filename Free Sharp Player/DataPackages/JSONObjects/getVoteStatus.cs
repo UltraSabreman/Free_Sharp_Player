@@ -5,11 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Free_Sharp_Player {
-	class getVoteStatus : JSONBase {
-		public Data data;
-
-		public class Data : ViewModelNotifier {
-			int status;
-		}
+	class getVoteStatus : ViewModelNotifier {
+		int? vote; //my vote.
+		int? status; //if here i can vote
+		
 	}
 }

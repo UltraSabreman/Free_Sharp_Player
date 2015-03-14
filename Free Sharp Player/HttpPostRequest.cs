@@ -21,6 +21,9 @@ namespace Free_Sharp_Player {
 				"getTrack",
 				"getVoteStatus",
 				"setVote",
+				"getRequest",
+				"setRequest",
+				"lastPlayed"
 			};
 		}
 
