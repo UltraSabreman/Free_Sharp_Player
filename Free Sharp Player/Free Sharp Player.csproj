@@ -65,7 +65,6 @@
     </ApplicationDefinition>
     <Compile Include="Configs.cs" />
     <Compile Include="DataPackages\JSONObjects\getRequests.cs" />
-    <Compile Include="DataPackages\JSONObjects\JSONBase.cs" />
     <Compile Include="DataPackages\JSONObjects\getRadioInfo.cs" />
     <Compile Include="DataPackages\JSONObjects\getTrack.cs" />
     <Compile Include="DataPackages\JSONObjects\lastPlayed.cs" />

@@ -121,8 +121,8 @@ namespace Free_Sharp_Player {
 	
 				using (WebClient wb = new WebClient()) {
 					NameValueCollection data = new NameValueCollection();
-					String tempAddr = temp.data.servers.medQuality.Split("?".ToCharArray())[0];
-					data["sid"] = temp.data.servers.medQuality.Split("=".ToCharArray())[1];//(Quality == StreamQuality.Normal ? "1" : (Quality == StreamQuality.Low ? "3" : "2"));
+					String tempAddr = temp.servers.medQuality.Split("?".ToCharArray())[0];
+					data["sid"] = temp.servers.medQuality.Split("=".ToCharArray())[1];//(Quality == StreamQuality.Normal ? "1" : (Quality == StreamQuality.Low ? "3" : "2"));
 
 					//TODO: add ui to alert people this is loading
 					Byte[] response = wb.UploadValues(tempAddr, "POST", data);
@@ -156,7 +156,7 @@ namespace Free_Sharp_Player {
 
 							getRadioInfo temp = (JsonConvert.DeserializeObject(playListData, typeof(getRadioInfo)) as getRadioInfo);
 							Util.Print(playListData);*/
-							address = temp.data.servers.medQuality;
+							address = temp.servers.medQuality;
 							//TODO move me to view model.
 							//extraModel.Votes = (int)radioInfo.rating;
 						}));

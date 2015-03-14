@@ -52,12 +52,12 @@
 									<ColumnDefinition Width="30"/>
 									<ColumnDefinition Width="30"/>
 								</Grid.ColumnDefinitions>
-								<Label Name="lbl_QueueTime" ToolTip="How long getTrack.Data.Track has been queued" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding RequestTime, Converter={StaticResource TimeInQueueConverter}}"/>
-								<Label Name="lbl_WholeTile" ToolTip="getTrack.Data.Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
-								<Label Name="lbl_Duration" ToolTip="getTrack.Data.Track duration" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="2" Content="{Binding Duration, Converter={StaticResource DurationConverter}}"/>
-								<Label Name="lbl_Plays" ToolTip="getTrack.Data.Track plays"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="3" Content="{Binding Plays}"/>
-								<Label Name="lbl_Requests" ToolTip="getTrack.Data.Track requests"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="4" Content="{Binding Requests}"/>
-								<Label Name="lbl_Rating" ToolTip="getTrack.Data.Track rating"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="5" Content="{Binding rating}"/>
+								<Label Name="lbl_QueueTime" ToolTip="How long getTrack.Track has been queued" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding RequestTime, Converter={StaticResource TimeInQueueConverter}}"/>
+								<Label Name="lbl_WholeTile" ToolTip="getTrack.Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
+								<Label Name="lbl_Duration" ToolTip="getTrack.Track duration" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="2" Content="{Binding Duration, Converter={StaticResource DurationConverter}}"/>
+								<Label Name="lbl_Plays" ToolTip="getTrack.Track plays"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="3" Content="{Binding Plays}"/>
+								<Label Name="lbl_Requests" ToolTip="getTrack.Track requests"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="4" Content="{Binding Requests}"/>
+								<Label Name="lbl_Rating" ToolTip="getTrack.Track rating"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="5" Content="{Binding rating}"/>
 								<Canvas Name="can_Requester" ToolTip="Reqester Nickname"  ClipToBounds="True" Margin="0,0,0,0" Grid.Column="6">
 									<TextBlock Name="txt_Requester" Text="{Binding Requester}" Margin="0,0,0,0" Padding="0" FontSize="10" />
 									<TextBlock Name="txt_Requester2" Visibility="Hidden" Text="{Binding Requester}" Margin="0,0,0,0" Padding="0" FontSize="10"/>
@@ -94,9 +94,9 @@
 				</Grid.ColumnDefinitions>
 				<Button Name="btn_Like" ToolTip="Rate up" Content="C" Grid.Column="0" Foreground="DarkGreen" FontFamily="Wingdings" FontSize="24" BorderThickness="0"/>
 				<Button Name="btn_Dislike" ToolTip="Rate down" Content="D" Grid.Column="3" Foreground="DarkRed" FontFamily="Wingdings" FontSize="24" BorderThickness="0"/>
-				<Label Name="lbl_Votes" ToolTip="getTrack.Data.Track Rating" Content="{Binding Votes}" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
-				<Button Name="btn_Favor" ToolTip="Add getTrack.Data.Track to local favorites" Content="«" Grid.Row="1" Foreground="#dfd000" FontFamily="wingdings" FontSize="24" BorderThickness="0" />
-				<Button Name="btn_Request" ToolTip="Request getTrack.Data.Track" Content="Request" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="0" />
+				<Label Name="lbl_Votes" ToolTip="getTrack.Track Rating" Content="{Binding Votes}" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+				<Button Name="btn_Favor" ToolTip="Add getTrack.Track to local favorites" Content="«" Grid.Row="1" Foreground="#dfd000" FontFamily="wingdings" FontSize="24" BorderThickness="0" />
+				<Button Name="btn_Request" ToolTip="Request getTrack.Track" Content="Request" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="0" />
 				<Button Name="btn_Settings" ToolTip="Settings" Content="⚙" Grid.Row="1" Grid.Column="3" BorderThickness="0" FontSize="19"  />
 			</Grid>
 		</Grid>
@@ -144,12 +144,12 @@
 									<ColumnDefinition Width="30"/>
 									<ColumnDefinition Width="30"/>
 								</Grid.ColumnDefinitions>
-								<Label Name="lbl_PlayedTime" ToolTip="When getTrack.Data.Track was last played" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding LastPlayed, Converter={StaticResource LastPlayedConverter}}"/>
-								<Label Name="lbl_WholeTile2" ToolTip="getTrack.Data.Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
-								<Label Name="lbl_Duration2" ToolTip="getTrack.Data.Track duration" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="2" Content="{Binding Duration, Converter={StaticResource DurationConverter}}"/>
-								<Label Name="lbl_Plays2" ToolTip="getTrack.Data.Track plays" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="3" Content="{Binding Plays}"/>
-								<Label Name="lbl_Requests2" ToolTip="getTrack.Data.Track requests" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="4" Content="{Binding Requests}"/>
-								<Label Name="lbl_Rating2" ToolTip="getTrack.Data.Track Rating" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="5" Content="{Binding rating}"/>
+								<Label Name="lbl_PlayedTime" ToolTip="When getTrack.Track was last played" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding LastPlayed, Converter={StaticResource LastPlayedConverter}}"/>
+								<Label Name="lbl_WholeTile2" ToolTip="getTrack.Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
+								<Label Name="lbl_Duration2" ToolTip="getTrack.Track duration" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="2" Content="{Binding Duration, Converter={StaticResource DurationConverter}}"/>
+								<Label Name="lbl_Plays2" ToolTip="getTrack.Track plays" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="3" Content="{Binding Plays}"/>
+								<Label Name="lbl_Requests2" ToolTip="getTrack.Track requests" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="4" Content="{Binding Requests}"/>
+								<Label Name="lbl_Rating2" ToolTip="getTrack.Track Rating" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="5" Content="{Binding rating}"/>
 								<Grid Grid.Column="6">
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="15"/>

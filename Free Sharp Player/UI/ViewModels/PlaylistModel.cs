@@ -14,9 +14,9 @@ using System.Windows.Media.Animation;
 namespace Free_Sharp_Player {
 	class PlaylistModel : ViewModelNotifier {
 		public String StreamTitle { get { return GetProp<String>(); } set { SetProp(value); DoMarquee(); } }
-		public ObservableCollection<getTrack.Data.Track> Played { get { return GetProp<ObservableCollection<getTrack.Data.Track>>(); } set { SetProp(value); } }
-		public ObservableCollection<getTrack.Data.Track> Queue { get { return GetProp<ObservableCollection<getTrack.Data.Track>>(); } set { SetProp(value); } }
-		public getTrack.Data.Track Playing { get { return GetProp<getTrack.Data.Track>(); } set { SetProp(value); } }
+		public ObservableCollection<getTrack.Track> Played { get { return GetProp<ObservableCollection<getTrack.Track>>(); } set { SetProp(value); } }
+		public ObservableCollection<getTrack.Track> Queue { get { return GetProp<ObservableCollection<getTrack.Track>>(); } set { SetProp(value); } }
+		public getTrack.Track Playing { get { return GetProp<getTrack.Track>(); } set { SetProp(value); } }
 
 		private double MaxQueueHight;
 		private double MaxPlayedHight;
@@ -65,8 +65,8 @@ namespace Free_Sharp_Player {
 
 
 			PlaylistData temp = (JsonConvert.DeserializeObject(playListData, typeof(PlaylistData)) as PlaylistData);
-			//Played = new ObservableCollection<getTrack.Data.Track>(temp.Played);
-			//Queue = new ObservableCollection<getTrack.Data.Track>(temp.Queue);
+			//Played = new ObservableCollection<getTrack.Track>(temp.Played);
+			//Queue = new ObservableCollection<getTrack.Track>(temp.Queue);
 			Playing = temp.Playing;
 
 			StreamTitle = Playing.WholeTitle;

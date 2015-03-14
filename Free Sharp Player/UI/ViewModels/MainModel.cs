@@ -43,7 +43,7 @@ namespace Free_Sharp_Player {
 		}
 
 		//TODO: Update Duration
-		/*public void UpdateSongProgress(getTrack.Data.Track song, getTrack.Data.Track lastSong, TimeSpan bufferLen) {
+		/*public void UpdateSongProgress(getTrack.Track song, getTrack.Track lastSong, TimeSpan bufferLen) {
 			if (song.Duration == -1 || song.LastPlayed == -1) {
 				SongProgress = 1;
 				SongProgressText = "No Duration Avalible";
