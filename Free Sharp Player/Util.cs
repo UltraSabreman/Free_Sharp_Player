@@ -50,6 +50,10 @@ namespace Free_Sharp_Player {
 			}
 		}
 
+		public static String trimDateString(String date) {
+			return date.Split(":".ToCharArray(), 2)[1];
+		}
+
 		public static void DumpException(Exception e) {
 			Func<int, String> getEquals = (count) => {
 				String s = "";
@@ -93,8 +97,8 @@ namespace Free_Sharp_Player {
 		}
 
 
-		private static Dictionary<String, Object> StringToDict(String msg) {
-			var outd = new Dictionary<String, Object>();
+		public static Dictionary<String, String> StringToDict(String msg) {
+			var outd = new Dictionary<String, String>();
 
 			var test = JsonConvert.DeserializeObject(msg) as JObject;
 			foreach (JProperty p in test.Properties())

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,18 +44,20 @@ namespace Free_Sharp_Player {
 		}
 
 		//TODO: Update Duration
-		/*public void UpdateSongProgress(getTrack.Track song, getTrack.Track lastSong, TimeSpan bufferLen) {
-			if (song.Duration == -1 || song.LastPlayed == -1) {
+		public void UpdateSongProgress(Track song, Track lastSong, TimeSpan bufferLen) {
+			if (song.duration == null || song.lastPlayed == null) {
 				SongProgress = 1;
 				SongProgressText = "No Duration Avalible";
 			} else {
-
-				DateTime songStart = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc).AddSeconds(song.LastPlayed + bufferLen.TotalSeconds + 120).ToLocalTime();
-				TimeSpan duration = DateTime.Now - songStart;
-				SongProgress = (int)((duration.TotalSeconds / (song.Duration + bufferLen.TotalSeconds)) * 100);
+				TimeSpan dur = TimeSpan.Parse(song.duration);
+				//DateTime songStart = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc).AddSeconds(song.LastPlayed + bufferLen.TotalSeconds + 120).ToLocalTime();
+				TimeZoneInfo hwZone = TimeZoneInfo.Utc;// FindSystemTimeZoneById("Eastern Standard Time");
+				DateTime lastPlayedDate = TimeZoneInfo.ConvertTime(DateTime.Parse(song.lastPlayed), hwZone, TimeZoneInfo.Local);
+				TimeSpan duration = DateTime.Now - lastPlayedDate;
+				SongProgress = (int)(((duration.TotalSeconds - bufferLen.TotalSeconds) / dur.TotalSeconds) * 100);
 				SongProgressText = (int)duration.TotalMinutes + ":" + duration.Seconds;
 			}
-		}*/
+		}
 
 		public void Tick(Object o, EventArgs e) {
 

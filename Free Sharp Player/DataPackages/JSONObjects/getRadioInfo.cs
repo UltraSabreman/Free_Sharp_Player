@@ -24,6 +24,17 @@ namespace Free_Sharp_Player {
 		}
 		public String track_id { get { return GetProp<String>(); } set { SetProp(value); } }
 		public String autoDJ { get { return GetProp<String>(); } set { SetProp(value); } }
+
+		public static getRadioInfo doPost() {
+			var payload = new Dictionary<String, Object> {
+				{"action", "getRadioInfo"},
+			};
+
+			String result = HttpPostRequest.APICall(payload);
+			getRadioInfo temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(getRadioInfo)) as getRadioInfo;
+
+			return temp;
+		}
 	}
 	
 }

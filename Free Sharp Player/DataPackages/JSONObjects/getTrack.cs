@@ -12,43 +12,6 @@ namespace Free_Sharp_Player {
 		public List<Track> track;
 		public Vars variables;
 
-		public class Track : ViewModelNotifier {
-			public String trackID { get; set; }
-
-			public String artist { get { return GetProp<String>(); } set { SetProp(value + " "); } }
-
-			public String title { get { return GetProp<String>(); } set { SetProp(value); } }
-
-			public String WholeTitle { get { return artist + " - " + title; } set { } }
-
-
-			public String duration { get; set; }
-			public String plays { get; set; }
-
-			public String rating { get { return GetProp<String>(); } set { SetProp(value); } }
-			public String requests { get; set; }
-
-			public int favorites { get { return GetProp<int>(); } set { SetProp(value); } }
-
-			public String LastPlayed { get; set; }
-			public double DateAdded { get; set; }
-
-			public int requestable { get { return GetProp<int>(); } set { SetProp(value); } }
-
-			public double RequestTime { get; set; }
-			public int forced { get { return GetProp<int>(); } set { SetProp(value); } }
-			public String Requester { get { return GetProp<String>(); } set { SetProp(value); } }
-			public int Priority { get; set; }
-
-			public static Track Parse(String s) {
-				return JsonConvert.DeserializeObject(s) as Track;
-			}
-
-			public override string ToString() {
-				return JsonConvert.SerializeObject(this, Formatting.None);
-			}
-		}
-
 		public class Vars {
 			public String artist;
 			public String Track;
@@ -57,7 +20,38 @@ namespace Free_Sharp_Player {
 			public String rating;
 			public String rating_direction;
 		}
-		
+
+		public static getTrack doPost(String track, String artist) {
+			return doPost(track, artist, null, null);
+		}
+
+		public static getTrack doPost(int? rating, String ratingEq) {
+			return doPost(null, null, rating, ratingEq);
+		}
+
+		public static getTrack doPost(String track, String artist, int? rating, String ratingEq, int page = 1, int limit = 20) {
+			var payload = new Dictionary<String, Object> {
+				{"action", "getTrack"},
+				{"page", page.ToString()},
+				{"limit", limit.ToString()},
+			};
+
+			if (track == null && artist == null && rating == null)
+				throw new ArgumentNullException("Must provide either artist, rating, or track");
+
+			if (track != null) payload["track"] = track;
+			if (artist != null) payload["artist"] = artist;
+			if (rating != null) {
+				payload["rating"] = rating.ToString();
+				if (ratingEq == null) throw new ArgumentNullException("Must provide ratingEq if spesifing rating.");
+				payload["rating_inequality"] = ratingEq;
+			}
+
+			String result = HttpPostRequest.APICall(payload);
+			getTrack temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(getTrack)) as getTrack;
+
+			return temp;
+		}	
 
 	}
 }

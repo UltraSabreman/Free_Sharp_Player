@@ -85,7 +85,7 @@ namespace Free_Sharp_Player {
 
 		public void MainTick(Object o, EventArgs e) {
 			//TODO: main song tick
-			//mainModel.UpdateSongProgress(playlistModel.Playing, playlistModel.Played[0], theStreamer.BufferLen);
+			mainModel.UpdateSongProgress(playlistModel.Playing, playlistModel.Played[0], theStreamer.BufferLen);
 		}
 
 
@@ -111,13 +111,7 @@ namespace Free_Sharp_Player {
 
 			while (!Connected) {
 
-				var payload = new Dictionary<string, object>() {
-								{ "action", "getRadioInfo" },
-							};
-
-				String playListData = HttpPostRequest.APICall(payload);
-
-				getRadioInfo temp = (JsonConvert.DeserializeObject(playListData, typeof(getRadioInfo)) as getRadioInfo);
+				getRadioInfo temp = getRadioInfo.doPost();
 	
 				using (WebClient wb = new WebClient()) {
 					NameValueCollection data = new NameValueCollection();
@@ -134,7 +128,6 @@ namespace Free_Sharp_Player {
 				}
 
 
-
 				try {
 					theStreamer = new MP3Stream(address, 30);
 					theStreamer.OnBufferChange += (i) => {
@@ -145,20 +138,13 @@ namespace Free_Sharp_Player {
 						//TODO: handle address change.
 						this.Dispatcher.Invoke(new Action(() => {
 							//mainModel.StreamTitle = t;
-
-							/*var payload = new Dictionary<string, object>() {
-								{ "action", "radio-info" },
-							};
-
-							String playListData = HttpPostRequest.APICall(payload)["data"].ToString();
-
-
-
-							getRadioInfo temp = (JsonConvert.DeserializeObject(playListData, typeof(getRadioInfo)) as getRadioInfo);
-							Util.Print(playListData);*/
-							address = temp.servers.medQuality;
+							getRadioInfo info = getRadioInfo.doPost();
+							address = info.servers.medQuality;
 							//TODO move me to view model.
-							//extraModel.Votes = (int)radioInfo.rating;
+							if (String.IsNullOrEmpty(info.rating))
+								extraModel.Votes = 0;
+							else
+								extraModel.Votes = Int32.Parse(info.rating);
 						}));
 
 					};

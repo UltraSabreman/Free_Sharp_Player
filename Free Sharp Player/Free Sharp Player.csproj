@@ -71,6 +71,7 @@
     <Compile Include="DataPackages\JSONObjects\setRequests.cs" />
     <Compile Include="DataPackages\JSONObjects\setVote.cs" />
     <Compile Include="DataPackages\JSONObjects\getVoteStatus.cs" />
+    <Compile Include="DataPackages\Track.cs" />
     <Compile Include="DataPackages\PlaylistData.cs" />
     <Compile Include="HttpPostRequest.cs" />
     <Compile Include="UI\ViewModels\ExtraMenuModel.cs" />

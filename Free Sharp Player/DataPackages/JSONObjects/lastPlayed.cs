@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -67,5 +68,17 @@ namespace Free_Sharp_Player {
 		public String last_played;
 		public String artist;
 		public String title;
+
+
+		public static List<lastPlayed> doPost() {
+			var payload = new Dictionary<String, Object> {
+				{"action", "getLastPlayed"},
+			};
+
+			String result = HttpPostRequest.APICall(payload);
+			List<lastPlayed> temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(List<lastPlayed>)) as List<lastPlayed>;
+
+			return temp;
+		}
 	}
 }

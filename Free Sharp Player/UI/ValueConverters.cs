@@ -32,10 +32,8 @@ namespace Free_Sharp_Player {
 
 	public class DurationConverter : IValueConverter {
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-			int seconds = (int)value % 60;
-			int minutes = (int)((double)(int)value / 60.0);
-
-			return String.Format("{0}:{1}", minutes, seconds.ToString("D2"));
+			String duration = (String)value;
+			return Util.trimDateString(duration);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -46,11 +44,9 @@ namespace Free_Sharp_Player {
 
 	public class LastPlayedConverter : IValueConverter {
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-			double ticks = (double)value; //convert form seconds to nanoseconds
-
-			DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-			dtDateTime = dtDateTime.AddSeconds(ticks).ToLocalTime();
-			return dtDateTime.ToString("h:mm");
+			String date = (String)value;
+			DateTime lastPlayedDate = DateTime.Parse(date);
+			return lastPlayedDate.ToString("h:mm");
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {

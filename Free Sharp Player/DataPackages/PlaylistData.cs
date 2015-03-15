@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Free_Sharp_Player {
 	class PlaylistData {
-		//public List<getTrack.Track> Played { get; set; }
-		//public List<getTrack.Track> Queue { get; set; }
-		public getTrack.Track Playing { get; set; }
+		//public List<Track> Played { get; set; }
+		//public List<Track> Queue { get; set; }
+		public Track Playing { get; set; }
 	}
 }

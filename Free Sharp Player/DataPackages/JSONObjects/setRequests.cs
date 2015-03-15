@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,5 +30,19 @@ namespace Free_Sharp_Player {
 	 */
 	public class setRequests : ViewModelNotifier {
 		public int? submitted;
+
+		public static setRequests doPost(String trackID) {
+			var payload = new Dictionary<String, Object> {
+				{"action", "setRequest"},
+				{"trackID", trackID}
+			};
+
+			String result = HttpPostRequest.APICall(payload);
+			setRequests temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(setRequests)) as setRequests;
+
+			return temp;
+		}
 	}
+
+
 }
