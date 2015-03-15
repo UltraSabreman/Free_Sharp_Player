@@ -34,7 +34,7 @@ namespace Free_Sharp_Player {
 		public static setRequests doPost(String trackID) {
 			var payload = new Dictionary<String, Object> {
 				{"action", "setRequest"},
-				{"trackID", trackID}
+				{"trackID", Uri.EscapeUriString(trackID)}
 			};
 
 			String result = HttpPostRequest.APICall(payload);
