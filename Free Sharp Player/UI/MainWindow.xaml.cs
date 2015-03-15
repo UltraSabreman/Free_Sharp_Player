@@ -89,8 +89,8 @@ namespace Free_Sharp_Player {
 		}
 
 
-		public MP3Stream.StreamingPlaybackState GetStreamState() {
-			return theStreamer.PlaybackState;
+		public PlaybackState GetStreamState() {
+			return theStreamer.StreamState;
 		}
 
 		public void Play() { theStreamer.Play(); }

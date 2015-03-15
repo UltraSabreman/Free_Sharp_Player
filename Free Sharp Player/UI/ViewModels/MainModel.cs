@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NAudio.Wave;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -43,8 +44,8 @@ namespace Free_Sharp_Player {
 			window.UpdateLayout();
 		}
 
-		//TODO: Update Duration
-		public void UpdateSongProgress(Track song, Track lastSong, TimeSpan bufferLen) {
+		//TODO: Handle not auto dj
+		public void UpdateSongProgress(Track song, Track lastSong, double bufferLen) {
 			if (song.duration == null || song.lastPlayed == null) {
 				SongProgress = 1;
 				SongProgressText = "No Duration Avalible";
@@ -54,7 +55,7 @@ namespace Free_Sharp_Player {
 				TimeZoneInfo hwZone = TimeZoneInfo.Utc;// FindSystemTimeZoneById("Eastern Standard Time");
 				DateTime lastPlayedDate = TimeZoneInfo.ConvertTime(DateTime.Parse(song.lastPlayed), hwZone, TimeZoneInfo.Local);
 				TimeSpan duration = DateTime.Now - lastPlayedDate;
-				SongProgress = (int)(((duration.TotalSeconds - bufferLen.TotalSeconds) / dur.TotalSeconds) * 100);
+				SongProgress = (int)(((duration.TotalSeconds - bufferLen) / dur.TotalSeconds) * 100);
 				SongProgressText = (int)duration.TotalMinutes + ":" + duration.Seconds;
 			}
 		}
@@ -65,7 +66,7 @@ namespace Free_Sharp_Player {
 
 
 		private void btn_PlayPause_Click(object sender, RoutedEventArgs e) {
-			if (window.GetStreamState() == MP3Stream.StreamingPlaybackState.Playing) {
+			if (window.GetStreamState() == PlaybackState.Playing) {
 				window.Pause();
 				window.btn_PlayPause.Content = "▶";
 			} else {
