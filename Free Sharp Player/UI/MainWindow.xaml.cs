@@ -56,6 +56,7 @@ namespace Free_Sharp_Player {
 		private VolumeModel volumeModel;
 		private ExtraMenuModel extraModel;
 		private PlaylistModel playlistModel;
+		private getRadioInfo radioInfo;
 
 		public MainWindow() {
 			InitializeComponent();
@@ -85,7 +86,7 @@ namespace Free_Sharp_Player {
 
 		public void MainTick(Object o, EventArgs e) {
 			//TODO: main song tick
-			mainModel.UpdateSongProgress(playlistModel.Playing, playlistModel.Played[0], theStreamer.BufferLen);
+			mainModel.UpdateSongProgress(playlistModel.Playing, playlistModel.Played[0], theStreamer.BufferLen, radioInfo);
 		}
 
 
@@ -138,13 +139,13 @@ namespace Free_Sharp_Player {
 						//TODO: handle address change.
 						this.Dispatcher.Invoke(new Action(() => {
 							//mainModel.StreamTitle = t;
-							getRadioInfo info = getRadioInfo.doPost();
-							address = info.servers.medQuality;
+							radioInfo = getRadioInfo.doPost();
+							address = radioInfo.servers.medQuality;
 							//TODO move me to view model.
-							if (String.IsNullOrEmpty(info.rating))
+							if (String.IsNullOrEmpty(radioInfo.rating))
 								extraModel.Votes = 0;
 							else
-								extraModel.Votes = Int32.Parse(info.rating);
+								extraModel.Votes = Int32.Parse(radioInfo.rating);
 						}));
 
 					};

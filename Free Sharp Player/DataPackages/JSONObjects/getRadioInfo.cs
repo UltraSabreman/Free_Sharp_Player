@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Free_Sharp_Player {
-	class getRadioInfo : ViewModelNotifier {
+	public class getRadioInfo : ViewModelNotifier {
 		public bool up { get; set; }
 		public String listeners { get { return GetProp<String>(); } set { SetProp(value); } }
 		public String title { get { return GetProp<String>(); } set { SetProp(value); } }

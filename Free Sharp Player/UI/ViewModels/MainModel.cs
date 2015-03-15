@@ -16,6 +16,7 @@ namespace Free_Sharp_Player {
 		public int BufferLen { get { return GetProp<int>(); } set { SetProp(value); } }
 		public int SongLength { get { return GetProp<int>(); } set { SetProp(value); } }
 		public int SongProgress { get { return GetProp<int>(); } set { SetProp(value); } }
+		public String SongTimeColor { get { return GetProp<String>(); } set { SetProp(value); } }
 		public String SongProgressText { get { return GetProp<String>(); } set { SetProp(value); } }
 
 		private MainWindow window;
@@ -25,10 +26,16 @@ namespace Free_Sharp_Player {
 		MouseButtonEventHandler VolumeOutClick;
 		MouseButtonEventHandler ExtrasOutClick;
 
+
+		//TODO: add to configs.
+		private String liveColor = "#22cccc";
+		private String notLiveColor = "#ff5555";
+
 		//double click on thing to open playlist
 
 		public MainModel(MainWindow win) {
 			window = win;
+
 
 			window.bar_Buffer.DataContext = this;
 			window.bar_BufferWindow.DataContext = this;
@@ -45,7 +52,12 @@ namespace Free_Sharp_Player {
 		}
 
 		//TODO: Handle not auto dj
-		public void UpdateSongProgress(Track song, Track lastSong, double bufferLen) {
+		public void UpdateSongProgress(Track song, Track lastSong, double bufferLen, getRadioInfo info) {
+			if (info.autoDJ != null && info.autoDJ == "0") 
+				SongTimeColor = notLiveColor;
+			else
+				SongTimeColor = liveColor;
+
 			if (song.duration == null || song.lastPlayed == null) {
 				SongProgress = 1;
 				SongProgressText = "No Duration Avalible";
@@ -58,6 +70,7 @@ namespace Free_Sharp_Player {
 				SongProgress = (int)(((duration.TotalSeconds - bufferLen) / dur.TotalSeconds) * 100);
 				SongProgressText = (int)duration.TotalMinutes + ":" + duration.Seconds;
 			}
+			
 		}
 
 		public void Tick(Object o, EventArgs e) {

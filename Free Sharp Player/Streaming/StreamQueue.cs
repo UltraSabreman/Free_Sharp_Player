@@ -73,7 +73,7 @@ namespace Free_Sharp_Player {
 		private Byte[] buffer; // needs to be big enough to hold a decompressed frame
 		private IMp3FrameDecompressor decompressor;
 
-		public StreamQueue(int min = 1, int max = 30, int num = 10) {
+		public StreamQueue(int min = 1, int max = 30, int num = 40) {
 			playTimer = new Timer(250);
 			playTimer.Elapsed += PlayFrame;
 			playTimer.AutoReset = true;
@@ -230,35 +230,5 @@ namespace Free_Sharp_Player {
 		private static IMp3FrameDecompressor CreateFrameDecompressor(Mp3Frame frame) {
 			return new AcmMp3FrameDecompressor(new Mp3WaveFormat(frame.SampleRate, frame.ChannelMode == ChannelMode.Mono ? 1 : 2, frame.FrameLength, frame.BitRate));
 		}
-
-	/*private void waveLoader_Tick(object sender, EventArgs e) {
-		if (PlaybackState != StreamingPlaybackState.Stopped) {
-			if (waveOut == null && bufferedWaveProvider != null) {
-
-				waveOut = new WaveOut();
-				//waveOut.PlaybackStopped += OnPlaybackStopped;
-				volumeProvider = new VolumeWaveProvider16(bufferedWaveProvider);
-				volumeProvider.Volume = Volume;
-
-				waveOut.Init(volumeProvider);
-			} else if (bufferedWaveProvider != null) {
-				volumeProvider.Volume = Volume;
-
-				double bufferedSeconds = bufferedWaveProvider.BufferedDuration.TotalSeconds;
-				BufferFillPercent = (int)((bufferedSeconds/ (double)bufferSizeSec) * 100);
-				//DumpStreamStats(bufferedSeconds);
-				// make it stutter less if we buffer up a decent amount before playing
-				if (bufferedSeconds < 0.5 && PlaybackState == StreamingPlaybackState.Playing && !EndOfStream)
-					Buffer();
-				else if (bufferedSeconds > 4 && PlaybackState == StreamingPlaybackState.Buffering)
-					Play();
-				else if (EndOfStream && bufferedSeconds == 0)
-					Stop();
-					
-			}
-
-		}
-	}*/
-
 	}
 }

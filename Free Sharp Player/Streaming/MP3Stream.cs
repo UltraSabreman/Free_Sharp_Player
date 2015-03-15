@@ -23,7 +23,18 @@ namespace Free_Sharp_Player {
 		public PlaybackState StreamState { get; private set; }
 		public bool EndOfStream { get; private set; }
 		//public float BufferFillPercent { get; private set; }
-		public float Volume { get; set; }
+		public float Volume {
+			get {
+				if (theQ == null)
+					return 0;
+				else
+					return theQ.Volume;
+			}
+			set {
+				if (theQ != null)
+					theQ.Volume = value;
+			}
+		}
 
 		public double BufferLen { get { return theQ.MaxBufferLengthSec; } }
 		public String StreamTitle { get; private set; }
