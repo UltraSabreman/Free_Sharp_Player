@@ -86,11 +86,7 @@ namespace Free_Sharp_Player {
 				foreach (lastPlayed l in playedTracks) {
 					getTrack temp = getTrack.doPost(l.title, l.artist);
 					if (temp != null && temp.track != null && temp.track.Count > 0)
-						playedList.Add(temp.track.Find(
-							X => {
-								return Util.trimDateString(X.lastPlayed) == Util.trimDateString(l.last_played);
-							}
-						));
+						playedList.Add(temp.track.Find(X => X.trackID == l.trackID));
 				}
 
 				if (newStart != null) {

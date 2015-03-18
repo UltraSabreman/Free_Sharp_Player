@@ -184,6 +184,7 @@ namespace Free_Sharp_Player {
 				}
 
 				if (bufferedWaveProvider != null) {
+					waveOut = new WaveOut();
 
 					volumeProvider = new VolumeWaveProvider16(bufferedWaveProvider);
 					volumeProvider.Volume = Volume;

@@ -68,6 +68,7 @@ namespace Free_Sharp_Player {
 		public String last_played;
 		public String artist;
 		public String title;
+		public String trackID;
 
 
 		public static List<lastPlayed> doPost() {
