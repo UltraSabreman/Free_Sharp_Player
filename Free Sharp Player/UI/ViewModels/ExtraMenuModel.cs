@@ -28,6 +28,11 @@ namespace Free_Sharp_Player {
 
 		}
 
+		public void UpdateInfo(getRadioInfo info) {
+			if (info != null && !String.IsNullOrEmpty(info.rating))
+				Votes = Int32.Parse(info.rating);
+		}
+
 		private void ResetCapture(object o, object e) {
 			Mouse.Capture(window.Extras, CaptureMode.SubTree);
 		}

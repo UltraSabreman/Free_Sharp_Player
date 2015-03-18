@@ -13,6 +13,8 @@ using System.Windows.Media.Animation;
 
 namespace Free_Sharp_Player {
 	class PlaylistModel : ViewModelNotifier {
+		private Object theLock = new Object();
+	
 		public String StreamTitle { get { return GetProp<String>(); } set { SetProp(value); DoMarquee(); } }
 		public ObservableCollection<Track> Played { get { return GetProp<ObservableCollection<Track>>(); } set { SetProp(value); } }
 		public ObservableCollection<Track> Queue { get { return GetProp<ObservableCollection<Track>>(); } set { SetProp(value); } }
@@ -28,11 +30,10 @@ namespace Free_Sharp_Player {
 		private Timer listUpdater = new Timer(10000);
 
 		public PlaylistModel(MainWindow win) {
+			Played = new ObservableCollection<Track>();
+			Queue = new ObservableCollection<Track>();
+
 			SetWindow(win);
-		}
-
-		public PlaylistModel() {
-
 		}
 
 		public void SetWindow(MainWindow win) {
@@ -54,38 +55,38 @@ namespace Free_Sharp_Player {
 			listUpdater.AutoReset = true;
 			listUpdater.Start();
 
+			StreamTitle = "Not Connected";
+
+			//DoMarquee();
 		}
 
 		public void Tick(Object o, EventArgs e) {
 			//TODO: playlist and other bs
 
-			List<lastPlayed> playedTracks = lastPlayed.doPost();
-			List<Track> actualTracks = new List<Track>();
+		}
 
-			foreach (lastPlayed l in playedTracks) {
-				getTrack temp = getTrack.doPost(l.title, l.artist);
-				if (temp != null && temp.track != null && temp.track.Count > 0)
-					actualTracks.Add(temp.track.Find(
-						X => {
-							return Util.trimDateString(X.lastPlayed) == Util.trimDateString(l.last_played);
-						}
-					));
-			}
+		public void UpdateLists(List<Track> played, List<Track> queued) {
+			window.Dispatcher.Invoke(new Action(() => {
+				lock (theLock) {
+					Played.Clear();
+					if (played != null)
+						played.ForEach(Played.Add);
 
-			getRequests requestedTracks = getRequests.doPost();
+					Queue.Clear();
+					if (queued != null)
+						queued.ForEach(Queue.Add);
 
+					UpdateSize();
+				}
+			}));
+		}
 
-
-			Played = new ObservableCollection<Track>(actualTracks);
-			if (requestedTracks.number_of_tracks > 0)
-				Queue = new ObservableCollection<Track>(requestedTracks.track);
-			else
-				Queue = new ObservableCollection<Track>();
-			Playing = actualTracks.First();
-
-			StreamTitle = Playing.WholeTitle;
-			
-			UpdateSize();
+		public void UpdateSong(Track song) {
+			Playing = song;
+			if (!window.IsPlaying)
+				StreamTitle = "Not Connected";
+			else 
+				StreamTitle = Playing.WholeTitle;
 		}
 
 
@@ -115,7 +116,7 @@ namespace Free_Sharp_Player {
 
 		public void UpdateSize() {
 			if (Queue != null && Queue.Count > 0)
-				MaxQueueHight = (Queue.Count * 20);
+				MaxQueueHight = MinQueueHeight - (Queue.Count * 20);
 			else
 				MaxQueueHight = MinQueueHeight;
 			if (Played != null && Played.Count > 0)

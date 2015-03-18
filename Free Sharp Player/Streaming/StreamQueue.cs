@@ -13,7 +13,7 @@ using System.Windows;
 namespace Free_Sharp_Player {
 	using Timer = System.Timers.Timer;
 
-	class StreamFrame {
+	public class StreamFrame {
 		public StreamFrame Next { get; set; }
 		public StreamFrame Prev { get; set; }
 
@@ -45,27 +45,31 @@ namespace Free_Sharp_Player {
 
 	}
 
-	class StreamQueue {
+	public class StreamQueue {
+		private Object addLock = new Object();
+		private Object playLock = new Object();
+
 		//TODO: impliement queue seek
 		//public int PosInQueue { get; set; } //change pos function
 		public double MinBufferLengthSec { get; set; }
 		public double MaxBufferLengthSec { get; set; }
 		public double CurBufferLengthSec { get; set; }
-		public int NumFramesToPlay { get; set; }
+		public double NumSecToPlay { get; set; }
 		public float Volume { get; set; }
-		public PlaybackState StreamState { get; private set;}
+		public bool IsPlaying { get; private set;}
 
-		public delegate void TitleChange();
-		public event TitleChange OnStreamTitleChange;
+
+		public delegate void SongChange(DateTime? newPlayDate);
+		public event SongChange OnStreamSongChange;
 
 		private bool buffering;
 
 		private StreamFrame head;
 		private StreamFrame tail;
 		private StreamFrame playHead;
-		private IWavePlayer waveOut;
-
 		private Timer playTimer;
+
+		private IWavePlayer waveOut;
 		private VolumeWaveProvider16 volumeProvider;
 		private BufferedWaveProvider bufferedWaveProvider;
 
@@ -73,7 +77,8 @@ namespace Free_Sharp_Player {
 		private Byte[] buffer; // needs to be big enough to hold a decompressed frame
 		private IMp3FrameDecompressor decompressor;
 
-		public StreamQueue(int min = 1, int max = 30, int num = 40) {
+
+		public StreamQueue(int min = 1, int max = 30, double sec = 2) {
 			playTimer = new Timer(250);
 			playTimer.Elapsed += PlayFrame;
 			playTimer.AutoReset = true;
@@ -81,7 +86,7 @@ namespace Free_Sharp_Player {
 
 			MinBufferLengthSec = min;
 			MaxBufferLengthSec = max;
-			NumFramesToPlay = num;
+			NumSecToPlay = sec;
 			Volume = 0.5f;
 
 			buffering = false;
@@ -92,119 +97,130 @@ namespace Free_Sharp_Player {
 		}
 
 		public void AddFrame(Mp3Frame frame, bool changed = false) {
-			//Util.PrintLine(ConsoleColor.DarkCyan, "AddFrame");
-
-			if (tail == null) {
-				StreamFrame temp = new StreamFrame(frame);
-				temp.SongChange = changed;
-
-				playHead = head = tail = temp;
-				temp.Next = temp.Prev = temp;
-				CurBufferLengthSec += temp.FrameLengthSec;
-			} else {
-				if (CurBufferLengthSec >= MaxBufferLengthSec) {
-					if (playHead == head)
-						playHead = playHead.Next;
-					head = head.Next;
-					tail = tail.Next;
-					tail.Frame = frame;
-				} else {
+			lock (addLock) {
+				if (tail == null) {
 					StreamFrame temp = new StreamFrame(frame);
 					temp.SongChange = changed;
 
-					tail.Next = temp;
-					temp.Prev = tail;
-					temp.Next = head;
-					head.Prev = temp;
-
-					tail = tail.Next;
+					playHead = head = tail = temp;
+					temp.Next = temp.Prev = temp;
 					CurBufferLengthSec += temp.FrameLengthSec;
+				} else {
+					if (CurBufferLengthSec >= MaxBufferLengthSec) {
+						if (playHead == head)
+							playHead = playHead.Next;
+						head = head.Next;
+						tail = tail.Next;
+						tail.Frame = frame;
+					} else {
+						StreamFrame temp = new StreamFrame(frame);
+						temp.SongChange = changed;
+
+						tail.Next = temp;
+						temp.Prev = tail;
+						temp.Next = head;
+						head.Prev = temp;
+
+						tail = tail.Next;
+						CurBufferLengthSec += temp.FrameLengthSec;
+					}
 				}
 			}
 		}
 
 		public bool IsBufferFull() {
-			bool test = bufferedWaveProvider != null
-				&& ((bufferedWaveProvider.BufferLength - bufferedWaveProvider.BufferedBytes)
-				< bufferedWaveProvider.WaveFormat.AverageBytesPerSecond / 4);
-			return test;
+			return CurBufferLengthSec >= (MaxBufferLengthSec - 2);
 		}
 
 		public void Play() {
-			StreamState = PlaybackState.Playing;
+			if (IsPlaying) return;
+			IsPlaying = true;
 
-			while (waveOut == null)
-				Thread.Sleep(250);
+			//TODO: fire loading event
+			new Thread(() => {
+				//TODO: deal with this:
+				while (waveOut == null)
+					Thread.Sleep(250);
 
-			try {
-				waveOut.Play();
-			} catch (Exception) { }
-		}
-
-		public void Pause() {
-			StreamState = PlaybackState.Paused;
-			waveOut.Pause();
+				try {
+					waveOut.Play();
+				} catch (Exception) { }
+				//TODO: fire loaded event
+			}).Start();
 		}
 
 		public void Stop() {
-			if (StreamState != PlaybackState.Stopped) {
+			if (!IsPlaying) return;
+			IsPlaying = false;
 
-				StreamState = PlaybackState.Stopped;
-
-				if (waveOut != null) {
-					waveOut.Stop();
-					waveOut.Dispose();
-					waveOut = null;
-				}
-
-				if (bufferedWaveProvider != null)
-					bufferedWaveProvider.ClearBuffer();
+			if (waveOut != null) {
+				waveOut.Stop();
+				waveOut.Dispose();
+				waveOut = null;
 			}
+
+			if (bufferedWaveProvider != null)
+				bufferedWaveProvider.ClearBuffer();
+
+			//TODO: actually delete the list?
+			tail = playHead = head = null;
 		}
 
 
 		private void PlayFrame(Object o, EventArgs e) {
-			//Util.PrintLine(ConsoleColor.Green, "PlayTimer");
-			if (playHead == null) return;
-			if (CurBufferLengthSec < MinBufferLengthSec) {
-				//TODO: fire event when buffering + when done.
-				buffering = true;
-				return;
-			}
-			if (StreamState != PlaybackState.Playing) return;
+			lock (playLock) {
+				//Util.PrintLine(ConsoleColor.Green, "PlayTimer");
+				if (playHead == null) return;
+				if (CurBufferLengthSec < MinBufferLengthSec) {
+					//TODO: fire event buffering
+					buffering = true;
+					return;
+				}
+				if (!IsPlaying) return;
 
-			if (buffering) {
-				//TODO: fire buffering is done event
-				buffering = false;
-			}
-			//Util.PrintLine(ConsoleColor.Yellow, "Playing");
-
-			if (waveOut == null && bufferedWaveProvider != null) {
-				waveOut = new WaveOut();
-
-				volumeProvider = new VolumeWaveProvider16(bufferedWaveProvider);
-				volumeProvider.Volume = Volume;
-
-				waveOut.Init(volumeProvider);
-			} else if (bufferedWaveProvider != null) 
-				volumeProvider.Volume = Volume;
-			
-			double totalTime = 0;
-			for (int i = 0; i < NumFramesToPlay; i++) {
-				AddFrameToWaveBuffer(playHead.Frame);
-				totalTime += playHead.FrameLengthSec * 1000;
-				CurBufferLengthSec -= playHead.FrameLengthSec;
-
-				if (playHead.SongChange) {
-					if (OnStreamTitleChange != null)
-						OnStreamTitleChange();
+				if (buffering) {
+					//TODO: fire event buffering done
+					buffering = false;
 				}
 
-				playHead = playHead.Next;
+				if (bufferedWaveProvider != null) {
+
+					volumeProvider = new VolumeWaveProvider16(bufferedWaveProvider);
+					volumeProvider.Volume = Volume;
+
+					waveOut.Init(volumeProvider);
+				} else if (bufferedWaveProvider != null)
+					volumeProvider.Volume = Volume;
+
+				bool doEvent = false;
+				double totalTime = 0;
+				//int frames = 0;
+				while (totalTime < NumSecToPlay) {
+					AddFrameToWaveBuffer(playHead.Frame);
+					totalTime += playHead.FrameLengthSec;
+					CurBufferLengthSec -= playHead.FrameLengthSec;
+					//frames ++;
+					if (playHead.SongChange) doEvent = true;
+
+					playHead = playHead.Next;
+				}
+
+				if (doEvent && OnStreamSongChange != null) {
+					OnStreamSongChange(DateTime.Now);
+				}
+
+				/*new Thread((obj) => {
+					Console.Clear();
+					Util.PrintLine("Frames Played: ", ConsoleColor.Cyan, frames);
+					Util.PrintLine("Time Loaded: ", ConsoleColor.Green, totalTime);
+					Util.PrintLine("Time In Buffer: ", ConsoleColor.DarkYellow, CurBufferLengthSec);
+					Util.PrintLine("Time In WaveBuffer: ", ConsoleColor.Red, bufferedWaveProvider.BufferedDuration.TotalSeconds);
+					Util.PrintLine("Time Since songChange: ", ConsoleColor.Yellow, startTime - DateTime.Now);
+				}).Start();*/
+
+				playTimer.Interval = totalTime * 1000;
+
 			}
-			playTimer.Interval = totalTime;
-
-
 		}
 
 		private void AddFrameToWaveBuffer(Mp3Frame frame) {
@@ -221,9 +237,13 @@ namespace Free_Sharp_Player {
 					//this.bufferedWaveProvider.BufferedDuration = 250;
 				}
 
-
-				int decompressed = decompressor.DecompressFrame(frame, buffer, 0);
-				bufferedWaveProvider.AddSamples(buffer, 0, decompressed);
+				try {
+					int decompressed = decompressor.DecompressFrame(frame, buffer, 0);
+					bufferedWaveProvider.AddSamples(buffer, 0, decompressed);
+				} catch (NAudio.MmException e) {
+					//TODO: Handle stream exception
+					Util.DumpException(e);
+				}
 			}
 		}
 

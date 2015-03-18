@@ -1,0 +1,16 @@
+TODO:
+
+Improve thread safety
+Improve buffering (so no stuter)
+Improve startup time. The longest wait should be to pool the station first, no other delays.
+
+Make sure buffering works, test with throttle or packet loss
+Queue:
+	add maxque length + max buffer length
+	change how play head moves based on above
+	Add ability to seek
+ Make sure ALL POSSIBLE stream errors/problems are properly handled (ie: stream restart or death)
+
+Add misc stream info to queue (diconnects, buffers, etc)
+
+Hande station ID.

@@ -12,12 +12,17 @@ using System.Windows.Media.Animation;
 
 namespace Free_Sharp_Player {
 	public class MainModel : ViewModelNotifier {
+		private Object theLock = new Object();
+
 		public int PosInBuffer { get { return GetProp<int>(); } set { SetProp(value); } }
 		public int BufferLen { get { return GetProp<int>(); } set { SetProp(value); } }
 		public int SongLength { get { return GetProp<int>(); } set { SetProp(value); } }
 		public int SongProgress { get { return GetProp<int>(); } set { SetProp(value); } }
 		public String SongTimeColor { get { return GetProp<String>(); } set { SetProp(value); } }
 		public String SongProgressText { get { return GetProp<String>(); } set { SetProp(value); } }
+
+		private Track currentSong;
+		private bool isLive;
 
 		private MainWindow window;
 
@@ -49,42 +54,52 @@ namespace Free_Sharp_Player {
 			ExtrasOutClick = new MouseButtonEventHandler(HandleClickOutsideOfExtras);
 
 			window.UpdateLayout();
+
+			currentSong = null;
+			isLive = false;
 		}
 
-		//TODO: Handle not auto dj
-		public void UpdateSongProgress(Track song, Track lastSong, double bufferLen, getRadioInfo info) {
-			if (info.autoDJ != null && info.autoDJ == "0") 
-				SongTimeColor = notLiveColor;
-			else
-				SongTimeColor = liveColor;
 
-			if (song.duration == null || song.lastPlayed == null) {
-				SongProgress = 1;
-				SongProgressText = "No Duration Avalible";
-			} else {
-				TimeSpan dur = TimeSpan.Parse(song.duration);
-				//DateTime songStart = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc).AddSeconds(song.LastPlayed + bufferLen.TotalSeconds + 120).ToLocalTime();
-				TimeZoneInfo hwZone = TimeZoneInfo.Utc;// FindSystemTimeZoneById("Eastern Standard Time");
-				DateTime lastPlayedDate = TimeZoneInfo.ConvertTime(DateTime.Parse(song.lastPlayed), hwZone, TimeZoneInfo.Local);
-				TimeSpan duration = DateTime.Now - lastPlayedDate;
-				SongProgress = (int)(((duration.TotalSeconds - bufferLen) / dur.TotalSeconds) * 100);
-				SongProgressText = (int)duration.TotalMinutes + ":" + duration.Seconds;
-			}
-			
+		public void UpdateSong(Track song) {
+			currentSong = song;
+		}
+
+		public void UpdateInfo(getRadioInfo info) {
+
 		}
 
 		public void Tick(Object o, EventArgs e) {
+			lock (theLock) {
+				if (isLive || currentSong == null || !window.IsPlaying) {
+					SongTimeColor = notLiveColor;
+					SongProgress = 100;
+					return;
+				} else
+					SongTimeColor = liveColor;
 
+				DateTime lastPlayedDate;
+				if (currentSong.localLastPlayed != new DateTime(0)) {
+					lastPlayedDate = currentSong.localLastPlayed;
+				} else {
+					TimeZoneInfo hwZone = TimeZoneInfo.Utc;
+					lastPlayedDate = TimeZoneInfo.ConvertTime(DateTime.Parse(currentSong.lastPlayed), hwZone, TimeZoneInfo.Local);
+				}
+
+				TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
+				TimeSpan duration = DateTime.Now - lastPlayedDate;
+				SongProgress = (int)((duration.TotalSeconds / SongDuration.TotalSeconds) * 100);
+				SongProgressText = "Duration: " + duration.TotalSeconds + ", SongDuration: " + (SongDuration.TotalSeconds);
+			}
 		}
 
 
 		private void btn_PlayPause_Click(object sender, RoutedEventArgs e) {
-			if (window.GetStreamState() == PlaybackState.Playing) {
-				window.Pause();
+			if (window.IsPlaying) {
+				window.Stop();
 				window.btn_PlayPause.Content = "▶";
 			} else {
 				window.Play();
-				window.btn_PlayPause.Content = "▌▐";
+				window.btn_PlayPause.Content = "■";
 			}
 		}
 

@@ -14,29 +14,9 @@ namespace Free_Sharp_Player {
 	using Timer = System.Timers.Timer;
 	public class MP3Stream {
 
-		public delegate void TitleChange(String title, String artist);
-		public event TitleChange OnStreamTitleChange;
 
-		public delegate void BufferChange(int pos);
-		public event BufferChange OnBufferChange;
-
-		public PlaybackState StreamState { get; private set; }
+		public bool IsPlaying { get; private set; }
 		public bool EndOfStream { get; private set; }
-		//public float BufferFillPercent { get; private set; }
-		public float Volume {
-			get {
-				if (theQ == null)
-					return 0;
-				else
-					return theQ.Volume;
-			}
-			set {
-				if (theQ != null)
-					theQ.Volume = value;
-			}
-		}
-
-		public double BufferLen { get { return theQ.MaxBufferLengthSec; } }
 		public String StreamTitle { get; private set; }
 
 		private String address;
@@ -47,7 +27,7 @@ namespace Free_Sharp_Player {
 		private bool changeNextFrame;
 		private String newTitle;
 
-		public MP3Stream(String address, int BufferSize = 20) {
+		public MP3Stream(String address, StreamQueue q) {
 			Util.ToggleAllowUnsafeHeaderParsing(true);
 
 			//this simply checks that the given address actualy works
@@ -56,54 +36,29 @@ namespace Free_Sharp_Player {
 
 			this.address = address;
 
-			Volume = 0.5f;
-
-			theQ = new StreamQueue();
-			theQ.OnStreamTitleChange += () => {
-				StreamTitle = newTitle;
-				if (OnStreamTitleChange != null)
-					OnStreamTitleChange(newTitle, "");
-
-			
-			};
-
-			durationUpdate = new Timer(1000);
-			durationUpdate.AutoReset = true;
-			durationUpdate.Enabled = true;
-			durationUpdate.Elapsed += (o, e) => {
-				if (theQ == null || theQ.MaxBufferLengthSec <= 0 || OnBufferChange == null) return;
-				int percent = (int)Math.Round((theQ.CurBufferLengthSec / theQ.MaxBufferLengthSec) * 100);
-				OnBufferChange(percent);
-			};
-			durationUpdate.Start();
-
+			theQ = q;
 
 			changeNextFrame = true;
 			newTitle = "";
 		}
 
 		public void Play() {
-			StreamState = PlaybackState.Playing;
+			IsPlaying = true;
 
 			if (streamThread == null || !streamThread.IsAlive) {
 				streamThread = new Thread(StreamMp3);
 				streamThread.Start();
 			}
-			theQ.Play();
 		}
 
-		public void Pause() {
-			theQ.Pause();
-			StreamState = theQ.StreamState;
-		}
 
 		public void Stop() {
+			IsPlaying = false;
+
 			if (streamThread != null) {
 				streamThread.Abort();
 				streamThread = null;
 			}
-			theQ.Stop();
-			StreamState = theQ.StreamState;
 		}
 
 		private void StreamMp3(object state) {
@@ -118,18 +73,8 @@ namespace Free_Sharp_Player {
 					};
 
 					readFullyStream = new ReadFullyStream(theStream);
-
+					int numFramesLoaded = 0;
 					do {
-
-						/*try {
-							double t = (double)bufferedWaveProvider.BufferedBytes / (double)bufferedWaveProvider.BufferLength;
-							int posnow = (int)(t * 100);
-							if (oldBufferLen != posnow && OnBufferChange != null)
-								OnBufferChange(posnow);
-						} catch (Exception) {
-							if (OnBufferChange != null)
-								OnBufferChange(0);
-						}*/
 
 						if (theQ.IsBufferFull()) {
 							Thread.Sleep(500);
@@ -140,20 +85,19 @@ namespace Free_Sharp_Player {
 								theQ.AddFrame(frame, changeNextFrame);
 
 								if (changeNextFrame) changeNextFrame = false;
+								numFramesLoaded++;
 							} catch (EndOfStreamException) {
 								EndOfStream = true;
-								// reached the end of the MP3 file / stream
 								break;
 							}
 
 						}
 
-					} while (StreamState != PlaybackState.Stopped);
-					Util.PrintLine(ConsoleColor.Red, "DoneAdding");
-
+					} while (IsPlaying);
+					//TODO: Handle stream errors (Aborts + crashes)
 				}
 			} catch (ThreadAbortException) {
-				Util.Print(ConsoleColor.DarkYellow, "Warning", ": Stream thread aborted!");
+				Util.Print(ConsoleColor.Yellow, "Warning", ": Stream thread aborted!");
 			} finally {
 				if (readFullyStream != null) {
 					readFullyStream.Close();

@@ -74,6 +74,7 @@
     <Compile Include="DataPackages\Track.cs" />
     <Compile Include="DataPackages\PlaylistData.cs" />
     <Compile Include="HttpPostRequest.cs" />
+    <Compile Include="Streaming\StreamManager.cs" />
     <Compile Include="Streaming\StreamQueue.cs" />
     <Compile Include="UI\ViewModels\ExtraMenuModel.cs" />
     <Compile Include="UI\ViewModels\MainModel.cs" />
@@ -125,7 +126,9 @@
   <ItemGroup>
     <None Include="Misc\App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Misc\ToDo.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

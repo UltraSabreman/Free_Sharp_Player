@@ -42,23 +42,29 @@ namespace Free_Sharp_Player {
 	using System.Windows.Media.Animation;
 
 	public partial class MainWindow : Window {
+		private Object trackLock = new Object();
+		private Object radioLock = new Object();
+
 		[DllImport("kernel32")]
 		static extern bool AllocConsole();
 
 		public enum StreamQuality {Low, Normal, High};
-		Timer doubleClickCheck = new Timer(750);
-		bool isDoubleClicking = false;
-		public MP3Stream theStreamer;
+		public bool IsPlaying { get; private set; }
 
-		Timer Updater = new Timer(1000);
+		private Timer doubleClickCheck = new Timer(750);
+		private bool isDoubleClicking = false;
+
+		//Timer Updater = new Timer(1000);
+
+		private StreamManager streamManager;
 
 		private MainModel mainModel;
 		private VolumeModel volumeModel;
 		private ExtraMenuModel extraModel;
 		private PlaylistModel playlistModel;
-		private getRadioInfo radioInfo;
 
 		public MainWindow() {
+
 			InitializeComponent();
 
 			doubleClickCheck.Elapsed += (o, e) => {
@@ -73,37 +79,40 @@ namespace Free_Sharp_Player {
 			extraModel = new ExtraMenuModel(this);
 			playlistModel = new PlaylistModel(this);
 
-			Updater.Elapsed += mainModel.Tick;
-			Updater.Elapsed += volumeModel.Tick;
-			Updater.Elapsed += extraModel.Tick;
-			Updater.Elapsed += playlistModel.Tick;
-			Updater.Elapsed += MainTick;
-			Updater.AutoReset = true;
+			btn_PlayPause.IsEnabled = false;
+			//TODO: UI alert of loading.
+			new Thread(() => {
+				ConnectToStream(StreamQuality.Normal);
 
-			ConnectToStream(StreamQuality.Normal);
-			Updater.Start();
+				streamManager.mainUpdateTimer.Elapsed += mainModel.Tick;
+				streamManager.mainUpdateTimer.Elapsed += volumeModel.Tick;
+				streamManager.mainUpdateTimer.Elapsed += extraModel.Tick;
+				streamManager.mainUpdateTimer.Elapsed += playlistModel.Tick;
+				streamManager.mainUpdateTimer.Elapsed += MainTick;
+
+				streamManager.ManualUpdate();
+
+				Dispatcher.Invoke(new Action(() => {
+					btn_PlayPause.IsEnabled = true;
+				}));
+			}).Start();
 		}
 
 		public void MainTick(Object o, EventArgs e) {
 			//TODO: main song tick
-			mainModel.UpdateSongProgress(playlistModel.Playing, playlistModel.Played[0], theStreamer.BufferLen, radioInfo);
+
+			//mainModel.UpdateSongProgress(playlistModel.Playing, playlistModel.Played[0], theStreamer.startTime, radioInfo);
 		}
 
 
-		public PlaybackState GetStreamState() {
-			return theStreamer.StreamState;
-		}
-
-		public void Play() { theStreamer.Play(); }
-		public void Pause() { theStreamer.Pause(); }
-		public void Stop() { theStreamer.Stop(); }
+		public void Play() { IsPlaying = true; streamManager.Play(); }
+		public void Stop() { IsPlaying = false; streamManager.Stop(); }
 
 		public void SetVolume(double Volume) {
 			if (Volume < 0 || Volume > 100) throw new ArgumentOutOfRangeException("Volume", Volume, "Volume must be between 0 and 100");
 
-			if (theStreamer == null) throw new NullReferenceException("The stream must be initilized.");
-
-			theStreamer.Volume = (float)Volume / 100;
+			if (streamManager != null)
+				streamManager.Volume = (float)Volume / 100;
 		}
 
 		private void ConnectToStream(StreamQuality Quality) {
@@ -119,7 +128,6 @@ namespace Free_Sharp_Player {
 					String tempAddr = temp.servers.medQuality.Split("?".ToCharArray())[0];
 					data["sid"] = temp.servers.medQuality.Split("=".ToCharArray())[1];//(Quality == StreamQuality.Normal ? "1" : (Quality == StreamQuality.Low ? "3" : "2"));
 
-					//TODO: add ui to alert people this is loading
 					Byte[] response = wb.UploadValues(tempAddr, "POST", data);
 
 					string[] responseData = System.Text.Encoding.UTF8.GetString(response, 0, response.Length).Split("\n".ToCharArray(), StringSplitOptions.None);
@@ -130,25 +138,23 @@ namespace Free_Sharp_Player {
 
 
 				try {
-					theStreamer = new MP3Stream(address, 30);
-					theStreamer.OnBufferChange += (i) => {
-						mainModel.BufferLen = i;
-					};
-					theStreamer.OnStreamTitleChange += (t, a) => {
-						//TODO: Handle playlist and shit
-						//TODO: handle address change.
-						this.Dispatcher.Invoke(new Action(() => {
-							//mainModel.StreamTitle = t;
-							radioInfo = getRadioInfo.doPost();
-							address = radioInfo.servers.medQuality;
-							//TODO move me to view model.
-							if (String.IsNullOrEmpty(radioInfo.rating))
-								extraModel.Votes = 0;
-							else
-								extraModel.Votes = Int32.Parse(radioInfo.rating);
-						}));
+					streamManager = new StreamManager(address);
 
+					streamManager.NewCurrentTrack += (Track track) => {
+						lock (trackLock) {
+							mainModel.UpdateSong(track);
+							playlistModel.UpdateSong(track);
+						}
 					};
+
+					streamManager.OnRadioUpdate += (getRadioInfo info, List<Track> played, List<Track> queued) => {
+						lock (radioLock) {
+							mainModel.UpdateInfo(info);
+							playlistModel.UpdateLists(played, queued);
+							extraModel.UpdateInfo(info);
+						}
+					};
+
 					Connected = true;
 				} catch (Exception) { }
 			}
@@ -162,7 +168,7 @@ namespace Free_Sharp_Player {
 		}
 
 		private void Window_Closed(object sender, EventArgs e) {
-			theStreamer.Stop();
+			streamManager.Stop();
 			Application.Current.Shutdown();
 		}
 
@@ -176,7 +182,6 @@ namespace Free_Sharp_Player {
 					playlistModel.AnimateLists();
 					isDoubleClicking = false;
 					doubleClickCheck.Stop();
-
 				}
 			}
 		}

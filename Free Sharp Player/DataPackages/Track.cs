@@ -25,6 +25,7 @@ namespace Free_Sharp_Player {
 		public int favorites { get { return GetProp<int>(); } set { SetProp(value); } }
 
 		public String lastPlayed { get; set; }
+		public DateTime localLastPlayed { get; set; }
 
 		public int requestable { get { return GetProp<int>(); } set { SetProp(value); } }
 
