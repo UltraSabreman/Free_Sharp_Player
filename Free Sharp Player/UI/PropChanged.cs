@@ -16,11 +16,14 @@ namespace Free_Sharp_Player {
 			OnPropertyChanged(property);
 		}
 		protected T GetProp<T>([CallerMemberName] string property = null) {
-			try {
-				return (T)propertyValues[property];
-			} catch (Exception) {
+			if (propertyValues.ContainsKey(property)) {
+				try {
+					return (T)propertyValues[property];
+				} catch (Exception) {
+					return default(T);
+				}
+			} else
 				return default(T);
-			}
 		}
 
 		protected void OnPropertyChanged(string propertyName) {
