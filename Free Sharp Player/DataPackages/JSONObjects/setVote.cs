@@ -21,7 +21,7 @@ namespace Free_Sharp_Player {
 			if (trackID != null)
 				payload["trackID"] = Uri.EscapeUriString(trackID);
 
-			String result = HttpPostRequest.APICall(payload);
+			String result = HttpPostRequest.PostRequest(payload);
 			setVote temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(setVote)) as setVote;
 
 			return temp;

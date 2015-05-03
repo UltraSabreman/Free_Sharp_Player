@@ -11,30 +11,48 @@ using System.IO;
 
 namespace Free_Sharp_Player {
 	class HttpPostRequest {
-		private static String Address = "http://canterlothill.com/api/v1/";
+		private static String Address = "http://api.canterlothill.com/v1/";
+		private static Object Lock = new Object();
 
-		public static String APICall(Dictionary<String, Object> Payload) {
-			StringBuilder PostData = new StringBuilder();
+		static HttpPostRequest() {
 
-			foreach (String s in Payload.Keys) {
-				PostData.Append(HttpUtility.UrlEncode(s)).Append("=").Append(Payload[s].ToString());
-				if (Payload.Keys.Last() != s)
-					PostData.Append("&");
-			}
+		}
 
-			HttpWebRequest httpWReq = (HttpWebRequest)WebRequest.Create(Address);
-			byte[] data = Encoding.ASCII.GetBytes(PostData.ToString());
+		public static String PostRequest(Dictionary<String, Object> Payload, String addr = null) {
+			//lock (Lock) {
+				StringBuilder PostData = new StringBuilder();
 
-			httpWReq.Method = "POST";
-			httpWReq.ContentType = "application/x-www-form-urlencoded";
-			httpWReq.ContentLength = data.Length;
+				foreach (String s in Payload.Keys) {
+					PostData.Append(HttpUtility.UrlEncode(s)).Append("=").Append(Payload[s].ToString());
+					if (Payload.Keys.Last() != s)
+						PostData.Append("&");
+				}
 
-			using (Stream stream = httpWReq.GetRequestStream())
-				stream.Write(data, 0, data.Length);
+				byte[] data = Encoding.ASCII.GetBytes(PostData.ToString());
 
-			String response = new StreamReader(((HttpWebResponse)httpWReq.GetResponse()).GetResponseStream()).ReadToEnd();
+				HttpWebRequest httpWReq;
 
-			return response;
+				if (addr == null) {
+					httpWReq = (HttpWebRequest)WebRequest.Create(Address);
+					httpWReq.Method = "POST";
+					httpWReq.ContentType = "application/x-www-form-urlencoded";
+					httpWReq.ContentLength = data.Length;
+
+					using (Stream stream = httpWReq.GetRequestStream())
+						stream.Write(data, 0, data.Length);
+
+				} else {
+					httpWReq = (HttpWebRequest)WebRequest.Create(addr);
+					httpWReq.Method = "POST";
+					httpWReq.ContentType = "application/x-www-form-urlencoded";
+					httpWReq.ContentLength = data.Length;
+
+					using (Stream stream = httpWReq.GetRequestStream())
+						stream.Write(data, 0, data.Length);
+				}
+
+				return new StreamReader(((HttpWebResponse)httpWReq.GetResponse()).GetResponseStream()).ReadToEnd();
+			//}
 		}
 		
 	}

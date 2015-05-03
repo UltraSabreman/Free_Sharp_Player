@@ -30,11 +30,19 @@ namespace Free_Sharp_Player {
 				{"action", "getRadioInfo"},
 			};
 
-			String result = HttpPostRequest.APICall(payload);
+			String result = HttpPostRequest.PostRequest(payload);
 			getRadioInfo temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(getRadioInfo)) as getRadioInfo;
 
 			return temp;
 		}
+
+
+		public void Print() {
+			Util.PrintLine(ConsoleColor.Yellow, "--------------------");
+			Util.PrintLine(ConsoleColor.White, "url", ": " + url);
+			Util.PrintLine(ConsoleColor.Yellow, "--------------------");
+		}
+
 	}
 	
 }

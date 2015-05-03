@@ -53,7 +53,7 @@ namespace Free_Sharp_Player {
 			mainUpdateTimer = new Timer(1000);
 			mainUpdateTimer.AutoReset = true;
 			mainUpdateTimer.Enabled = true;
-			mainUpdateTimer.Elapsed += UpdateData;
+			//mainUpdateTimer.Elapsed += UpdateData;
 			mainUpdateTimer.Start();
 
 			/*
@@ -80,19 +80,18 @@ namespace Free_Sharp_Player {
 		//TODO: potentual issues with disconnect.
 		private void UpdateData(DateTime? newStart) {
 			lock (theLock) {
+				//get all played tracks
 				List<lastPlayed> playedTracks = lastPlayed.doPost();
 				playedList.Clear();
 
+				//get details for each played track
 				foreach (lastPlayed l in playedTracks) {
-					getTrack temp = getTrack.doPost(l.title, l.artist);
+					getTrack temp = getTrack.doPost(int.Parse(l.trackID));
 					if (temp != null && temp.track != null && temp.track.Count > 0)
-						playedList.Add(temp.track.Find(
-							X => {
-								return Util.trimDateString(X.lastPlayed) == Util.trimDateString(l.last_played);
-							}
-						));
+						playedList.Add(temp.track[0]);
 				}
 
+				//update current track if nessesary
 				if (newStart != null) {
 					currentTrack = playedList.First();
 					currentTrack.localLastPlayed = (DateTime)newStart;
@@ -100,6 +99,7 @@ namespace Free_Sharp_Player {
 						NewCurrentTrack(currentTrack);
 				}
 
+				//get list of requested tracks + radio info
 				requested = getRequests.doPost().track;
 				radioInfo = getRadioInfo.doPost();
 

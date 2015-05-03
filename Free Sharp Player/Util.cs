@@ -26,8 +26,8 @@ namespace Free_Sharp_Player {
 				return;
 			}
 
-			ConsoleColor oldf = Console.ForegroundColor;
-			ConsoleColor oldb = Console.BackgroundColor;
+			ConsoleColor oldf = ConsoleColor.Gray;// Console.ForegroundColor;
+			ConsoleColor oldb = ConsoleColor.Black;// Console.BackgroundColor;
 
 			var enumerator = stuff.GetEnumerator();
 

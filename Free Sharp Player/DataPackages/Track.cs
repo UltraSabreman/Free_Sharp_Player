@@ -42,6 +42,15 @@ namespace Free_Sharp_Player {
 			return JsonConvert.SerializeObject(this, Formatting.None);
 		}
 
+		public void Print() {
+			Util.PrintLine(ConsoleColor.Yellow, "--------------------");
+			Util.PrintLine(ConsoleColor.White, "TrackID", ": " + trackID);
+			Util.PrintLine(ConsoleColor.White, "WholeTitle", ": " + WholeTitle);
+			Util.PrintLine(ConsoleColor.White, "Duration", ": " + duration);
+			Util.PrintLine(ConsoleColor.White, "lastPlayed", ": " + lastPlayed);
+			Util.PrintLine(ConsoleColor.Yellow, "--------------------");
+		}
+
 		public String getLastPlayed() {
 			return DateTime.Parse(lastPlayed).ToString("mm:ss");
 		}

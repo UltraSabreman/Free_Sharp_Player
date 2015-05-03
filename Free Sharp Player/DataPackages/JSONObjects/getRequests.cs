@@ -48,7 +48,7 @@ namespace Free_Sharp_Player {
 				{"action", "getRequest"},
 			};
 
-			String result = HttpPostRequest.APICall(payload);
+			String result = HttpPostRequest.PostRequest(payload);
 			getRequests temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(getRequests)) as getRequests;
 
 			return temp;

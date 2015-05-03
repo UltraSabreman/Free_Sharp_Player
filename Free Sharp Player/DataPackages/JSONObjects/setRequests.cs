@@ -37,7 +37,7 @@ namespace Free_Sharp_Player {
 				{"trackID", Uri.EscapeUriString(trackID)}
 			};
 
-			String result = HttpPostRequest.APICall(payload);
+			String result = HttpPostRequest.PostRequest(payload);
 			setRequests temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(setRequests)) as setRequests;
 
 			return temp;

@@ -15,7 +15,7 @@ namespace Free_Sharp_Player {
 				{"action", "getVoteStatus"},
 			};
 
-			String result = HttpPostRequest.APICall(payload);
+			String result = HttpPostRequest.PostRequest(payload);
 			getVoteStatus temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(getVoteStatus)) as getVoteStatus;
 
 			return temp;

@@ -11,54 +11,64 @@ namespace Free_Sharp_Player {
     "action": "getLastPlayed",
     "data": [
         {
-            "last_played": "2015-03-14 18:04:19",
-            "artist": "&I feat. Giggly Maria",
-            "title": "Dive (Exiark's Endless Sky Remix)"
-        },
-        {
-            "last_played": "2015-03-14 18:02:59",
-            "artist": "Baq5",
-            "title": "Egarim (Interlude) (ft.Rina-chan)"
-        },
-        {
-            "last_played": "2015-03-14 17:56:07",
-            "artist": "Ricardojvc6",
-            "title": "Requiem Concerto Pour Octavia"
-        },
-        {
-            "last_played": "2015-03-14 17:53:18",
-            "artist": "Blaze",
-            "title": "Love Is In Bloom"
-        },
-        {
-            "last_played": "2015-03-14 17:47:11",
-            "artist": "ArtAttack and Metajoker",
-            "title": "Still Shy (Aviators Remix)"
-        },
-        {
-            "last_played": "2015-03-14 17:43:49",
+            "last_played": "2015-05-03 13:17:59",
             "artist": "Daniel Ingram",
-            "title": "Under Our Spell (174UDSI Mica Cover Remix)"
+            "title": "Find A Way (Azuredash Remix)",
+            "trackID": "13137"
         },
         {
-            "last_played": "2015-03-14 17:37:05",
-            "artist": "Baasik",
-            "title": "23"
+            "last_played": "2015-05-03 13:13:39",
+            "artist": "Flying Melodys",
+            "title": "Let Your Heart Be Free",
+            "trackID": "17543"
         },
         {
-            "last_played": "2015-03-14 17:31:04",
-            "artist": "Sebastian Ingrosso & Tommy Trash Vs. Daniel Ingram",
-            "title": "Reload the Crystal Empire (Nitramcz mashup)"
+            "last_played": "2015-05-03 13:11:40",
+            "artist": "Daniel Ingram",
+            "title": "Life is a Runway",
+            "trackID": "18105"
         },
         {
-            "last_played": "2015-03-14 17:26:35",
-            "artist": "Erutan",
-            "title": "Children of the Night (Donn DeVore Symphonic Metal Cover)"
+            "last_played": "2015-05-03 13:08:39",
+            "artist": "Resonantwaves",
+            "title": "Beneath the Trenches",
+            "trackID": "8373"
         },
         {
-            "last_played": "2015-03-14 17:23:00",
-            "artist": "Vocal Score",
-            "title": "Under Luna's Sky"
+            "last_played": "2015-05-03 13:05:24",
+            "artist": "H8_Seed and Wooden Toaster",
+            "title": "Awoken (Vocal Score Cover)",
+            "trackID": "13325"
+        },
+        {
+            "last_played": "2015-05-03 13:01:40",
+            "artist": "Psycosis",
+            "title": "Smile 3x",
+            "trackID": "1527"
+        },
+        {
+            "last_played": "2015-05-03 12:57:18",
+            "artist": "Luna Jax",
+            "title": "The Choice I Have Made",
+            "trackID": "17008"
+        },
+        {
+            "last_played": "2015-05-03 12:53:48",
+            "artist": "Flying Melodys",
+            "title": "Just Keep Smiling",
+            "trackID": "16939"
+        },
+        {
+            "last_played": "2015-05-03 12:50:38",
+            "artist": "WoodenToaster",
+            "title": "Rainbow Factory (DJDoctorWhooves Guitar Cover)",
+            "trackID": "14604"
+        },
+        {
+            "last_played": "2015-05-03 12:47:14",
+            "artist": "Kaoss Walker",
+            "title": "Crystal Heart Return",
+            "trackID": "15778"
         }
     ],
     "valid": 1
@@ -68,6 +78,7 @@ namespace Free_Sharp_Player {
 		public String last_played;
 		public String artist;
 		public String title;
+		public String trackID;
 
 
 		public static List<lastPlayed> doPost() {
@@ -75,7 +86,7 @@ namespace Free_Sharp_Player {
 				{"action", "getLastPlayed"},
 			};
 
-			String result = HttpPostRequest.APICall(payload);
+			String result = HttpPostRequest.PostRequest(payload);
 			List<lastPlayed> temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(List<lastPlayed>)) as List<lastPlayed>;
 
 			return temp;

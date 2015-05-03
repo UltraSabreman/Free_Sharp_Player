@@ -1,8 +1,9 @@
 ﻿<Application x:Class="Free_Sharp_Player.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="UI\MainWindow.xaml">
-    <Application.Resources>
+             >
+	<!--StartupUri="UI\MainWindow.xaml"-->
+	<Application.Resources>
          
     </Application.Resources>
 </Application>

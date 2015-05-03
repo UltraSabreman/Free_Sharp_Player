@@ -32,7 +32,8 @@ namespace Free_Sharp_Player {
 
 			//this simply checks that the given address actualy works
 			//An exception is thrown if it doesn't
-			((HttpWebRequest)HttpWebRequest.Create(address)).GetResponse().Close();
+			//TODO: replace with ping.
+			//((HttpWebRequest)HttpWebRequest.Create(address)).GetResponse().Close();
 
 			this.address = address;
 
@@ -49,6 +50,7 @@ namespace Free_Sharp_Player {
 				streamThread = new Thread(StreamMp3);
 				streamThread.Start();
 			}
+
 		}
 
 
@@ -98,6 +100,9 @@ namespace Free_Sharp_Player {
 				}
 			} catch (ThreadAbortException) {
 				Util.Print(ConsoleColor.Yellow, "Warning", ": Stream thread aborted!");
+			} catch (Exception e) {
+				Util.DumpException(e);
+				throw e;
 			} finally {
 				if (readFullyStream != null) {
 					readFullyStream.Close();
