@@ -54,9 +54,9 @@
 								</Grid.ColumnDefinitions>
 								<Label Name="lbl_QueueTime" ToolTip="How long Track has been queued" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding RequestTime, Converter={StaticResource TimeInQueueConverter}}"/>
 								<Label Name="lbl_WholeTile" ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
-								<Label Name="lbl_Duration" ToolTip="Track duration" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="2" Content="{Binding Duration, Converter={StaticResource DurationConverter}}"/>
-								<Label Name="lbl_Plays" ToolTip="Track plays"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="3" Content="{Binding Plays}"/>
-								<Label Name="lbl_Requests" ToolTip="Track requests"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="4" Content="{Binding Requests}"/>
+								<Label Name="lbl_Duration" ToolTip="Track duration" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="2" Content="{Binding duration, Converter={StaticResource DurationConverter}}"/>
+								<Label Name="lbl_Plays" ToolTip="Track plays"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="3" Content="{Binding plays}"/>
+								<Label Name="lbl_Requests" ToolTip="Track requests"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="4" Content="{Binding requests}"/>
 								<Label Name="lbl_Rating" ToolTip="Track rating"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="5" Content="{Binding rating}"/>
 								<Canvas Name="can_Requester" ToolTip="Reqester Nickname"  ClipToBounds="True" Margin="0,0,0,0" Grid.Column="6">
 									<TextBlock Name="txt_Requester" Text="{Binding Requester}" Margin="0,0,0,0" Padding="0" FontSize="10" />
