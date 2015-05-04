@@ -75,11 +75,11 @@ namespace Free_Sharp_Player {
 }
 */
 	public class lastPlayed : ViewModelNotifier {
-		public String last_played;
+		public String last_played  { get { return GetProp<String>(); } set { SetProp(value); } }
 		public String artist;
 		public String title;
 		public String trackID;
-
+		public String WholeTitle { get { return artist + " - " + title; } }
 
 		public static List<lastPlayed> doPost() {
 			var payload = new Dictionary<String, Object> {

@@ -18,8 +18,10 @@ namespace Free_Sharp_Player {
 			var payload = new Dictionary<String, Object> {
 				{"action", "setVote"},
 			};
-			if (trackID != null)
-				payload["trackID"] = Uri.EscapeUriString(trackID);
+			if (trackID == null) return null;
+			payload["trackID"] = Uri.EscapeUriString(trackID);
+			payload["modifier"] = Uri.EscapeUriString(vote.ToString());
+			
 
 			String result = HttpPostRequest.PostRequest(payload);
 			setVote temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(setVote)) as setVote;

@@ -11,9 +11,9 @@ namespace Free_Sharp_Player {
 	/// Interaction logic for App.xaml
 	/// </summary>
 	public partial class App : Application {
-		ConsoleRunner theThing = new ConsoleRunner();
+		//ConsoleRunner theThing = new ConsoleRunner();
 		public App() {
-			theThing.Run();
+			//theThing.Run();
 		}
 	}
 }

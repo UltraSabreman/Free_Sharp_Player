@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 
 namespace Free_Sharp_Player {
@@ -49,6 +50,8 @@ namespace Free_Sharp_Player {
 			window.btn_PlayPause.Click += btn_PlayPause_Click;
 			window.btn_Volume.Click += btn_Volume_Click;
 			window.btn_Extra.Click += btn_Extra_Click;
+			window.btn_Like.Click += btn_Like_Click;
+			window.btn_Dislike.Click += btn_Dislike_Click;
 
 			VolumeOutClick = new MouseButtonEventHandler(HandleClickOutsideOfVolume);
 			ExtrasOutClick = new MouseButtonEventHandler(HandleClickOutsideOfExtras);
@@ -62,10 +65,48 @@ namespace Free_Sharp_Player {
 
 		public void UpdateSong(Track song) {
 			currentSong = song;
+
+			getVoteStatus tempStatus = getVoteStatus.doPost();
+			//TODO: make this not rely on a post.
+			currentSong.MyVote = tempStatus.vote != null ? (int)tempStatus.vote : 0;
+			ColorLikes(tempStatus.status);
+		}
+
+		private void ColorLikes(int? status) {
+			window.Dispatcher.Invoke(new Action(() => {
+				if (status != null && status == 0) {
+					window.btn_Like.IsEnabled = false;
+					window.btn_Dislike.IsEnabled = false;
+				} else {
+					window.btn_Like.IsEnabled = true;
+					window.btn_Dislike.IsEnabled = true;
+
+					if (currentSong.MyVote != null && currentSong.MyVote == 1) {
+						window.btn_Like.Background = Brushes.DarkGreen;
+						window.btn_Like.Foreground = Brushes.Black;
+
+						window.btn_Dislike.Background = Brushes.Transparent;
+						window.btn_Dislike.Foreground = Brushes.DarkRed;
+					} else if (currentSong.MyVote != null && currentSong.MyVote == -1) {
+						window.btn_Like.Background = Brushes.Transparent;
+						window.btn_Like.Foreground = Brushes.DarkGreen;
+
+						window.btn_Dislike.Background = Brushes.DarkRed;
+						window.btn_Dislike.Foreground = Brushes.Black;
+					} else {
+						window.btn_Like.Background = Brushes.Transparent;
+						window.btn_Like.Foreground = Brushes.DarkGreen;
+
+						window.btn_Dislike.Background = Brushes.Transparent;
+						window.btn_Dislike.Foreground = Brushes.DarkRed;
+					}
+				}
+			}));
+
 		}
 
 		public void UpdateInfo(getRadioInfo info) {
-
+			isLive = int.Parse(info.autoDJ) == 0;
 		}
 
 		public void Tick(Object o, EventArgs e) {
@@ -124,42 +165,59 @@ namespace Free_Sharp_Player {
 
 		private void btn_Volume_Click(object sender, RoutedEventArgs e) {
 			VolumeOpen = !VolumeOpen;
-			ThicknessAnimation testan;
+			DoubleAnimation testan;
 			if (VolumeOpen) {
 				Mouse.Capture(window.Volume, CaptureMode.SubTree);
 				window.Volume.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick, true);
-				
-				testan = new ThicknessAnimation(new Thickness(0, 120, 0, 0), new Thickness(0, 0, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+
+				testan = new DoubleAnimation(0, 120, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+				//Util.AnimateWindowMoveY(window, -120);
 			} else {
-				testan = new ThicknessAnimation(new Thickness(0, 0, 0, 0), new Thickness(0, 120, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+				testan = new DoubleAnimation(120, 0, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+				//Util.AnimateWindowMoveY(window, 120);
 			}
 
 			Storyboard test = new Storyboard();
 			test.Children.Add(testan);
-			Storyboard.SetTargetName(testan, window.Volume.Name);
-			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.MarginProperty));
-			test.Begin(window.Volume);
+			Storyboard.SetTargetName(testan, window.VolumeMenu.Name);
+			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.HeightProperty));
+			test.Begin(window.VolumeMenu);
+
 		}
 
 
 
+		private void btn_Like_Click(object sender, RoutedEventArgs e) {
+			currentSong.MyVote += (currentSong.MyVote + 1 > 1 ? -1 : 1);
+			ColorLikes(null);
+			setVote.doPost(currentSong.MyVote, currentSong.trackID);
+		}
+		private void btn_Dislike_Click(object sender, RoutedEventArgs e) {
+			currentSong.MyVote += (currentSong.MyVote - 1 < -1 ? 1 : -1);
+			ColorLikes(null);
+			setVote.doPost(currentSong.MyVote, currentSong.trackID);
+
+		}
+
 		private void btn_Extra_Click(object sender, RoutedEventArgs e) {
 			ExtrasOpen = !ExtrasOpen;
-			ThicknessAnimation testan;
+			DoubleAnimation testan;
 			if (ExtrasOpen) {
 				Mouse.Capture(window.Extras, CaptureMode.SubTree);
 				window.Extras.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick, true);
 
-				testan = new ThicknessAnimation(new Thickness(0, 60, 0, 0), new Thickness(0, 0, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+				testan = new DoubleAnimation(0, 60, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+				Util.AnimateWindowMoveY(window, 60);
 			} else {
-				testan = new ThicknessAnimation(new Thickness(0, 0, 0, 0), new Thickness(0, 60, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+				testan = new DoubleAnimation(60, 0, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+				Util.AnimateWindowMoveY(window, -60);
 			}
 
 			Storyboard test = new Storyboard();
 			test.Children.Add(testan);
-			Storyboard.SetTargetName(testan, window.Extras.Name);
-			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.MarginProperty));
-			test.Begin(window.Extras);
+			Storyboard.SetTargetName(testan, window.ExtrasMenu.Name);
+			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.HeightProperty));
+			test.Begin(window.ExtrasMenu);
 		}
 
 

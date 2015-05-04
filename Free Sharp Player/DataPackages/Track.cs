@@ -34,6 +34,8 @@ namespace Free_Sharp_Player {
 		public String Requester { get { return GetProp<String>(); } set { SetProp(value); } }
 		public int Priority { get; set; }
 
+		public int MyVote { get; set; }
+
 		public static Track Parse(String s) {
 			return JsonConvert.DeserializeObject(s) as Track;
 		}

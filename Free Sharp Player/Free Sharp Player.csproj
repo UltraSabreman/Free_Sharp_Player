@@ -77,6 +77,9 @@
     <Compile Include="HttpPostRequest.cs" />
     <Compile Include="Streaming\StreamManager.cs" />
     <Compile Include="Streaming\StreamQueue.cs" />
+    <Compile Include="UI\GridLengthAnimation.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="UI\ViewModels\ExtraMenuModel.cs" />
     <Compile Include="UI\ViewModels\MainModel.cs" />
     <Compile Include="UI\ViewModels\PlaylistModel.cs" />

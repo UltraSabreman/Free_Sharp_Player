@@ -147,11 +147,13 @@ namespace Free_Sharp_Player {
 						}
 					};
 
-					streamManager.OnRadioUpdate += (getRadioInfo info, List<Track> played, List<Track> queued) => {
+					streamManager.OnRadioUpdate += (getRadioInfo info, List<lastPlayed> played, List<Track> queued) => {
 						lock (radioLock) {
 							mainModel.UpdateInfo(info);
 							playlistModel.UpdateLists(played, queued);
 							extraModel.UpdateInfo(info);
+							playlistModel.UpdateInfo(info);
+
 						}
 					};
 
@@ -162,6 +164,10 @@ namespace Free_Sharp_Player {
 		}
 
 
+
+		private void Grid_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+			//currentSong.trackID;
+		}
 		private void Window_KeyUp(object sender, KeyEventArgs e) {
 			if (e.Key == Key.Escape)
 				Application.Current.Shutdown();
@@ -184,11 +190,6 @@ namespace Free_Sharp_Player {
 					doubleClickCheck.Stop();
 				}
 			}
-		}
-
-
-		private void Grid_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
-
 		}
 
 

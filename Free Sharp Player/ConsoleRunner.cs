@@ -24,7 +24,7 @@ namespace Free_Sharp_Player {
 		}
 		public enum StreamQuality { Low, Normal, High };
 
-		private void ConnectToStream(StreamQuality Quality) {
+		/*private void ConnectToStream(StreamQuality Quality) {
 			String address = "";
 			bool Connected = false;
 
@@ -73,11 +73,11 @@ namespace Free_Sharp_Player {
 				} catch (Exception) { }
 			}
 
-		}
+		}*/
 		public void Run() {
-			ConnectToStream(StreamQuality.Normal);
+			//ConnectToStream(StreamQuality.Normal);
 
-			streamManager.Play();
+			//streamManager.Play();
 
 		}
 	}

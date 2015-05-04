@@ -28,7 +28,7 @@ namespace Free_Sharp_Player {
 		public delegate void TrackUpdate(Track track);
 		public event TrackUpdate NewCurrentTrack;
 
-		public delegate void RadioUpdate(getRadioInfo info, List<Track> played, List<Track> request);
+		public delegate void RadioUpdate(getRadioInfo info, List<lastPlayed> played, List<Track> request);
 		public event RadioUpdate OnRadioUpdate;
 
 
@@ -36,12 +36,12 @@ namespace Free_Sharp_Player {
 		private StreamQueue theQueue;
 
 		private getRadioInfo radioInfo;
-		private List<Track> playedList;
+		private List<lastPlayed> playedList;
 		private List<Track> requested;
 		private Track currentTrack;
 
 		public StreamManager(String address) {
-			playedList = new List<Track>();
+			playedList = new List<lastPlayed>();
 			requested = new List<Track>();
 
 
@@ -53,7 +53,7 @@ namespace Free_Sharp_Player {
 			mainUpdateTimer = new Timer(1000);
 			mainUpdateTimer.AutoReset = true;
 			mainUpdateTimer.Enabled = true;
-			//mainUpdateTimer.Elapsed += UpdateData;
+			mainUpdateTimer.Elapsed += UpdateData;
 			mainUpdateTimer.Start();
 
 			/*
@@ -81,19 +81,20 @@ namespace Free_Sharp_Player {
 		private void UpdateData(DateTime? newStart) {
 			lock (theLock) {
 				//get all played tracks
-				List<lastPlayed> playedTracks = lastPlayed.doPost();
+				//List<lastPlayed> playedTracks = lastPlayed.doPost();
 				playedList.Clear();
 
 				//get details for each played track
-				foreach (lastPlayed l in playedTracks) {
+				/*foreach (lastPlayed l in playedTracks) {
 					getTrack temp = getTrack.doPost(int.Parse(l.trackID));
 					if (temp != null && temp.track != null && temp.track.Count > 0)
 						playedList.Add(temp.track[0]);
-				}
+				}*/
 
+				playedList = lastPlayed.doPost();
 				//update current track if nessesary
 				if (newStart != null) {
-					currentTrack = playedList.First();
+					currentTrack = getTrack.doPost(int.Parse(playedList.First().trackID)).track[0];
 					currentTrack.localLastPlayed = (DateTime)newStart;
 					if (NewCurrentTrack != null)
 						NewCurrentTrack(currentTrack);

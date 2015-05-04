@@ -45,7 +45,8 @@ namespace Free_Sharp_Player {
 	public class LastPlayedConverter : IValueConverter {
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
 			String date = (String)value;
-			DateTime lastPlayedDate = DateTime.Parse(date);
+			TimeZoneInfo hwZone = TimeZoneInfo.Utc;
+			DateTime lastPlayedDate = DateTime.Parse(date);//TimeZoneInfo.ConvertTime(DateTime.Parse(date), hwZone, TimeZoneInfo.Local);
 			return lastPlayedDate.ToString("h:mm");
 		}
 

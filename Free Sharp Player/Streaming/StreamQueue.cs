@@ -188,7 +188,7 @@ namespace Free_Sharp_Player {
 
 		private void PlayFrame(Object o, EventArgs e) {
 			lock (playLock) {
-				try {
+				//try {
 					//Check if queue has shit in it.
 					if (playHead == null) return;
 					//Dont play if we're not playing.
@@ -272,10 +272,10 @@ namespace Free_Sharp_Player {
 					playTimer.Interval = diff * 1000;
 					playTimer.Start();
 
-				} catch (Exception ex) {
+				/*} catch (Exception ex) {
 					Util.DumpException(ex);
 					throw ex;
-				}
+				}*/
 			}
 		}
 

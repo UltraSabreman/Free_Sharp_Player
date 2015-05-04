@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 namespace Free_Sharp_Player {
 	using Newtonsoft.Json;
 	using Newtonsoft.Json.Linq;
+	using System.Windows;
+	using System.Windows.Media.Animation;
 	using DataDict = Dictionary<String, Object>;
 	static class Util {
 		public static void Print() { Print(null); }
@@ -52,6 +54,27 @@ namespace Free_Sharp_Player {
 
 		public static String trimDateString(String date) {
 			return date.Split(":".ToCharArray(), 2)[1];
+		}
+
+
+		public static void AnimateWindowMovex(Window window, double width) {
+			DoubleAnimation moveXAnimation = new DoubleAnimation(window.Left, window.Left + width, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+
+			Storyboard moveXStoryboard = new Storyboard();
+			moveXStoryboard.Children.Add(moveXAnimation);
+			Storyboard.SetTargetName(moveXAnimation, window.Name);
+			Storyboard.SetTargetProperty(moveXAnimation, new PropertyPath(Window.LeftProperty));
+			moveXStoryboard.Begin(window);
+		}
+
+		public static void AnimateWindowMoveY(Window window, double height) {
+			DoubleAnimation moveYAnimation = new DoubleAnimation(window.Top, window.Top + height, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+			
+			Storyboard moveYStoryboard = new Storyboard();
+			moveYStoryboard.Children.Add(moveYAnimation);
+			Storyboard.SetTargetName(moveYAnimation, window.Name);
+			Storyboard.SetTargetProperty(moveYAnimation, new PropertyPath(Window.TopProperty));
+			moveYStoryboard.Begin(window);
 		}
 
 		public static void DumpException(Exception e) {

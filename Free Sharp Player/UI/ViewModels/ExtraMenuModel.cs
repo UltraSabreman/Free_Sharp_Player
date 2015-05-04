@@ -7,7 +7,10 @@ using System.Windows.Input;
 
 namespace Free_Sharp_Player {
 	class ExtraMenuModel : ViewModelNotifier {
-		public int Votes { get { return GetProp<int>(); } set { SetProp(value); } }
+		public String Votes { get { return GetProp<String>(); } set { SetProp(value); } }
+
+		//TODO: set votes to "---" when stopped.
+
 
 		private MainWindow window;
 
@@ -22,6 +25,7 @@ namespace Free_Sharp_Player {
 			window.btn_Request.Click += ResetCapture;
 			window.btn_Settings.Click += ResetCapture;
 
+			Votes = "---";
 		}
 
 		public void Tick(Object o, EventArgs e) {
@@ -30,7 +34,7 @@ namespace Free_Sharp_Player {
 
 		public void UpdateInfo(getRadioInfo info) {
 			if (info != null && !String.IsNullOrEmpty(info.rating))
-				Votes = Int32.Parse(info.rating);
+				Votes = info.rating;
 		}
 
 		private void ResetCapture(object o, object e) {

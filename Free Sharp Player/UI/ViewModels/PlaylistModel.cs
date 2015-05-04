@@ -9,6 +9,7 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 
 namespace Free_Sharp_Player {
@@ -16,7 +17,7 @@ namespace Free_Sharp_Player {
 		private Object theLock = new Object();
 	
 		public String StreamTitle { get { return GetProp<String>(); } set { SetProp(value); DoMarquee(); } }
-		public ObservableCollection<Track> Played { get { return GetProp<ObservableCollection<Track>>(); } set { SetProp(value); } }
+		public ObservableCollection<lastPlayed> Played { get { return GetProp<ObservableCollection<lastPlayed>>(); } set { SetProp(value); } }
 		public ObservableCollection<Track> Queue { get { return GetProp<ObservableCollection<Track>>(); } set { SetProp(value); } }
 		public Track Playing { get { return GetProp<Track>(); } set { SetProp(value); } }
 
@@ -30,7 +31,7 @@ namespace Free_Sharp_Player {
 		private Timer listUpdater = new Timer(10000);
 
 		public PlaylistModel(MainWindow win) {
-			Played = new ObservableCollection<Track>();
+			Played = new ObservableCollection<lastPlayed>();
 			Queue = new ObservableCollection<Track>();
 
 			SetWindow(win);
@@ -46,10 +47,10 @@ namespace Free_Sharp_Player {
 
 			Tick(null, null);
 
-			window.QueueList.Margin = new Thickness(0, window.QueueHeight.Height.Value, 0, 0);
-			window.PlayedList.Margin = new Thickness(0, 0, 0, window.PlayedHeight.Height.Value);
-			MaxQueueHight = MinQueueHeight = window.QueueHeight.Height.Value;
-			MaxPlayedHight = MinPlayedHeight = window.PlayedHeight.Height.Value;
+			//window.QueueList.Margin = new Thickness(0, window.QueueHeight.Height.Value, 0, 0);
+			//window.PlayedList.Margin = new Thickness(0, 0, 0, window.PlayedHeight.Height.Value);
+			MaxQueueHight = MinQueueHeight = 0;// window.QueueHeight.Height.Value;
+			MaxPlayedHight = MinPlayedHeight = 0;// window.PlayedHeight.Height.Value;
 
 			listUpdater.Elapsed += Tick;
 			listUpdater.AutoReset = true;
@@ -65,7 +66,7 @@ namespace Free_Sharp_Player {
 
 		}
 
-		public void UpdateLists(List<Track> played, List<Track> queued) {
+		public void UpdateLists(List<lastPlayed> played, List<Track> queued) {
 			window.Dispatcher.Invoke(new Action(() => {
 				lock (theLock) {
 					Played.Clear();
@@ -77,16 +78,21 @@ namespace Free_Sharp_Player {
 						queued.ForEach(Queue.Add);
 
 					UpdateSize();
+					//window.PlayedList.Margin = new Thickness(0, MinPlayedHeight, 0, 0);
+					//window.QueueList.Margin = new Thickness(0, 0, 0, MinQueueHeight);
 				}
 			}));
 		}
 
 		public void UpdateSong(Track song) {
 			Playing = song;
+		}
+
+		public void UpdateInfo(getRadioInfo info) {
 			if (!window.IsPlaying)
 				StreamTitle = "Not Connected";
-			else 
-				StreamTitle = Playing.WholeTitle;
+			else
+				StreamTitle = info.title;
 		}
 
 
@@ -101,7 +107,7 @@ namespace Free_Sharp_Player {
 					text2.Visibility = Visibility.Visible;
 					//todo better marquee math here.
 					DoubleAnimation anim = new DoubleAnimation(0, (text.ActualWidth + canvas.ActualWidth / 2), new Duration(new TimeSpan(0, 0, 10)));
-					DoubleAnimation anim2 = new DoubleAnimation(-(text.ActualWidth + canvas.ActualWidth / 2), 0, new Duration(new TimeSpan(0, 0, 10)));
+					DoubleAnimation anim2 = new DoubleAnimation((text.ActualWidth + canvas.ActualWidth / 2), 0, new Duration(new TimeSpan(0, 0, 10)));
 					anim.RepeatBehavior = RepeatBehavior.Forever;
 					anim2.RepeatBehavior = RepeatBehavior.Forever;
 
@@ -116,42 +122,57 @@ namespace Free_Sharp_Player {
 
 		public void UpdateSize() {
 			if (Queue != null && Queue.Count > 0)
-				MaxQueueHight = MinQueueHeight - (Queue.Count * 20);
+				MaxQueueHight = (Queue.Count * 20);
 			else
-				MaxQueueHight = MinQueueHeight;
+				MaxQueueHight = 0;
+
 			if (Played != null && Played.Count > 0)
 				MaxPlayedHight = (Played.Count * 20);
 			else
-				MaxPlayedHight = MinPlayedHeight;
+				MaxPlayedHight = 0;
+			//App.Current.MainWindow.Height = MaxPlayedHight + MaxQueueHight + 30;
 		}
 
 		public void AnimateLists() {
 			doOpen = !doOpen;
-			ThicknessAnimation testan;
 			if (doOpen) {
-				testan = new ThicknessAnimation(new Thickness(0, MinQueueHeight, 0, 0), new Thickness(0, MaxQueueHight, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+				window.btn_PlayPause.Background = Brushes.Red;
 			} else {
-				testan = new ThicknessAnimation(new Thickness(0, MaxQueueHight, 0, 0), new Thickness(0, MinQueueHeight, 0, 0), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+				window.btn_PlayPause.Background = Brushes.Green;
 			}
+		
 
-			ThicknessAnimation testan2;
+			DoubleAnimation testan;
 			if (doOpen) {
-				testan2 = new ThicknessAnimation(new Thickness(0, 0, 0, MinPlayedHeight), new Thickness(0, 0, 0, MaxPlayedHight), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+				testan = new DoubleAnimation(0, MaxQueueHight, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
 			} else {
-				testan2 = new ThicknessAnimation(new Thickness(0, 0, 0, MaxPlayedHight), new Thickness(0, 0, 0, MinPlayedHeight), new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+				testan = new DoubleAnimation(MaxQueueHight, 0, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
 			}
 
 			Storyboard test = new Storyboard();
 			test.Children.Add(testan);
 			Storyboard.SetTargetName(testan, window.QueueList.Name);
-			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.MarginProperty));
+			Storyboard.SetTargetProperty(testan, new PropertyPath(ListView.HeightProperty));
 			test.Begin(window.QueueList);
+
+			DoubleAnimation testan2;
+			if (doOpen) {
+				testan2 = new DoubleAnimation(0, MaxPlayedHight, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+			} else {
+				testan2 = new DoubleAnimation(MaxPlayedHight, 0, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
+			}
 
 			Storyboard test2 = new Storyboard();
 			test2.Children.Add(testan2);
 			Storyboard.SetTargetName(testan2, window.PlayedList.Name);
-			Storyboard.SetTargetProperty(testan2, new PropertyPath(Grid.MarginProperty));
+			Storyboard.SetTargetProperty(testan2, new PropertyPath(ListView.HeightProperty));
 			test2.Begin(window.PlayedList);
+			if (doOpen)
+				Util.AnimateWindowMoveY(window, MaxQueueHight);
+			else
+				Util.AnimateWindowMoveY(window, -(MaxQueueHight));
 		}
+
+
 	}
 }

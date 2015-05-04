@@ -2,9 +2,10 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:UISpace="clr-namespace:Free_Sharp_Player"
-        Title="MainWindow" Height="700" Width="500"
+		Name="mainPlayerWindow"
+        Title="MainWindow" Height="30" Width="500" 
 		KeyUp="Window_KeyUp" Closed="Window_Closed" WindowStyle="None" AllowsTransparency="True" ClipToBounds="False"
-		Background="Transparent">
+		Background="Transparent" ResizeMode="CanMinimize" SizeToContent="Height" >
 	<Window.Resources>
 		<UISpace:SliderToVolumeConverter x:Key="SliderToVolConverter"/>
 		<UISpace:BoolToMuteIcon x:Key="BoolToMuteConverter" />
@@ -12,21 +13,20 @@
 		<UISpace:LastPlayedConverter x:Key="LastPlayedConverter" />
 		<UISpace:TimeInQueueConverter x:Key="TimeInQueueConverter" />
 	</Window.Resources>
-	<Grid MouseDown="Grid_MouseDown" MouseUp="Grid_MouseLeftButtonUp">
+	<Grid MouseDown="Grid_MouseDown" MouseUp="Grid_MouseLeftButtonUp" >
 		<Grid.RowDefinitions>
-			<RowDefinition Height="*"/>
-			<RowDefinition Name="QueueHeight" Height="100"/>
+			<RowDefinition Name="QueueHeight" Height="*"/>
 			<RowDefinition Height="30"/>
-			<RowDefinition Name="PlayedHeight" Height="400"/>
-			<RowDefinition Height="*"/>
+			<RowDefinition Name="PlayedHeight" Height="*"/>
 		</Grid.RowDefinitions>
+		
 		
 		<Grid Name="QueueHeader" >
 			
 		</Grid>
 		
-		<Grid Name="Queue" Grid.Row="1" >
-			<ListView Name="QueueList" Background="#e6e6e6" ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Queue}" Padding="0"  ClipToBounds="False">
+		<Grid Name="Queue" Grid.Row="0" >
+			<ListView Name="QueueList" Height="0" Background="#e6e6e6" ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Queue}" Padding="0"  ClipToBounds="False">
 				<ListView.ItemTemplate>
 					<DataTemplate>
 						<Border Height="15" BorderBrush="Gray" Width="490">
@@ -46,18 +46,23 @@
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="40"/>
 									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="30"/>
+
+									<!--
 									<ColumnDefinition Width="40"/>
 									<ColumnDefinition Width="30"/>
 									<ColumnDefinition Width="30"/>
 									<ColumnDefinition Width="30"/>
-									<ColumnDefinition Width="30"/>
+									-->
 								</Grid.ColumnDefinitions>
 								<Label Name="lbl_QueueTime" ToolTip="How long Track has been queued" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding RequestTime, Converter={StaticResource TimeInQueueConverter}}"/>
-								<Label Name="lbl_WholeTile" ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
+								<Label Name="lbl_WholeTile" ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
+								<!--
 								<Label Name="lbl_Duration" ToolTip="Track duration" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="2" Content="{Binding duration, Converter={StaticResource DurationConverter}}"/>
 								<Label Name="lbl_Plays" ToolTip="Track plays"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="3" Content="{Binding plays}"/>
 								<Label Name="lbl_Requests" ToolTip="Track requests"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="4" Content="{Binding requests}"/>
 								<Label Name="lbl_Rating" ToolTip="Track rating"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="5" Content="{Binding rating}"/>
+								-->
 								<Canvas Name="can_Requester" ToolTip="Reqester Nickname"  ClipToBounds="True" Margin="0,0,0,0" Grid.Column="6">
 									<TextBlock Name="txt_Requester" Text="{Binding Requester}" Margin="0,0,0,0" Padding="0" FontSize="10" />
 									<TextBlock Name="txt_Requester2" Visibility="Hidden" Text="{Binding Requester}" Margin="0,0,0,0" Padding="0" FontSize="10"/>
@@ -69,19 +74,19 @@
 			</ListView>
 		</Grid>
 		
-		<Grid Name="VolumeMenu" Width="30" Grid.Row="0" Grid.RowSpan="2" Height="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,30,0">
-			<Grid Name="Volume" Background="#e6e6e6" Margin="0,120,0,0">
+		<Grid Name="VolumeMenu" Width="30" Grid.Row="0" Height="0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,30,0">
+			<Grid Name="Volume" Background="#e6e6e6">
 				<Grid.RowDefinitions>
-					<RowDefinition Height="*"/>
+					<RowDefinition Height="120"/>
 					<RowDefinition Height="30"/>
 				</Grid.RowDefinitions>
 				<Slider Name="sldr_VolumeSlider" ToolTip="Adjust volume" Orientation="Vertical" Maximum="100" Margin="0,3,0,3" Value="{Binding Volume}" HorizontalAlignment="Center"/>
 				<Button Name="btn_MuteButton" ToolTip="Mute/Un-Mute the stream" Grid.Row="1" Content="{Binding Mute, Converter={StaticResource BoolToMuteConverter}}" BorderThickness="0"/>
 			</Grid>
 		</Grid>
-		
-		<Grid Name="ExtrasMenu" Width="120" Height="60" Grid.RowSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-			<Grid Name="Extras" Background="#e6e6e6" Margin="0,60,0,0" >
+
+		<Grid Name="ExtrasMenu" Width="120" Grid.Row="0" Height="0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+			<Grid Name="Extras" Background="#e6e6e6" >
 				<Grid.RowDefinitions>
 					<RowDefinition Height="30"/>
 					<RowDefinition Height="30"/>
@@ -92,8 +97,8 @@
 					<ColumnDefinition Width="30"/>
 					<ColumnDefinition Width="30"/>
 				</Grid.ColumnDefinitions>
-				<Button Name="btn_Like" ToolTip="Rate up" Content="C" Grid.Column="0" Foreground="DarkGreen" FontFamily="Wingdings" FontSize="24" BorderThickness="0"/>
-				<Button Name="btn_Dislike" ToolTip="Rate down" Content="D" Grid.Column="3" Foreground="DarkRed" FontFamily="Wingdings" FontSize="24" BorderThickness="0"/>
+				<Button Name="btn_Like" ToolTip="Rate up" Content="C" Grid.Column="0" Foreground="DarkGreen" FontFamily="Wingdings" FontSize="24" BorderThickness="0" IsEnabled="False"/>
+				<Button Name="btn_Dislike" ToolTip="Rate down" Content="D" Grid.Column="3" Foreground="DarkRed" FontFamily="Wingdings" FontSize="24" BorderThickness="0" IsEnabled="False"/>
 				<Label Name="lbl_Votes" ToolTip="Track Rating" Content="{Binding Votes}" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
 				<Button Name="btn_Favor" ToolTip="Add Track to local favorites" Content="«" Grid.Row="1" Foreground="#dfd000" FontFamily="wingdings" FontSize="24" BorderThickness="0" />
 				<Button Name="btn_Request" ToolTip="Request Track" Content="Request" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="0" />
@@ -101,7 +106,7 @@
 			</Grid>
 		</Grid>
 		
-		<Grid Name="Player" Grid.Row="2">
+		<Grid Name="Player" Grid.Row="1">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="30"/>
 				<ColumnDefinition Width="*"/>
@@ -129,8 +134,8 @@
 			</Grid>
 		</Grid>
 
-		<Grid Name="Played" Grid.Row="3" >
-			<ListView Name="PlayedList" Background="#e6e6e6" ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Played}" Padding="0"  ClipToBounds="False">
+		<Grid Name="Played" Grid.Row="2">
+			<ListView Name="PlayedList"  Height="0" Background="#e6e6e6" ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Played}" Padding="0"  ClipToBounds="False">
 				<ListView.ItemTemplate>
 					<DataTemplate>
 						<Border Height="15" Width="494" BorderBrush="LightGray" BorderThickness="0">
@@ -138,22 +143,26 @@
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="40"/>
 									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="30"/>
+									<!--
 									<ColumnDefinition Width="40"/>
 									<ColumnDefinition Width="30"/>
 									<ColumnDefinition Width="30"/>
 									<ColumnDefinition Width="30"/>
-									<ColumnDefinition Width="30"/>
+									-->
 								</Grid.ColumnDefinitions>
-								<Label Name="lbl_PlayedTime" ToolTip="When Track was last played" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding lastPlayed, Converter={StaticResource LastPlayedConverter}}"/>
-								<Label Name="lbl_WholeTile2" ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
+								<Label Name="lbl_PlayedTime" ToolTip="When Track was last played" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding last_played, Converter={StaticResource LastPlayedConverter}}"/>
+								<Label Name="lbl_WholeTile2" ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="left" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
+								<!--
 								<Label Name="lbl_Duration2" ToolTip="Track duration" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="2" Content="{Binding duration, Converter={StaticResource DurationConverter}}"/>
 								<Label Name="lbl_Plays2" ToolTip="Track plays" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="3" Content="{Binding plays}"/>
 								<Label Name="lbl_Requests2" ToolTip="Track requests" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="4" Content="{Binding requests}"/>
 								<Label Name="lbl_Rating2" ToolTip="Track Rating" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="5" Content="{Binding rating}"/>
-								<Grid Grid.Column="6">
+								-->
+								<Grid Grid.Column="6" HorizontalAlignment="Center">
 									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="15"/>
-										<ColumnDefinition Width="15"/>
+										<ColumnDefinition Width="12"/>
+										<ColumnDefinition Width="12"/>
 									</Grid.ColumnDefinitions>
 									<Button Name="btn_Like2" ToolTip="Rate up" Content="C" Grid.Column="0" Foreground="DarkGreen" FontFamily="Wingdings" BorderThickness="0"/>
 									<Button Name="btn_Dislike2" ToolTip="Rate down" Content="D" Grid.Column="1" Foreground="DarkRed" FontFamily="Wingdings" BorderThickness="0"/>
