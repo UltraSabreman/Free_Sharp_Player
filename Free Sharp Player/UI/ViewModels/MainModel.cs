@@ -53,6 +53,7 @@ namespace Free_Sharp_Player {
 			window.btn_Like.Click += btn_Like_Click;
 			window.btn_Dislike.Click += btn_Dislike_Click;
 
+
 			VolumeOutClick = new MouseButtonEventHandler(HandleClickOutsideOfVolume);
 			ExtrasOutClick = new MouseButtonEventHandler(HandleClickOutsideOfExtras);
 
@@ -81,13 +82,13 @@ namespace Free_Sharp_Player {
 					window.btn_Like.IsEnabled = true;
 					window.btn_Dislike.IsEnabled = true;
 
-					if (currentSong.MyVote != null && currentSong.MyVote == 1) {
+					if (currentSong.MyVote == 1) {
 						window.btn_Like.Background = Brushes.DarkGreen;
 						window.btn_Like.Foreground = Brushes.Black;
 
 						window.btn_Dislike.Background = Brushes.Transparent;
 						window.btn_Dislike.Foreground = Brushes.DarkRed;
-					} else if (currentSong.MyVote != null && currentSong.MyVote == -1) {
+					} else if (currentSong.MyVote == -1) {
 						window.btn_Like.Background = Brushes.Transparent;
 						window.btn_Like.Foreground = Brushes.DarkGreen;
 
@@ -165,10 +166,15 @@ namespace Free_Sharp_Player {
 
 		private void btn_Volume_Click(object sender, RoutedEventArgs e) {
 			VolumeOpen = !VolumeOpen;
-			DoubleAnimation testan;
+			window.VolumeMenu.IsOpen = VolumeOpen;
 			if (VolumeOpen) {
 				Mouse.Capture(window.Volume, CaptureMode.SubTree);
 				window.Volume.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick, true);
+			}
+			/*DoubleAnimation testan;
+			if (VolumeOpen) {
+				//Mouse.Capture(window.Volume, CaptureMode.SubTree);
+				//window.Volume.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick, true);
 
 				testan = new DoubleAnimation(0, 120, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
 				//Util.AnimateWindowMoveY(window, -120);
@@ -181,7 +187,7 @@ namespace Free_Sharp_Player {
 			test.Children.Add(testan);
 			Storyboard.SetTargetName(testan, window.VolumeMenu.Name);
 			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.HeightProperty));
-			test.Begin(window.VolumeMenu);
+			test.Begin(window.VolumeMenu);*/
 
 		}
 
@@ -201,23 +207,28 @@ namespace Free_Sharp_Player {
 
 		private void btn_Extra_Click(object sender, RoutedEventArgs e) {
 			ExtrasOpen = !ExtrasOpen;
-			DoubleAnimation testan;
+			window.ExtrasMenu.IsOpen = ExtrasOpen;
 			if (ExtrasOpen) {
 				Mouse.Capture(window.Extras, CaptureMode.SubTree);
 				window.Extras.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick, true);
+			}
+			/*DoubleAnimation testan;
+			if (ExtrasOpen) {
+				//Mouse.Capture(window.Extras, CaptureMode.SubTree);
+				//window.Extras.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick, true);
 
 				testan = new DoubleAnimation(0, 60, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-				Util.AnimateWindowMoveY(window, 60);
+				//Util.AnimateWindowMoveY(window, 60);
 			} else {
 				testan = new DoubleAnimation(60, 0, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-				Util.AnimateWindowMoveY(window, -60);
+				//Util.AnimateWindowMoveY(window, -60);
 			}
 
 			Storyboard test = new Storyboard();
 			test.Children.Add(testan);
 			Storyboard.SetTargetName(testan, window.ExtrasMenu.Name);
 			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.HeightProperty));
-			test.Begin(window.ExtrasMenu);
+			test.Begin(window.ExtrasMenu);*/
 		}
 
 

@@ -177,8 +177,15 @@ namespace Free_Sharp_Player {
 				waveOut = null;
 			}
 
-			if (bufferedWaveProvider != null)
+			if (bufferedWaveProvider != null) {
 				bufferedWaveProvider.ClearBuffer();
+				bufferedWaveProvider = null;
+			}
+
+			if (decompressor != null) {
+				decompressor.Dispose();
+				decompressor = null;
+			}
 
 			//TODO: actually delete the list?
 			tail = playHead = head = null;

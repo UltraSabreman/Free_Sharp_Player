@@ -51,7 +51,7 @@ namespace Free_Sharp_Player {
 		public enum StreamQuality {Low, Normal, High};
 		public bool IsPlaying { get; private set; }
 
-		private Timer doubleClickCheck = new Timer(750);
+		private Timer doubleClickCheck = new Timer(350);
 		private bool isDoubleClicking = false;
 
 		//Timer Updater = new Timer(1000);

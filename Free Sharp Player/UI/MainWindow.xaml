@@ -14,22 +14,26 @@
 		<UISpace:TimeInQueueConverter x:Key="TimeInQueueConverter" />
 	</Window.Resources>
 	<Grid MouseDown="Grid_MouseDown" MouseUp="Grid_MouseLeftButtonUp" >
-		<Grid.RowDefinitions>
-			<RowDefinition Name="QueueHeight" Height="*"/>
-			<RowDefinition Height="30"/>
-			<RowDefinition Name="PlayedHeight" Height="*"/>
-		</Grid.RowDefinitions>
-		
-		
-		<Grid Name="QueueHeader" >
-			
-		</Grid>
-		
-		<Grid Name="Queue" Grid.Row="0" >
-			<ListView Name="QueueList" Height="0" Background="#e6e6e6" ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Queue}" Padding="0"  ClipToBounds="False">
+	
+		<Popup Name="Queue" Height="0" Width="500" IsOpen="false" AllowsTransparency="True" PopupAnimation="Slide" Placement="Top" StaysOpen="True"  >
+			<ListView Name="QueueList" Background="#e6e6e6" ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderThickness="0" 
+					  ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Queue}" ClipToBounds="False"
+					  >
+				<ListBox.ItemContainerStyle>
+					<Style TargetType="{x:Type ListBoxItem}">
+						<Setter Property="Template">
+							<Setter.Value>
+								<ControlTemplate TargetType="{x:Type ListBoxItem}">
+									<ContentPresenter/>
+								</ControlTemplate>
+							</Setter.Value>
+						</Setter>
+					</Style>
+				</ListBox.ItemContainerStyle>
+				
 				<ListView.ItemTemplate>
 					<DataTemplate>
-						<Border Height="15" BorderBrush="Gray" Width="490">
+						<Border Height="15" BorderBrush="Gray">
 							<Border.Style>
 								<Style>
 									<Style.Triggers>
@@ -45,47 +49,37 @@
 							<Grid>
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="40"/>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="30"/>
-
-									<!--
-									<ColumnDefinition Width="40"/>
-									<ColumnDefinition Width="30"/>
-									<ColumnDefinition Width="30"/>
-									<ColumnDefinition Width="30"/>
-									-->
+									<ColumnDefinition Width="400"/>
+									<ColumnDefinition Width="60"/>
 								</Grid.ColumnDefinitions>
-								<Label Name="lbl_QueueTime" ToolTip="How long Track has been queued" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding RequestTime, Converter={StaticResource TimeInQueueConverter}}"/>
-								<Label Name="lbl_WholeTile" ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
-								<!--
-								<Label Name="lbl_Duration" ToolTip="Track duration" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="2" Content="{Binding duration, Converter={StaticResource DurationConverter}}"/>
-								<Label Name="lbl_Plays" ToolTip="Track plays"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="3" Content="{Binding plays}"/>
-								<Label Name="lbl_Requests" ToolTip="Track requests"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="4" Content="{Binding requests}"/>
-								<Label Name="lbl_Rating" ToolTip="Track rating"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="5" Content="{Binding rating}"/>
-								-->
-								<Canvas Name="can_Requester" ToolTip="Reqester Nickname"  ClipToBounds="True" Margin="0,0,0,0" Grid.Column="6">
-									<TextBlock Name="txt_Requester" Text="{Binding Requester}" Margin="0,0,0,0" Padding="0" FontSize="10" />
-									<TextBlock Name="txt_Requester2" Visibility="Hidden" Text="{Binding Requester}" Margin="0,0,0,0" Padding="0" FontSize="10"/>
+								
+								<Label Name="lbl_QueueTime" ToolTip="How long Track has been queued" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="10" Padding ="0" Content="{Binding RequestTime, Converter={StaticResource TimeInQueueConverter}}"/>
+								<Rectangle Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Right" Width="1" Margin="2" Stroke="Black" />
+								<Label Name="lbl_WholeTile" ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" FontSize="10" Grid.Column="1" Padding ="0" Content="{Binding WholeTitle}"/>
+								<Rectangle Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Right" Width="1" Margin="2" Stroke="Black" />
+								<Canvas Name="can_Requester" ToolTip="Reqester Nickname"  ClipToBounds="True" Grid.Column="6"  >
+									<TextBlock Name="txt_Requester" Text="{Binding Requester}" FontSize="10" Padding ="0" />
+									<TextBlock Name="txt_Requester2" Visibility="Hidden" Text="{Binding Requester}"  FontSize="10" Padding ="0"/>
 								</Canvas>
 							</Grid>
 						</Border>
 					</DataTemplate>
 				</ListView.ItemTemplate>
 			</ListView>
-		</Grid>
-		
-		<Grid Name="VolumeMenu" Width="30" Grid.Row="0" Height="0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,30,0">
-			<Grid Name="Volume" Background="#e6e6e6">
+		</Popup>
+
+		<Popup Name="VolumeMenu" Placement="Top" PlacementTarget="{Binding ElementName=btn_Volume}"  Width="30" Height="120" AllowsTransparency="True" PopupAnimation="Slide" IsOpen="False" HorizontalAlignment="Right" VerticalAlignment="Bottom" StaysOpen="True">
+			<Grid Name="Volume" Background="#e6e6e6" >
 				<Grid.RowDefinitions>
-					<RowDefinition Height="120"/>
+					<RowDefinition Height="90"/>
 					<RowDefinition Height="30"/>
 				</Grid.RowDefinitions>
 				<Slider Name="sldr_VolumeSlider" ToolTip="Adjust volume" Orientation="Vertical" Maximum="100" Margin="0,3,0,3" Value="{Binding Volume}" HorizontalAlignment="Center"/>
 				<Button Name="btn_MuteButton" ToolTip="Mute/Un-Mute the stream" Grid.Row="1" Content="{Binding Mute, Converter={StaticResource BoolToMuteConverter}}" BorderThickness="0"/>
 			</Grid>
-		</Grid>
+		</Popup>
 
-		<Grid Name="ExtrasMenu" Width="120" Grid.Row="0" Height="0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+		<Popup Name="ExtrasMenu" Width="120" Height="60" IsOpen="False" Placement="Top" HorizontalOffset="-90" PlacementTarget="{Binding ElementName=btn_Extra}" StaysOpen="True" AllowsTransparency="True" PopupAnimation="Slide" >
 			<Grid Name="Extras" Background="#e6e6e6" >
 				<Grid.RowDefinitions>
 					<RowDefinition Height="30"/>
@@ -104,9 +98,9 @@
 				<Button Name="btn_Request" ToolTip="Request Track" Content="Request" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="0" />
 				<Button Name="btn_Settings" ToolTip="Settings" Content="⚙" Grid.Row="1" Grid.Column="3" BorderThickness="0" FontSize="19"  />
 			</Grid>
-		</Grid>
+		</Popup>
 		
-		<Grid Name="Player" Grid.Row="1">
+		<Grid Name="Player" Height="30">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="30"/>
 				<ColumnDefinition Width="*"/>
@@ -134,31 +128,34 @@
 			</Grid>
 		</Grid>
 
-		<Grid Name="Played" Grid.Row="2">
-			<ListView Name="PlayedList"  Height="0" Background="#e6e6e6" ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Played}" Padding="0"  ClipToBounds="False">
+		<Popup Name="Played" Height="0" Width="500"  IsOpen="False" AllowsTransparency="True" PopupAnimation="Slide" Placement="Bottom" StaysOpen="True" >
+			<ListView Name="PlayedList" Background="#e6e6e6" ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderThickness="0" 
+					  ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Played}" Padding="0"  ClipToBounds="False">
+				<ListBox.ItemContainerStyle>
+					<Style TargetType="{x:Type ListBoxItem}">
+						<Setter Property="Template">
+							<Setter.Value>
+								<ControlTemplate TargetType="{x:Type ListBoxItem}">
+									<ContentPresenter/>
+								</ControlTemplate>
+							</Setter.Value>
+						</Setter>
+					</Style>
+				</ListBox.ItemContainerStyle>
 				<ListView.ItemTemplate>
 					<DataTemplate>
-						<Border Height="15" Width="494" BorderBrush="LightGray" BorderThickness="0">
+						<Border Height="15" BorderBrush="LightGray" BorderThickness="0">
 							<Grid>
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="40"/>
-									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="430"/>
 									<ColumnDefinition Width="30"/>
-									<!--
-									<ColumnDefinition Width="40"/>
-									<ColumnDefinition Width="30"/>
-									<ColumnDefinition Width="30"/>
-									<ColumnDefinition Width="30"/>
-									-->
 								</Grid.ColumnDefinitions>
+								
 								<Label Name="lbl_PlayedTime" ToolTip="When Track was last played" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding last_played, Converter={StaticResource LastPlayedConverter}}"/>
+								<Rectangle Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Right" Width="1" Margin="2" Stroke="Black" />
 								<Label Name="lbl_WholeTile2" ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="left" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
-								<!--
-								<Label Name="lbl_Duration2" ToolTip="Track duration" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="2" Content="{Binding duration, Converter={StaticResource DurationConverter}}"/>
-								<Label Name="lbl_Plays2" ToolTip="Track plays" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10"  Grid.Column="3" Content="{Binding plays}"/>
-								<Label Name="lbl_Requests2" ToolTip="Track requests" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="4" Content="{Binding requests}"/>
-								<Label Name="lbl_Rating2" ToolTip="Track Rating" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Grid.Column="5" Content="{Binding rating}"/>
-								-->
+								<Rectangle Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Right" Width="1" Margin="2" Stroke="Black" />
 								<Grid Grid.Column="6" HorizontalAlignment="Center">
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="12"/>
@@ -166,14 +163,12 @@
 									</Grid.ColumnDefinitions>
 									<Button Name="btn_Like2" ToolTip="Rate up" Content="C" Grid.Column="0" Foreground="DarkGreen" FontFamily="Wingdings" BorderThickness="0"/>
 									<Button Name="btn_Dislike2" ToolTip="Rate down" Content="D" Grid.Column="1" Foreground="DarkRed" FontFamily="Wingdings" BorderThickness="0"/>
-
 								</Grid>
-
 							</Grid>
 						</Border>
 					</DataTemplate>
 				</ListView.ItemTemplate>
 			</ListView>
-		</Grid>
+		</Popup>
 	</Grid>
 </Window>

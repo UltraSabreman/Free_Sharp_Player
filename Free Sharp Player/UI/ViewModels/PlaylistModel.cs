@@ -52,6 +52,21 @@ namespace Free_Sharp_Player {
 			MaxQueueHight = MinQueueHeight = 0;// window.QueueHeight.Height.Value;
 			MaxPlayedHight = MinPlayedHeight = 0;// window.PlayedHeight.Height.Value;
 
+
+			window.LocationChanged += (o, e) => {
+				window.Played.HorizontalOffset += 1;
+				window.Played.HorizontalOffset -= 1;
+
+				window.Queue.HorizontalOffset += 1;
+				window.Queue.HorizontalOffset -= 1;
+			};
+
+			window.Deactivated += (o, e) => {
+				window.Queue.IsOpen = false;
+				window.Played.IsOpen = false;
+				doOpen = false;
+			};
+
 			listUpdater.Elapsed += Tick;
 			listUpdater.AutoReset = true;
 			listUpdater.Start();
@@ -122,27 +137,37 @@ namespace Free_Sharp_Player {
 
 		public void UpdateSize() {
 			if (Queue != null && Queue.Count > 0)
-				MaxQueueHight = (Queue.Count * 20);
+				MaxQueueHight = (Queue.Count * 15);
 			else
-				MaxQueueHight = 0;
+				MaxQueueHight = 50;
 
 			if (Played != null && Played.Count > 0)
-				MaxPlayedHight = (Played.Count * 20);
+				MaxPlayedHight = (Played.Count * 15);
 			else
 				MaxPlayedHight = 0;
-			//App.Current.MainWindow.Height = MaxPlayedHight + MaxQueueHight + 30;
+
+			window.Dispatcher.Invoke(new Action(() => {
+				window.Played.Height = MaxPlayedHight;
+				window.Queue.Height = MaxQueueHight;
+				//window.Queue.VerticalOffset = - (MaxQueueHight);
+				//App.Current.MainWindow.Height = MaxPlayedHight + MaxQueueHight + 30;
+			}));
 		}
 
 		public void AnimateLists() {
 			doOpen = !doOpen;
-			if (doOpen) {
+			window.Played.IsOpen = doOpen;
+			window.Queue.IsOpen = doOpen;
+			/*if (doOpen) {
 				window.btn_PlayPause.Background = Brushes.Red;
+				window.Played.IsOpen = true;
 			} else {
 				window.btn_PlayPause.Background = Brushes.Green;
-			}
+				window.Played.IsOpen = false;
+			}*/
 		
 
-			DoubleAnimation testan;
+			/*DoubleAnimation testan;
 			if (doOpen) {
 				testan = new DoubleAnimation(0, MaxQueueHight, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
 			} else {
@@ -170,7 +195,7 @@ namespace Free_Sharp_Player {
 			if (doOpen)
 				Util.AnimateWindowMoveY(window, MaxQueueHight);
 			else
-				Util.AnimateWindowMoveY(window, -(MaxQueueHight));
+				Util.AnimateWindowMoveY(window, -(MaxQueueHight));*/
 		}
 
 
