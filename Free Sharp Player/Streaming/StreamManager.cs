@@ -48,7 +48,7 @@ namespace Free_Sharp_Player {
 			theQueue = new StreamQueue();
 			theStream = new MP3Stream(address, theQueue);
 
-			theQueue.OnStreamSongChange += UpdateData;
+			theQueue.OnEventTrigger += UpdateData;
 
 			mainUpdateTimer = new Timer(1000);
 			mainUpdateTimer.AutoReset = true;
@@ -70,34 +70,31 @@ namespace Free_Sharp_Player {
 		}
 
 		public void ManualUpdate() {
-			UpdateData(null);
+			UpdateData();
 		}
 
 		private void UpdateData(Object o, EventArgs e) {
-			UpdateData(null);
+			UpdateData();
 		}
 
 		//TODO: potentual issues with disconnect.
-		private void UpdateData(DateTime? newStart) {
+		private void UpdateData(EventType type = EventType.None) {
+			if (IsPlaying && theStream.EndOfStream)
+				theStream.Play();
+
 			lock (theLock) {
 				//get all played tracks
-				//List<lastPlayed> playedTracks = lastPlayed.doPost();
 				playedList.Clear();
-
-				//get details for each played track
-				/*foreach (lastPlayed l in playedTracks) {
-					getTrack temp = getTrack.doPost(int.Parse(l.trackID));
-					if (temp != null && temp.track != null && temp.track.Count > 0)
-						playedList.Add(temp.track[0]);
-				}*/
-
+	
 				playedList = lastPlayed.doPost();
 				//update current track if nessesary
-				if (newStart != null) {
+				if (type == EventType.SongChange) {
 					currentTrack = getTrack.doPost(int.Parse(playedList.First().trackID)).track[0];
-					currentTrack.localLastPlayed = (DateTime)newStart;
+					currentTrack.localLastPlayed = DateTime.Now;
 					if (NewCurrentTrack != null)
 						NewCurrentTrack(currentTrack);
+				} else if (type == EventType.Disconnect) {
+					//TODO: handle disconnect.  Ui hooks?
 				}
 
 				//get list of requested tracks + radio info

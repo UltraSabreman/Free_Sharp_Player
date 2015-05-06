@@ -15,9 +15,10 @@ namespace Free_Sharp_Player {
 		private int metaInt;
 		private int receivedBytes;
 		private Stream netStream;
-		private bool connected = false;
+		public bool connected { get; private set; }
 
 		private string streamTitle;
+		private string address;
 
 		/// <summary>
 		/// Is fired, when a new StreamTitle is received
@@ -29,13 +30,21 @@ namespace Free_Sharp_Player {
 		/// </summary>
 		/// <param name="url">Url of the Shoutcast stream</param>
 		public ShoutcastStream(string url) {
+			address = url;
+			connected = false;
+			Connect();
+		}
+
+		public void Connect() {
+			if (connected) return;
+
 			HttpWebResponse response;
 
-			HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url);
+			HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(address);
 			request.Headers.Clear();
 			request.Headers.Add("Icy-MetaData", "1");
 			request.KeepAlive = false;
-			
+
 			request.UserAgent = "VLC media player";
 
 			response = (HttpWebResponse)request.GetResponse();
@@ -161,11 +170,12 @@ namespace Free_Sharp_Player {
 				//	bytesRead += result;
 				//}
 				return result;
-			} catch (Exception e) {
+			} catch (TimeoutException e) {
 				connected = false;
-				Console.WriteLine(e.Message);
+				netStream.Close();
+				Connect();
 				return -1;
-			}
+			} 
 		}
 	
 		/// <summary>

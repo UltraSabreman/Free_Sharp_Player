@@ -82,13 +82,30 @@ namespace Free_Sharp_Player {
 							Thread.Sleep(500);
 						} else {
 							Mp3Frame frame;
+							var timeout = new Timer();
+							timeout.Interval = 5000; //TODO: make this configurable
+							timeout.AutoReset = false;
+							timeout.Enabled = true;
+							timeout.Elapsed += (o, e) => {
+								theQ.AddFrame(null, false);
+							};
+
 							try {
+
 								frame = Mp3Frame.LoadFromStream(readFullyStream);
+								timeout.Enabled = false;
+								timeout.Stop();
+
 								theQ.AddFrame(frame, changeNextFrame);
 
 								if (changeNextFrame) changeNextFrame = false;
 								numFramesLoaded++;
 							} catch (EndOfStreamException) {
+								timeout.Enabled = false;
+								timeout.Stop();
+
+								theQ.AddFrame(null, false);
+
 								EndOfStream = true;
 								break;
 							}
@@ -100,15 +117,17 @@ namespace Free_Sharp_Player {
 				}
 			} catch (ThreadAbortException) {
 				Util.Print(ConsoleColor.Yellow, "Warning", ": Stream thread aborted!");
-			} catch (Exception e) {
-				Util.DumpException(e);
-				throw e;
-			} finally {
+			}  finally {
 				if (readFullyStream != null) {
 					readFullyStream.Close();
 					readFullyStream.Dispose();
 				}
 			}
+
+			/*catch (Exception e) {
+				Util.DumpException(e);
+				throw e;
+			}*/
 		}
 
 

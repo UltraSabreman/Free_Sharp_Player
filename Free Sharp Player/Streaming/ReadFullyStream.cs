@@ -56,6 +56,9 @@ namespace Free_Sharp_Player {
 					readAheadOffset += toCopy;
 				} else {
 					readAheadOffset = 0;
+					if (!((ShoutcastStream)sourceStream).connected)
+						return bytesRead;
+
 					readAheadLength = sourceStream.Read(readAheadBuffer, 0, readAheadBuffer.Length);
 					//Debug.WriteLine(String.Format("Read {0} bytes (requested {1})", readAheadLength, readAheadBuffer.Length));
 					if (readAheadLength == 0) {
