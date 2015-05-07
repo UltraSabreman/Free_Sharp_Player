@@ -96,7 +96,7 @@ namespace Free_Sharp_Player {
 								timeout.Enabled = false;
 								timeout.Stop();
 
-								theQ.AddFrame(frame, changeNextFrame);
+								theQ.AddFrame(frame, changeNextFrame, newTitle);
 
 								if (changeNextFrame) changeNextFrame = false;
 								numFramesLoaded++;

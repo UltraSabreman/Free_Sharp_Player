@@ -32,6 +32,7 @@ namespace Free_Sharp_Player {
 			}
 		}
 		public EventType Event { get; set; }
+		public String NewTitle { get; set; }
 		public double FrameLengthSec { get; private set; }
 
 		private void GetFrameLengthSec() {
@@ -60,9 +61,10 @@ namespace Free_Sharp_Player {
 
 	}
 
-	public class EventPair {
+	public class EventTuple {
 		public EventType Event { get; set; }
 		public double EventQueuePosition { get; set; }
+		public String CurrentTitle { get; set; }
 	}
 
 	public class StreamQueue {
@@ -141,19 +143,18 @@ namespace Free_Sharp_Player {
 			StreamInfo();
 		}
 
-		public void AddFrame(Mp3Frame frame, bool changed = false) {
+		public void AddFrame(Mp3Frame frame, bool changed = false, String streamTitle = null) {
 			lock (addLock) {
+				StreamFrame temp = new StreamFrame(frame);
+				if (changed) {
+					temp.Event = EventType.SongChange;
+					temp.NewTitle = streamTitle;
+				}
 				if (tail == null) {
-					StreamFrame temp = new StreamFrame(frame);
-					if (changed) temp.Event = EventType.SongChange;
-
 					playHead = head = tail = temp;
 					BufferedTime += temp.FrameLengthSec;
 					TotalTimeInQueue += temp.FrameLengthSec;
 				} else {
-					StreamFrame temp = new StreamFrame(frame);
-					if (changed) temp.Event = EventType.SongChange;
-
 					tail.Next = temp;
 					temp.Prev = tail;
 					tail = tail.Next;
@@ -177,15 +178,15 @@ namespace Free_Sharp_Player {
 			}
 		}
 
-		public List<EventPair> GetAllEvents() {
+		public List<EventTuple> GetAllEvents() {
 			lock (addLock) {
-				List<EventPair> nums = new List<EventPair>();
+				List<EventTuple> nums = new List<EventTuple>();
 
 				StreamFrame cur = head;
 				double time = 0;
 				while (cur != null) {
 					if (cur.Event != EventType.None)
-						nums.Add(new EventPair {Event = cur.Event, EventQueuePosition = time});
+						nums.Add(new EventTuple {Event = cur.Event, EventQueuePosition = time});
 
 					time += cur.FrameLengthSec;
 					cur = cur.Next;
@@ -230,7 +231,7 @@ namespace Free_Sharp_Player {
 			var yellow = ConsoleColor.Yellow;
 			char b = '█';
 
-			List<EventPair> thing = GetAllEvents();
+			List<EventTuple> thing = GetAllEvents();
 
 			double percentfull = (TotalTimeInQueue / MaxTineInQueue) * 100;
 			double percentBuff = (BufferedTime / TotalTimeInQueue);
@@ -257,7 +258,7 @@ namespace Free_Sharp_Player {
 			}
 			Util.PrintLine(white, "]");
 
-			foreach (EventPair e in thing) {
+			foreach (EventTuple e in thing) {
 				int pos =  (int)Math.Max(Math.Round((e.EventQueuePosition / TotalTimeInQueue) * ((TotalTimeInQueue / MaxTineInQueue) * 100)), 0);
 				Console.CursorLeft = pos;
 				if (e.Event == EventType.SongChange)
