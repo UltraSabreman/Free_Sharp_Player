@@ -186,7 +186,7 @@ namespace Free_Sharp_Player {
 				double time = 0;
 				while (cur != null) {
 					if (cur.Event != EventType.None)
-						nums.Add(new EventTuple {Event = cur.Event, EventQueuePosition = time});
+						nums.Add(new EventTuple {Event = cur.Event, EventQueuePosition = time, CurrentTitle = cur.NewTitle});
 
 					time += cur.FrameLengthSec;
 					cur = cur.Next;
