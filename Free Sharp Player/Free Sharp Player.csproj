@@ -69,7 +69,7 @@
     <Compile Include="DataPackages\JSONObjects\getRequests.cs" />
     <Compile Include="DataPackages\JSONObjects\getRadioInfo.cs" />
     <Compile Include="DataPackages\JSONObjects\getTrack.cs" />
-    <Compile Include="DataPackages\JSONObjects\lastPlayed.cs" />
+    <Compile Include="DataPackages\JSONObjects\getLastPlayed.cs" />
     <Compile Include="DataPackages\JSONObjects\setRequests.cs" />
     <Compile Include="DataPackages\JSONObjects\setVote.cs" />
     <Compile Include="DataPackages\JSONObjects\getVoteStatus.cs" />
@@ -78,6 +78,7 @@
     <Compile Include="HttpPostRequest.cs" />
     <Compile Include="Streaming\StreamManager.cs" />
     <Compile Include="Streaming\StreamQueue.cs" />
+    <Compile Include="UI\Controls\DynamicBufferBar.cs" />
     <Compile Include="UI\Controls\MarqueeTextBlock.cs" />
     <Compile Include="UI\TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
