@@ -170,7 +170,7 @@ namespace Free_Sharp_Player {
 				//	bytesRead += result;
 				//}
 				return result;
-			} catch (TimeoutException e) {
+			} catch (TimeoutException) {
 				connected = false;
 				netStream.Close();
 				Connect();

@@ -28,7 +28,7 @@ namespace Free_Sharp_Player {
 		public delegate void TrackUpdate(Track track);
 		public event TrackUpdate NewCurrentTrack;
 
-		public delegate void RadioUpdate(getRadioInfo info, List<lastPlayed> played, List<Track> request);
+		public delegate void RadioUpdate(getRadioInfo info, List<getLastPlayed> played, List<Track> request);
 		public event RadioUpdate OnRadioUpdate;
 
 
@@ -36,12 +36,12 @@ namespace Free_Sharp_Player {
 		private StreamQueue theQueue;
 
 		private getRadioInfo radioInfo;
-		private List<lastPlayed> playedList;
+		private List<getLastPlayed> playedList;
 		private List<Track> requested;
 		private Track currentTrack;
 
 		public StreamManager(String address) {
-			playedList = new List<lastPlayed>();
+			playedList = new List<getLastPlayed>();
 			requested = new List<Track>();
 
 
@@ -86,7 +86,7 @@ namespace Free_Sharp_Player {
 				//get all played tracks
 				playedList.Clear();
 	
-				playedList = lastPlayed.doPost();
+				playedList = getLastPlayed.doPost();
 				//update current track if nessesary
 				if (type == EventType.SongChange) {
 					currentTrack = getTrack.doPost(int.Parse(playedList.First().trackID)).track[0];

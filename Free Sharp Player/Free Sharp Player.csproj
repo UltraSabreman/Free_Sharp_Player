@@ -40,8 +40,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -78,8 +78,9 @@
     <Compile Include="HttpPostRequest.cs" />
     <Compile Include="Streaming\StreamManager.cs" />
     <Compile Include="Streaming\StreamQueue.cs" />
-    <Compile Include="UI\GridLengthAnimation.cs">
-      <SubType>Code</SubType>
+    <Compile Include="UI\Controls\MarqueeTextBlock.cs" />
+    <Compile Include="UI\TestWindow.xaml.cs">
+      <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\ViewModels\ExtraMenuModel.cs" />
     <Compile Include="UI\ViewModels\MainModel.cs" />
@@ -91,6 +92,10 @@
     <Compile Include="UI\ViewModels\VolumeModel.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="UI\ValueConverters.cs" />
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -103,6 +108,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="UI\TestWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

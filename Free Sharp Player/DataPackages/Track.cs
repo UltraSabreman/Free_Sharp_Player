@@ -44,6 +44,26 @@ namespace Free_Sharp_Player {
 			return JsonConvert.SerializeObject(this, Formatting.None);
 		}
 
+		public void Update(Track src) {
+			trackID = src.trackID;
+			artist = src.artist;
+			title = src.title;
+			WholeTitle = src.WholeTitle;
+			duration = src.duration;
+			plays = src.plays;
+			rating = src.rating;
+			requests = src.requests;
+			favorites = src.favorites;
+			lastPlayed = src.lastPlayed;
+			localLastPlayed = src.localLastPlayed;
+			requestable = src.requestable;
+			RequestTime = src.RequestTime;
+			forced = src.forced;
+			Requester = src.Requester;
+			Priority = src.Priority;
+			MyVote = src.MyVote;
+		}
+
 		public void Print() {
 			Util.PrintLine(ConsoleColor.Yellow, "--------------------");
 			Util.PrintLine(ConsoleColor.White, "TrackID", ": " + trackID);

@@ -110,6 +110,7 @@ namespace Free_Sharp_Player {
 			isLive = int.Parse(info.autoDJ) == 0;
 		}
 
+		//TODO: make sure to fix this.
 		public void Tick(Object o, EventArgs e) {
 			lock (theLock) {
 				if (isLive || currentSong == null || !window.IsPlaying) {

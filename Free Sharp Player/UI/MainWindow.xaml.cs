@@ -147,7 +147,7 @@ namespace Free_Sharp_Player {
 						}
 					};
 
-					streamManager.OnRadioUpdate += (getRadioInfo info, List<lastPlayed> played, List<Track> queued) => {
+					streamManager.OnRadioUpdate += (getRadioInfo info, List<getLastPlayed> played, List<Track> queued) => {
 						lock (radioLock) {
 							mainModel.UpdateInfo(info);
 							playlistModel.UpdateLists(played, queued);

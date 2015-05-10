@@ -74,20 +74,27 @@ namespace Free_Sharp_Player {
     "valid": 1
 }
 */
-	public class lastPlayed : ViewModelNotifier {
+	public class getLastPlayed : ViewModelNotifier {
 		public String last_played  { get { return GetProp<String>(); } set { SetProp(value); } }
 		public String artist;
 		public String title;
 		public String trackID;
 		public String WholeTitle { get { return artist + " - " + title; } }
 
-		public static List<lastPlayed> doPost() {
+		public void Update(getLastPlayed src) {
+			last_played = src.last_played;
+			artist = src.artist;
+			title = src.title;
+			trackID = src.trackID;
+		}
+
+		public static List<getLastPlayed> doPost() {
 			var payload = new Dictionary<String, Object> {
 				{"action", "getLastPlayed"},
 			};
 
 			String result = HttpPostRequest.PostRequest(payload);
-			List<lastPlayed> temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(List<lastPlayed>)) as List<lastPlayed>;
+			List<getLastPlayed> temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(List<getLastPlayed>)) as List<getLastPlayed>;
 
 			return temp;
 		}
