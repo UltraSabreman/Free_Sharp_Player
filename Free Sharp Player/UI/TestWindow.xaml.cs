@@ -21,13 +21,32 @@ namespace Free_Sharp_Player.UI {
 		public TestWindow() {
 			InitializeComponent();
 
+			bool asdf = true;
+			MyBuffer.MaxBufferSize = 100;
+			MyBuffer.TotalBufferSize = 0;
+			prog.Value = 0;
+
 			Timer lol = new Timer();
-			lol.Interval = 1000;
+			lol.Interval = 25;
 			lol.AutoReset = true;
 			lol.Enabled = true;
 			lol.Elapsed += (o, e) => {
-				MyTextControlTest.Content = "~~~~Dat Scrolling Text~~~~";
+				Dispatcher.Invoke(new Action(() => {
+					MyTextControlTest.Content = "~~~~Dat Scrolling Text~~~~";
+
+					if (asdf) {
+						MyBuffer.TotalBufferSize++;
+						prog.Value++;
+					} else {
+						MyBuffer.TotalBufferSize--;
+						prog.Value--;
+					}
+
+					if (prog.Value == 100 || prog.Value == 0)
+						asdf = !asdf;
+				}));
 			};
+			lol.Start();
 		}
 	}
 }
