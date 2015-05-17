@@ -109,10 +109,14 @@
 				<Button Name="btn_PlayPause" ToolTip="Play/Pause the stream"  Content="▶"  VerticalContentAlignment="Center" BorderThickness="0"/>
 			</Grid>
 			<Grid Name="Progress" Grid.Column="1">
+				<mc:DynamicBufferBar  x:Name="MyBuffer" MaxBufferSize="{Binding MaxBufferSize, Mode=OneWay}" TotalBufferSize="{Binding TotalBufferSize, Mode=OneWay}" PlayedBufferSize="{Binding PlayedBufferSize, Mode=OneWay}" 
+									  SongMaxLength="{Binding SongMaxLength, Mode=OneWay}" SongLength="{Binding SongLength, Mode=OneWay}" StreamTitle="{Binding TheTitle, Mode=OneWay}"/>
+				<!--
 				<ProgressBar Name="bar_Buffer" Foreground="Gray" Maximum="100" Value="{Binding BufferLen}" BorderThickness="0" />
 				<ProgressBar Name="bar_BufferWindow" Foreground="#22cccc" Background="Transparent" Maximum="100" Value="{Binding PosInBuffer}"  BorderThickness="0"/>
 				<mc:MarqueeTextBlock x:Name="mrq_trackName" Content="{Binding StreamTitle}" FontSize="14" VerticalContentAlignment="Center" VerticalAlignment="Center"  Height="30" Margin="4,3,4,0"/>
 				<ProgressBar Name="bar_SongTime" Foreground="{Binding SongTimeColor}" Maximum="100" Value="{Binding SongProgress}" BorderThickness="0" Margin="0,28,0,0" ToolTip="{Binding SongProgressText}"/>
+				-->
 			</Grid>
 			<Grid Name="OpenVolume" ToolTip="Volume" Grid.Column="2">
 				<Button Name="btn_Volume" Content="Vol" BorderThickness="0"/>
@@ -164,5 +168,10 @@
 				</ListView.ItemTemplate>
 			</ListView>
 		</Popup>
+		<Border Name="Connecting" Background="#ccaaaaaa" BorderBrush="Transparent">
+			<Label Content="Connecting To Stream" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" HorizontalContentAlignment="Center"
+				   FontSize="18" Padding="0"/>
+		</Border>
+
 	</Grid>
 </Window>

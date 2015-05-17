@@ -13,8 +13,6 @@ using System.Windows;
 namespace Free_Sharp_Player {
 	using Timer = System.Timers.Timer;
 
-	public enum EventType {None, SongChange, Disconnect}
-
 	public class StreamFrame {
 		public StreamFrame Next { get; set; }
 		public StreamFrame Prev { get; set; }
@@ -79,7 +77,7 @@ namespace Free_Sharp_Player {
 		public double MinBufferdTime { get; set; }	//Minimum time buffered to play (before stream starts buffering again)
 		public double MaxTineInQueue { get; set; }	//Maximum TOTAL time that can be stored in the queue.
 		public double BufferedTime { get; set; }	//Time currently buffered to play
-		public double TotalTimeInQueue { get; set; }//Total size of the queue currently
+		public double TotalTimeInQueue { get; set; } //Total size of the queue currently
 
 		public double NumSecToPlay { get; set; }
 		public float Volume { get; set; }

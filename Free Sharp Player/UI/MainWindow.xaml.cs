@@ -48,7 +48,6 @@ namespace Free_Sharp_Player {
 		[DllImport("kernel32")]
 		static extern bool AllocConsole();
 
-		public enum StreamQuality {Low, Normal, High};
 		public bool IsPlaying { get; private set; }
 
 		private Timer doubleClickCheck = new Timer(350);
@@ -56,7 +55,6 @@ namespace Free_Sharp_Player {
 
 		//Timer Updater = new Timer(1000);
 
-		private StreamManager streamManager;
 
 		private MainModel mainModel;
 		private VolumeModel volumeModel;
@@ -82,18 +80,33 @@ namespace Free_Sharp_Player {
 			btn_PlayPause.IsEnabled = false;
 			//TODO: UI alert of loading.
 			new Thread(() => {
-				ConnectToStream(StreamQuality.Normal);
+				mainModel.ConnectThread();
 
-				streamManager.mainUpdateTimer.Elapsed += mainModel.Tick;
-				streamManager.mainUpdateTimer.Elapsed += volumeModel.Tick;
-				streamManager.mainUpdateTimer.Elapsed += extraModel.Tick;
-				streamManager.mainUpdateTimer.Elapsed += playlistModel.Tick;
-				streamManager.mainUpdateTimer.Elapsed += MainTick;
+				mainModel.streamManager.NewCurrentTrack += (Track track) => {
+					lock (trackLock) {
+						mainModel.UpdateSong(track);
+						playlistModel.UpdateSong(track);
+					}
+				};
 
-				streamManager.ManualUpdate();
+				mainModel.streamManager.OnRadioUpdate += (getRadioInfo info, List<getLastPlayed> played, List<Track> queued) => {
+					lock (radioLock) {
+						mainModel.UpdateInfo(info);
+						playlistModel.UpdateLists(played, queued);
+						extraModel.UpdateInfo(info);
+						playlistModel.UpdateInfo(info);
+
+					}
+				};
+
+				mainModel.streamManager.mainUpdateTimer.Elapsed += volumeModel.Tick;
+				mainModel.streamManager.mainUpdateTimer.Elapsed += extraModel.Tick;
+				mainModel.streamManager.mainUpdateTimer.Elapsed += playlistModel.Tick;
+				mainModel.streamManager.mainUpdateTimer.Elapsed += MainTick;
 
 				Dispatcher.Invoke(new Action(() => {
 					btn_PlayPause.IsEnabled = true;
+					Connecting.Visibility = System.Windows.Visibility.Collapsed;
 				}));
 			}).Start();
 		}
@@ -105,62 +118,14 @@ namespace Free_Sharp_Player {
 		}
 
 
-		public void Play() { IsPlaying = true; streamManager.Play(); }
-		public void Stop() { IsPlaying = false; streamManager.Stop(); }
+		public void Play() { IsPlaying = true; mainModel.streamManager.Play(); }
+		public void Stop() { IsPlaying = false; mainModel.streamManager.Stop(); }
 
 		public void SetVolume(double Volume) {
 			if (Volume < 0 || Volume > 100) throw new ArgumentOutOfRangeException("Volume", Volume, "Volume must be between 0 and 100");
 
-			if (streamManager != null)
-				streamManager.Volume = (float)Volume / 100;
-		}
-
-		private void ConnectToStream(StreamQuality Quality) {
-			String address = "";
-			bool Connected = false;
-
-			while (!Connected) {
-
-				getRadioInfo temp = getRadioInfo.doPost();
-	
-				using (WebClient wb = new WebClient()) {
-					NameValueCollection data = new NameValueCollection();
-					String tempAddr = temp.servers.medQuality.Split("?".ToCharArray())[0];
-					data["sid"] = temp.servers.medQuality.Split("=".ToCharArray())[1];//(Quality == StreamQuality.Normal ? "1" : (Quality == StreamQuality.Low ? "3" : "2"));
-
-					Byte[] response = wb.UploadValues(tempAddr, "POST", data);
-
-					string[] responseData = System.Text.Encoding.UTF8.GetString(response, 0, response.Length).Split("\n".ToCharArray(), StringSplitOptions.None);
-
-					//Todo: timeout, check for valid return data, find the adress in more dynamic way.
-					address = responseData[2].Split("=".ToCharArray())[1];
-				}
-
-
-				try {
-					streamManager = new StreamManager(address);
-
-					streamManager.NewCurrentTrack += (Track track) => {
-						lock (trackLock) {
-							mainModel.UpdateSong(track);
-							playlistModel.UpdateSong(track);
-						}
-					};
-
-					streamManager.OnRadioUpdate += (getRadioInfo info, List<getLastPlayed> played, List<Track> queued) => {
-						lock (radioLock) {
-							mainModel.UpdateInfo(info);
-							playlistModel.UpdateLists(played, queued);
-							extraModel.UpdateInfo(info);
-							playlistModel.UpdateInfo(info);
-
-						}
-					};
-
-					Connected = true;
-				} catch (Exception) { }
-			}
-
+			if (mainModel.streamManager != null)
+				mainModel.streamManager.Volume = (float)Volume / 100;
 		}
 
 
@@ -174,7 +139,7 @@ namespace Free_Sharp_Player {
 		}
 
 		private void Window_Closed(object sender, EventArgs e) {
-			streamManager.Stop();
+			mainModel.streamManager.Stop();
 			Application.Current.Shutdown();
 		}
 

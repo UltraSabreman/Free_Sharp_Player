@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace Free_Sharp_Player {
 	public class SliderToVolumeConverter : IValueConverter {
@@ -34,6 +35,50 @@ namespace Free_Sharp_Player {
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
 			String duration = (String)value;
 			return Util.trimDateString(duration);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+			// Do the conversion from visibility to bool
+			throw new NotImplementedException();
+		}
+	}
+
+	public class SongLengthSafetyConverter : IValueConverter {
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+			double len = (double)value;
+			if (len < 0)
+				return 1;
+			else
+				return len;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+			// Do the conversion from visibility to bool
+			throw new NotImplementedException();
+		}
+	}
+
+
+	public class SongLengthToTimeConverter : IValueConverter {
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+			double len = (double)value;
+			if (len < 0)
+				return "Brodcast is Live";
+			else
+				return String.Format("{0:D}:{1:D2}", (int)len/60, (int) len%60);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+			// Do the conversion from visibility to bool
+			throw new NotImplementedException();
+		}
+	}
+
+	public class SongLengthToColorConverter : IValueConverter {
+		private static BrushConverter con = new BrushConverter();
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+			double len = (double)value;
+			return (len > 0 ? con.ConvertFromString("#2ECC71") : con.ConvertFromString("#D91E18")) as Brush;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {

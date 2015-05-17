@@ -1,8 +1,10 @@
 ﻿using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,12 +17,13 @@ namespace Free_Sharp_Player {
 	public class MainModel : ViewModelNotifier {
 		private Object theLock = new Object();
 
-		public int PosInBuffer { get { return GetProp<int>(); } set { SetProp(value); } }
-		public int BufferLen { get { return GetProp<int>(); } set { SetProp(value); } }
-		public int SongLength { get { return GetProp<int>(); } set { SetProp(value); } }
-		public int SongProgress { get { return GetProp<int>(); } set { SetProp(value); } }
-		public String SongTimeColor { get { return GetProp<String>(); } set { SetProp(value); } }
-		public String SongProgressText { get { return GetProp<String>(); } set { SetProp(value); } }
+
+		public double MaxBufferSize { get { return GetProp<double>(); } set { SetProp(value); } }
+		public double TotalBufferSize { get { return GetProp<double>(); } set { SetProp(value); } }
+		public double PlayedBufferSize { get { return GetProp<double>(); } set { SetProp(value); } }
+		public double SongMaxLength { get { return GetProp<double>(); } set { SetProp(value); } }
+		public double SongLength { get { return GetProp<double>(); } set { SetProp(value); } }
+		public String TheTitle { get { return GetProp<String>(); } set { SetProp(value); } }
 
 		private Track currentSong;
 		private bool isLive;
@@ -31,6 +34,8 @@ namespace Free_Sharp_Player {
 		private bool ExtrasOpen = false;
 		MouseButtonEventHandler VolumeOutClick;
 		MouseButtonEventHandler ExtrasOutClick;
+
+		public StreamManager streamManager;
 
 
 		//TODO: add to configs.
@@ -43,9 +48,7 @@ namespace Free_Sharp_Player {
 			window = win;
 
 
-			window.bar_Buffer.DataContext = this;
-			window.bar_BufferWindow.DataContext = this;
-			window.bar_SongTime.DataContext = this;
+			window.MyBuffer.DataContext = this;
 
 			window.btn_PlayPause.Click += btn_PlayPause_Click;
 			window.btn_Volume.Click += btn_Volume_Click;
@@ -53,6 +56,10 @@ namespace Free_Sharp_Player {
 			window.btn_Like.Click += btn_Like_Click;
 			window.btn_Dislike.Click += btn_Dislike_Click;
 
+			window.MyBuffer.OnSeekDone += (sec) => {
+				if (streamManager != null)
+					streamManager.Seek(sec);
+			};
 
 			VolumeOutClick = new MouseButtonEventHandler(HandleClickOutsideOfVolume);
 			ExtrasOutClick = new MouseButtonEventHandler(HandleClickOutsideOfExtras);
@@ -63,10 +70,48 @@ namespace Free_Sharp_Player {
 			isLive = false;
 		}
 
+		public void ConnectThread() {
+			ConnectToStream(StreamQuality.Normal);
+
+			streamManager.mainUpdateTimer.Elapsed += Tick;
+
+			MaxBufferSize = streamManager.MaxBufferSize;
+
+			streamManager.ManualUpdate();
+		}
+
+		private void ConnectToStream(StreamQuality Quality) {
+			String address = "";
+			bool Connected = false;
+
+			while (!Connected) {
+
+				getRadioInfo temp = getRadioInfo.doPost();
+
+				using (WebClient wb = new WebClient()) {
+					NameValueCollection data = new NameValueCollection();
+					String tempAddr = temp.servers.medQuality.Split("?".ToCharArray())[0];
+					data["sid"] = temp.servers.medQuality.Split("=".ToCharArray())[1];//(Quality == StreamQuality.Normal ? "1" : (Quality == StreamQuality.Low ? "3" : "2"));
+
+					Byte[] response = wb.UploadValues(tempAddr, "POST", data);
+
+					string[] responseData = System.Text.Encoding.UTF8.GetString(response, 0, response.Length).Split("\n".ToCharArray(), StringSplitOptions.None);
+
+					//Todo: timeout, check for valid return data, find the adress in more dynamic way.
+					address = responseData[2].Split("=".ToCharArray())[1];
+				}
+
+
+				streamManager = new StreamManager(address);
+
+				Connected = true;
+			}
+
+		}
 
 		public void UpdateSong(Track song) {
 			currentSong = song;
-
+			TheTitle = song.WholeTitle;
 			getVoteStatus tempStatus = getVoteStatus.doPost();
 			//TODO: make this not rely on a post.
 			currentSong.MyVote = tempStatus.vote != null ? (int)tempStatus.vote : 0;
@@ -108,17 +153,21 @@ namespace Free_Sharp_Player {
 
 		public void UpdateInfo(getRadioInfo info) {
 			isLive = int.Parse(info.autoDJ) == 0;
+			
 		}
 
 		//TODO: make sure to fix this.
 		public void Tick(Object o, EventArgs e) {
-			lock (theLock) {
+			//lock (theLock) {
+				//window.MyBuffer.Update(streamManager.GetEvents());
+				TotalBufferSize = streamManager.TotalLength;
+				PlayedBufferSize = streamManager.PlayedLegnth;
+
 				if (isLive || currentSong == null || !window.IsPlaying) {
-					SongTimeColor = notLiveColor;
-					SongProgress = 100;
+					SongLength = -1;
+					SongMaxLength = 1;
 					return;
-				} else
-					SongTimeColor = liveColor;
+				}
 
 				DateTime lastPlayedDate;
 				if (currentSong.localLastPlayed != new DateTime(0)) {
@@ -130,9 +179,9 @@ namespace Free_Sharp_Player {
 
 				TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
 				TimeSpan duration = DateTime.Now - lastPlayedDate;
-				SongProgress = (int)((duration.TotalSeconds / SongDuration.TotalSeconds) * 100);
-				SongProgressText = "Duration: " + duration.TotalSeconds + ", SongDuration: " + (SongDuration.TotalSeconds);
-			}
+				SongMaxLength = SongDuration.TotalSeconds;
+				SongLength = (duration.TotalSeconds / SongDuration.TotalSeconds ) * 100;
+			//}
 		}
 
 

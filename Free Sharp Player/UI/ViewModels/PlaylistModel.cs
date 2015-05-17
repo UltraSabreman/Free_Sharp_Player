@@ -40,7 +40,6 @@ namespace Free_Sharp_Player {
 
 			window.QueueList.DataContext = this;
 			window.PlayedList.DataContext = this;
-			window.mrq_trackName.DataContext = this;
 
 
 			Tick(null, null);

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Free_Sharp_Player {
 	using Timer = System.Timers.Timer;
 
-	class StreamManager {
+	public class StreamManager {
 		private Object theLock = new Object();
 
 		public bool IsPlaying { get; private set; }
@@ -24,6 +24,10 @@ namespace Free_Sharp_Player {
 					theQueue.Volume = value;
 			}
 		}
+
+		public double MaxBufferSize { get { return theQueue.MaxTineInQueue; } set { theQueue.MaxTineInQueue = value; } }
+		public double PlayedLegnth { get { return  theQueue.BufferedTime; } }
+		public double TotalLength { get { return theQueue.TotalTimeInQueue; } }
 
 		public delegate void TrackUpdate(Track track);
 		public event TrackUpdate NewCurrentTrack;
@@ -52,7 +56,7 @@ namespace Free_Sharp_Player {
 
 			mainUpdateTimer = new Timer(1000);
 			mainUpdateTimer.AutoReset = true;
-			mainUpdateTimer.Enabled = true;
+			mainUpdateTimer.Enabled = false;
 			mainUpdateTimer.Elapsed += UpdateData;
 			mainUpdateTimer.Start();
 
@@ -67,6 +71,14 @@ namespace Free_Sharp_Player {
 			};
 			durationUpdate.Start();
 			 */
+		}
+
+		public List<EventTuple> GetEvents() {
+			return theQueue.GetAllEvents();
+		}
+
+		public void Seek(double sec) {
+			theQueue.Seek(sec);
 		}
 
 		public void ManualUpdate() {
@@ -112,6 +124,8 @@ namespace Free_Sharp_Player {
 
 			theStream.Play();
 			theQueue.Play();
+			UpdateData(EventType.SongChange);
+			mainUpdateTimer.Enabled = true;
 		}
 
 		public void Stop() {
@@ -120,6 +134,7 @@ namespace Free_Sharp_Player {
 
 			theStream.Stop();
 			theQueue.Stop();
+			mainUpdateTimer.Enabled = false;
 		}
 
 

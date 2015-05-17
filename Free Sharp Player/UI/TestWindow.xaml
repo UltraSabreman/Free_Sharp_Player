@@ -18,7 +18,7 @@
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
 		
-		<mc:MarqueeTextBlock Grid.Row="1" mc:Content="~~~~Dat Scrolling Text~~~~" Background="Pink" x:Name="MyTextControlTest" />
+		<mc:MarqueeTextBlock Grid.Row="1" mc:Content="~~~~Dat Scrolling Text~~~~" VerticalContentAlignment="Stretch"  Background="Pink" x:Name="MyTextControlTest" />
 		<mc:DynamicBufferBar Grid.Row="2"  x:Name="MyBuffer" />
 		<TextBlock Grid.Row="3" Text="Some Long Text" Background="Pink" Name="NormalTextControl" />
 		<ProgressBar Name="prog" Grid.Row="4" Maximum="100" IsEnabled="True"/>

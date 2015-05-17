@@ -29,6 +29,19 @@ namespace Free_Sharp_Player{
 		private DoubleAnimation text1Anim;
 		private DoubleAnimation text2Anim;
 
+		public double TextPosVertical {
+			get { return (double)GetValue(TextPosVerticalProperty); }
+			private set { SetValue(TextPosVerticalProperty, value); }
+		}
+		public static readonly DependencyProperty TextPosVerticalProperty = DependencyProperty.Register("TextPosVertical", typeof(double), typeof(MarqueeTextBlock), null);
+
+		public double TextPosHorizontal {
+			get { return (double)GetValue(TextPosHorizontalProperty); }
+			private set { SetValue(TextPosHorizontalProperty, value); }
+		}
+		public static readonly DependencyProperty TextPosHorizontalProperty = DependencyProperty.Register("TextPosHorizontal", typeof(double), typeof(MarqueeTextBlock), null);
+
+
 		static MarqueeTextBlock() {
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(MarqueeTextBlock), new FrameworkPropertyMetadata(typeof(MarqueeTextBlock)));
 		}
@@ -48,8 +61,36 @@ namespace Free_Sharp_Player{
 				DoMarqueeLogic();
 		}
 
+
+		//TODO: handle stretch vertical allingment and all horizontal ones.
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo) {
 			base.OnRenderSizeChanged(sizeInfo);
+
+			switch (VerticalContentAlignment) {
+				case System.Windows.VerticalAlignment.Center:
+					TextPosVertical = (theCanvas.ActualHeight / 2) - (textBlock1.ActualHeight / 2);
+					break;
+				case System.Windows.VerticalAlignment.Bottom:
+					TextPosVertical = theCanvas.ActualHeight - (textBlock1.ActualHeight / 2);
+					break;
+				default:
+					TextPosVertical = 0;
+					break;
+			}
+
+			/*switch (HorizontalContentAlignment) {
+				case System.Windows.HorizontalAlignment.Center:
+					TextPosHorizontal = (theCanvas.ActualWidth / 2) - (textBlock1.ActualWidth / 2);
+					break;
+				case System.Windows.HorizontalAlignment.Right:
+					TextPosHorizontal = textBlock1.ActualWidth / 2;
+					break;
+				default:
+					TextPosHorizontal = 0;
+					break;
+			}*/
+
+			
 
 			DoMarqueeLogic();
 		}
@@ -61,8 +102,14 @@ namespace Free_Sharp_Player{
 			if (theCanvas != null && textBlock1 != null && textBlock1.ActualWidth >= theCanvas.ActualWidth) {
 				textBlock2.Visibility = Visibility.Visible;
 
-				text1Anim = new DoubleAnimation(0, (textBlock1.ActualWidth + theCanvas.ActualWidth / 2), new Duration(new TimeSpan(0, 0, 10)));
-				text2Anim = new DoubleAnimation(-(textBlock1.ActualWidth + theCanvas.ActualWidth / 2), 0, new Duration(new TimeSpan(0, 0, 10)));
+				/*if (HorizontalContentAlignment == System.Windows.HorizontalAlignment.Right) {
+					text1Anim = new DoubleAnimation((textBlock1.ActualWidth + theCanvas.ActualWidth / 2), 0, new Duration(new TimeSpan(0, 0, 10)));
+					text2Anim = new DoubleAnimation(0, -(textBlock1.ActualWidth + theCanvas.ActualWidth / 2), new Duration(new TimeSpan(0, 0, 10)));
+				} else {*/
+					text1Anim = new DoubleAnimation(0, (textBlock1.ActualWidth + theCanvas.ActualWidth / 2), new Duration(new TimeSpan(0, 0, 10)));
+					text2Anim = new DoubleAnimation(-(textBlock1.ActualWidth + theCanvas.ActualWidth / 2), 0, new Duration(new TimeSpan(0, 0, 10)));
+				//}
+
 				text1Anim.RepeatBehavior = RepeatBehavior.Forever;
 				text2Anim.RepeatBehavior = RepeatBehavior.Forever;
 
