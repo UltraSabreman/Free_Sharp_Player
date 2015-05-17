@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
@@ -13,6 +14,8 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 
 namespace Free_Sharp_Player {
+	using Timer = System.Timers.Timer;
+
 	class PlaylistModel : ViewModelNotifier {
 		private Object theLock = new Object();
 	
@@ -71,7 +74,7 @@ namespace Free_Sharp_Player {
 
 		public void Tick(Object o, EventArgs e) {
 			//TODO: playlist and other bs
-
+			new Thread(() => { }).Start();
 		}
 
 		public void UpdateLists(List<getLastPlayed> played, List<Track> queued) {
@@ -132,14 +135,18 @@ namespace Free_Sharp_Player {
 		}
 
 		public void UpdateSong(Track song) {
-			Playing = song;
+			new Thread(() => {
+				Playing = song;
+			}).Start();
 		}
 
 		public void UpdateInfo(getRadioInfo info) {
-			if (!window.IsPlaying)
-				StreamTitle = "Not Connected";
-			else
-				StreamTitle = info.title;
+			window.Dispatcher.Invoke(new Action(() => {
+				if (!window.IsPlaying)
+					StreamTitle = "Not Connected";
+				else
+					StreamTitle = info.title;
+			}));
 		}
 
 

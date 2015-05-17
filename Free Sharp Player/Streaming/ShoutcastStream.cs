@@ -16,6 +16,7 @@ namespace Free_Sharp_Player {
 		private int receivedBytes;
 		private Stream netStream;
 		public bool connected { get; private set; }
+		private bool doEvetns = false;
 
 		private string streamTitle;
 		private string address;
@@ -67,10 +68,14 @@ namespace Free_Sharp_Player {
 			Match m = Regex.Match(metaString, "StreamTitle='(.*)';.*");
 			string newStreamTitle = m.Groups[1].Value.Trim();
 
-			
-			if (!newStreamTitle.Equals(streamTitle)) {
-				streamTitle = newStreamTitle;
-				OnStreamTitleChanged();
+
+			if (newStreamTitle != streamTitle) {
+				if (!doEvetns && !String.IsNullOrEmpty(newStreamTitle))
+					doEvetns = true;
+				else {
+					streamTitle = newStreamTitle;
+					OnStreamTitleChanged();
+				}
 			}
 		}
 

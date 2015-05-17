@@ -14,6 +14,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
 using System.ComponentModel;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace Free_Sharp_Player {
 	public class DynamicBufferBar : Control {
@@ -66,10 +68,7 @@ namespace Free_Sharp_Player {
 			get { return (double)GetValue(PlayedBufferSizeProperty); }
 			set { 
 				SetValue(PlayedBufferSizeProperty, value);
-
-				if (theCanvas == null) return;
-				double hpos = theCanvas.ActualWidth - (((PlayedBufferSize / MaxBufferSize) * theCanvas.ActualWidth) + 5);
-				HandlePosition = hpos;
+				//Playedchanged();
 			}
 		}
 
@@ -80,8 +79,8 @@ namespace Free_Sharp_Player {
 
 		public static readonly DependencyProperty StreamTitleSizeProperty	= DependencyProperty.Register("StreamTitle", typeof(String), typeof(DynamicBufferBar), null);
 		public static readonly DependencyProperty MaxBufferSizeProperty = DependencyProperty.Register("MaxBufferSize", typeof(double), typeof(DynamicBufferBar), null);
-		public static readonly DependencyProperty TotalBufferSizeProperty = DependencyProperty.Register("TotalBufferSize", typeof(double), typeof(DynamicBufferBar), new PropertyMetadata(Buff));
-		public static readonly DependencyProperty PlayedBufferSizeProperty	= DependencyProperty.Register("PlayedBufferSize", typeof(double), typeof(DynamicBufferBar), null);
+		public static readonly DependencyProperty TotalBufferSizeProperty = DependencyProperty.Register("TotalBufferSize", typeof(double), typeof(DynamicBufferBar), null);
+		public static readonly DependencyProperty PlayedBufferSizeProperty = DependencyProperty.Register("PlayedBufferSize", typeof(double), typeof(DynamicBufferBar), new PropertyMetadata(Buff));
 		public static readonly DependencyProperty HandlePositionProperty	= DependencyProperty.Register("HandlePosition", typeof(double), typeof(DynamicBufferBar), null);
 		public static readonly DependencyProperty SongMaxLengthProperty = DependencyProperty.Register("SongMaxLength", typeof(double), typeof(DynamicBufferBar), new PropertyMetadata(SongLenChanged));
 		public static readonly DependencyProperty SongLengthProperty = DependencyProperty.Register("SongLength", typeof(double), typeof(DynamicBufferBar), new PropertyMetadata(SongLenChanged));
@@ -97,7 +96,7 @@ namespace Free_Sharp_Player {
 		private static void Buff(DependencyObject sender, DependencyPropertyChangedEventArgs e) {
 			DynamicBufferBar h = sender as DynamicBufferBar;
 			if (h != null) {
-				Util.Print("====CHANGED====");
+				h.Playedchanged();
 			}
 		}
 
@@ -108,6 +107,7 @@ namespace Free_Sharp_Player {
 		private ProgressBar playedBuffer;
 		private Canvas theCanvas;
 		private Button bufferHandle;
+		private MarqueeTextBlock mark;
 
 		private double oldtime = 0;
 		private bool isHeld = false;
@@ -115,8 +115,15 @@ namespace Free_Sharp_Player {
 		private BitmapImage disconnectImage;
 		private List<Image> markers = new List<Image>();
 
-		protected override void OnInitialized(EventArgs e) {
-			base.OnInitialized(e);
+		public DynamicBufferBar()
+			: base() {
+			TotalBufferSize = 0;
+			MaxBufferSize = 0;
+			PlayedBufferSize = 0;
+			SongLength = -1;
+			SongMaxLength = 0;
+			StreamTitle = "";
+			HandlePosition = 0;
 
 			songChangeImage = new BitmapImage();
 			songChangeImage.BeginInit();
@@ -127,7 +134,11 @@ namespace Free_Sharp_Player {
 			disconnectImage.BeginInit();
 			disconnectImage.UriSource = new Uri(System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"Resources\disconnect.png"));
 			disconnectImage.EndInit();
+
+			Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => { done = true; }));
 		}
+
+		private bool done = false;
 
 		public override void OnApplyTemplate() {
 			base.OnApplyTemplate();
@@ -135,12 +146,14 @@ namespace Free_Sharp_Player {
 			playedBuffer = GetTemplateChild("PlayedProgress") as ProgressBar;
 			bufferHandle = GetTemplateChild("BufferHandle") as Button;
 			theCanvas = GetTemplateChild("Surface") as Canvas;
+			mark = GetTemplateChild("StreamTitle") as MarqueeTextBlock;
 
 			bufferHandle.PreviewMouseDown += bufferHandle_MouseDown;
 			bufferHandle.PreviewMouseUp += bufferHandle_MouseUp;
 			bufferHandle.PreviewMouseMove += bufferHandle_MouseMove;
 
 			theCanvas.UpdateLayout();
+
 		}
 
 		
@@ -151,11 +164,21 @@ namespace Free_Sharp_Player {
 				ToolTip = String.Format("{0:D}:{1:D2} / {2:D}:{3:D2}", (int)SongLength/60, (int) SongLength%60, (int)SongMaxLength/60, (int)SongMaxLength%60);
 		}
 
+
+		public void Playedchanged() {
+			if (theCanvas == null || isHeld) return;
+
+			double hpos = theCanvas.ActualWidth - (((PlayedBufferSize / MaxBufferSize) * theCanvas.ActualWidth) + 5);
+			if (!double.IsNaN(hpos) && !double.IsInfinity(hpos))
+				HandlePosition = hpos;
+		}
+
+
 		void bufferHandle_MouseUp(object sender, MouseButtonEventArgs e) {
 			isHeld = false;
 
 			if (OnSeekDone != null)
-				OnSeekDone(oldtime - PlayedBufferSize);
+				OnSeekDone(0-(oldtime - PlayedBufferSize));
 		}
 
 		void bufferHandle_MouseMove(object sender, MouseEventArgs e) {
@@ -164,16 +187,11 @@ namespace Free_Sharp_Player {
 			var pos = e.MouseDevice.GetPosition(theCanvas);
 			PlayedBufferSize = Math.Min((pos.X / theCanvas.ActualWidth) * MaxBufferSize, TotalBufferSize);
 			PlayedBufferSize = Math.Max(PlayedBufferSize, 0);
-
-			Util.PrintLine(PlayedBufferSize);
-
 		}
 
 		void bufferHandle_MouseDown(object sender, MouseButtonEventArgs e) {
 			isHeld = true;
 			oldtime = PlayedBufferSize;
-
-			//TODO: fire PauseEvent
 		}
 
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo) {
@@ -184,9 +202,21 @@ namespace Free_Sharp_Player {
 		}
 
 		public void Update(List<EventTuple> events) {
+			if (events == null || events.Count == 0 && theCanvas != null) {
+				
+				var slider = theCanvas.Children[0];
+				theCanvas.Children.Clear();
+				theCanvas.Children.Add(slider);
+
+				PlayedBufferSize = 0;
+				TotalBufferSize = 0;
+				return;
+			}
+
+			if (!done) return;
 			int i = 0;
 			foreach (EventTuple e in events) {
-				if (e.Event == EventType.None) continue;
+				if (e.Event == EventType.None || e.EventQueuePosition == 0) continue;
 
 				Image image;
 				if (i < markers.Count)
@@ -206,9 +236,24 @@ namespace Free_Sharp_Player {
 					thePic = songChangeImage;
 
 				image.Source = thePic;
-				image.SetValue(Canvas.TopProperty, theCanvas.ActualHeight / 2 - thePic.Height / 2);
-				double pos = theCanvas.ActualWidth - ((e.EventQueuePosition / TotalBufferSize) * theCanvas.ActualWidth);
-				image.SetValue(Canvas.RightProperty, pos);
+				image.Height = theCanvas.ActualHeight;
+				image.SetValue(Canvas.TopProperty, theCanvas.ActualHeight / 2 - thePic.PixelHeight / 2);
+
+
+				if (theCanvas == null || double.IsNaN(theCanvas.ActualWidth) || double.IsInfinity(theCanvas.ActualWidth))
+					continue;
+
+				double lol = theCanvas.ActualWidth;
+
+				if (TotalBufferSize != 0 && MaxBufferSize != 0) {
+					double sizeOfProgress = (TotalBufferSize / MaxBufferSize) * theCanvas.ActualWidth;
+					double pos = lol - (((e.EventQueuePosition / TotalBufferSize) * sizeOfProgress) + (thePic.PixelWidth / 2));
+					if (!double.IsNaN(pos) && !double.IsInfinity(pos))
+						image.SetValue(Canvas.RightProperty, pos);
+
+				}
+
+				mark.DoMarqueeLogic();
 			}
 
 		}

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Free_Sharp_Player {
+	using System.Threading;
 	using Timer = System.Timers.Timer;
 
 	public class StreamManager {
@@ -26,7 +27,7 @@ namespace Free_Sharp_Player {
 		}
 
 		public double MaxBufferSize { get { return theQueue.MaxTineInQueue; } set { theQueue.MaxTineInQueue = value; } }
-		public double PlayedLegnth { get { return  theQueue.BufferedTime; } }
+		public double PlayedLegnth { get { return theQueue.TotalTimeInQueue - theQueue.BufferedTime; } }
 		public double TotalLength { get { return theQueue.TotalTimeInQueue; } }
 
 		public delegate void TrackUpdate(Track track);
@@ -57,20 +58,8 @@ namespace Free_Sharp_Player {
 			mainUpdateTimer = new Timer(1000);
 			mainUpdateTimer.AutoReset = true;
 			mainUpdateTimer.Enabled = false;
-			mainUpdateTimer.Elapsed += UpdateData;
+			mainUpdateTimer.Elapsed += (o, e) => { UpdateData(null); };
 			mainUpdateTimer.Start();
-
-			/*
-			durationUpdate = new Timer(1000);
-			durationUpdate.AutoReset = true;
-			durationUpdate.Enabled = true;
-			durationUpdate.Elapsed += (o, e) => {
-				if (theQ == null || theQ.MaxBufferLengthSec <= 0 || OnBufferChange == null) return;
-				int percent = (int)Math.Round((theQ.CurBufferLengthSec / theQ.MaxBufferLengthSec) * 100);
-				OnBufferChange(percent);
-			};
-			durationUpdate.Start();
-			 */
 		}
 
 		public List<EventTuple> GetEvents() {
@@ -81,41 +70,49 @@ namespace Free_Sharp_Player {
 			theQueue.Seek(sec);
 		}
 
-		public void ManualUpdate() {
-			UpdateData();
-		}
-
-		private void UpdateData(Object o, EventArgs e) {
-			UpdateData();
-		}
-
 		//TODO: potentual issues with disconnect.
-		private void UpdateData(EventType type = EventType.None) {
-			if (IsPlaying && theStream.EndOfStream)
-				theStream.Play();
+		public void UpdateData(EventTuple tup) {
+			new Thread(() => {
+				if (IsPlaying && theStream.EndOfStream)
+					theStream.Play(); //restart stream if needed
 
-			lock (theLock) {
-				//get all played tracks
-				playedList.Clear();
-	
-				playedList = getLastPlayed.doPost();
-				//update current track if nessesary
-				if (type == EventType.SongChange) {
-					currentTrack = getTrack.doPost(int.Parse(playedList.First().trackID)).track[0];
-					currentTrack.localLastPlayed = DateTime.Now;
-					if (NewCurrentTrack != null)
-						NewCurrentTrack(currentTrack);
-				} else if (type == EventType.Disconnect) {
-					//TODO: handle disconnect.  Ui hooks?
+				lock (theLock) {
+					//get all played tracks
+					radioInfo = getRadioInfo.doPost();
+					playedList.Clear();
+
+					playedList = getLastPlayed.doPost();
+					//update current track if nessesary
+					if (tup != null) {
+						if (tup.Event == EventType.SongChange) {
+
+							currentTrack = getTrack.doPost(int.Parse(playedList.First().trackID)).track[0];
+
+							//TODO: Song Progress: Fiz timing issue
+							Util.PrintLine(tup.EventQueuePosition);
+							if (tup.EventQueuePosition == 0) {
+								TimeSpan diffrence = DateTime.Parse(currentTrack.lastPlayed) - DateTime.UtcNow;
+								currentTrack.duration = (TimeSpan.Parse(currentTrack.duration) + diffrence).ToString();
+							}
+
+							if (currentTrack.WholeTitle == radioInfo.title)
+								currentTrack.lastPlayed = DateTime.UtcNow.ToString();
+
+							if (NewCurrentTrack != null)
+								NewCurrentTrack(currentTrack);
+						} else if (tup.Event == EventType.Disconnect) {
+							//TODO: handle disconnect.  Ui hooks?
+						}
+					}
+
+					//get list of requested tracks + radio info
+					requested = getRequests.doPost().track;
+					
+
+					if (OnRadioUpdate != null)
+						OnRadioUpdate(radioInfo, playedList, requested);
 				}
-
-				//get list of requested tracks + radio info
-				requested = getRequests.doPost().track;
-				radioInfo = getRadioInfo.doPost();
-
-				if (OnRadioUpdate != null)
-					OnRadioUpdate(radioInfo, playedList, requested);
-			}
+			}).Start();
 		}
 
 		public void Play() {
@@ -124,8 +121,8 @@ namespace Free_Sharp_Player {
 
 			theStream.Play();
 			theQueue.Play();
-			UpdateData(EventType.SongChange);
-			mainUpdateTimer.Enabled = true;
+			UpdateData(new EventTuple() { Event = EventType.SongChange, EventQueuePosition = 0 });
+			//mainUpdateTimer.Enabled = true;
 		}
 
 		public void Stop() {
@@ -134,7 +131,7 @@ namespace Free_Sharp_Player {
 
 			theStream.Stop();
 			theQueue.Stop();
-			mainUpdateTimer.Enabled = false;
+			//mainUpdateTimer.Enabled = false;
 		}
 
 

@@ -31,17 +31,6 @@ namespace Free_Sharp_Player {
 		}
 	}
 
-	public class DurationConverter : IValueConverter {
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-			String duration = (String)value;
-			return Util.trimDateString(duration);
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-			// Do the conversion from visibility to bool
-			throw new NotImplementedException();
-		}
-	}
 
 	public class SongLengthSafetyConverter : IValueConverter {
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -78,7 +67,7 @@ namespace Free_Sharp_Player {
 		private static BrushConverter con = new BrushConverter();
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
 			double len = (double)value;
-			return (len > 0 ? con.ConvertFromString("#2ECC71") : con.ConvertFromString("#D91E18")) as Brush;
+			return (len > 0 ? con.ConvertFromString("#B27C30") : con.ConvertFromString("#D91E18")) as Brush;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -90,7 +79,6 @@ namespace Free_Sharp_Player {
 	public class LastPlayedConverter : IValueConverter {
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
 			String date = (String)value;
-			TimeZoneInfo hwZone = TimeZoneInfo.Utc;
 			DateTime lastPlayedDate = DateTime.Parse(date);//TimeZoneInfo.ConvertTime(DateTime.Parse(date), hwZone, TimeZoneInfo.Local);
 			return lastPlayedDate.ToString("h:mm");
 		}

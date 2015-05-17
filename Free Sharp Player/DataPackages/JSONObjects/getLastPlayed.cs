@@ -75,7 +75,7 @@ namespace Free_Sharp_Player {
 }
 */
 	public class getLastPlayed : ViewModelNotifier {
-		public String last_played  { get { return GetProp<String>(); } set { SetProp(value); } }
+		public String last_played  { get { return GetProp<String>(); } set { SetProp(value); } } //THIS IS EAST COAST TIME
 		public String artist;
 		public String title;
 		public String trackID;
@@ -96,6 +96,10 @@ namespace Free_Sharp_Player {
 			String result = HttpPostRequest.PostRequest(payload);
 			List<getLastPlayed> temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(List<getLastPlayed>)) as List<getLastPlayed>;
 
+			foreach (var l in temp) {
+				TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+				l.last_played = TimeZoneInfo.ConvertTime(DateTime.Parse(l.last_played), eastern, TimeZoneInfo.Local).ToString();
+			}
 			return temp;
 		}
 	}

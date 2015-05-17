@@ -119,7 +119,7 @@
 									<ControlTemplate TargetType="ProgressBar">
 										<Grid>
 											<Rectangle Name="PART_Track" Fill="Transparent" />
-											<Rectangle Name="PART_Indicator" HorizontalAlignment="Left" Fill="#81CFE0"/>
+											<Rectangle Name="PART_Indicator" HorizontalAlignment="Left" Fill="#78CAFF"/>
 
 											<Rectangle Name="PART_GlowRect" Fill="Transparent"/>
 										</Grid>
@@ -128,11 +128,11 @@
 							</ProgressBar>
 							<Canvas Name="Surface" ClipToBounds="True" Background="Transparent">
 								<Button Name="BufferHandle" Height="30" Width="10" Background="#aaaaaa" BorderThickness="1,0,1,0" BorderBrush="#777777" 
-										Canvas.Right="{Binding HandlePosition, RelativeSource={RelativeSource TemplatedParent}}" >
+										Canvas.Right="{Binding HandlePosition, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" >
 								</Button>
 							</Canvas>
 							<local:MarqueeTextBlock x:Name="StreamTitle" Content="{Binding StreamTitle, RelativeSource={RelativeSource TemplatedParent}}" 
-								   VerticalContentAlignment="Center" HorizontalContentAlignment="Left" FontSize="14" Background="Transparent" IsHitTestVisible="False"/>
+								   VerticalContentAlignment="Center" FontSize="14" Background="Transparent" IsHitTestVisible="False"/>
 						</Grid>
 					</Border>
                 </ControlTemplate>

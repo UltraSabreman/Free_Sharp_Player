@@ -23,18 +23,8 @@ using NAudio.Wave;
 using System.Diagnostics;
 using System.Timers;
 
-//TODO: hanlde network disconnects
-//TODO: sanity check duration value on now playing.
-//tODO: make icons for times show up on main bar when epxaneded? (or not
-//make extra menu apear on right click of anything.
-//replace extra icon with app icon?
-//how to handle requester?
-//Elipse song names in playlist/queue (wiht alpha gradient?)
-//add calculated song progress bar somehwre in playing (and time to?)
-//make votes easier to see?
-//prevent player from going of screen when dragged (rest like that pandora client)
-//when playlist expands, move the player away from the screen edge the needed amount (possibly back when collapses).
-
+//Todo: fix song timing
+//Todo: fix retarted locups
 
 namespace Free_Sharp_Player {
 	using Timer = System.Timers.Timer;
@@ -99,6 +89,7 @@ namespace Free_Sharp_Player {
 					}
 				};
 
+				mainModel.streamManager.mainUpdateTimer.Elapsed += mainModel.Tick;
 				mainModel.streamManager.mainUpdateTimer.Elapsed += volumeModel.Tick;
 				mainModel.streamManager.mainUpdateTimer.Elapsed += extraModel.Tick;
 				mainModel.streamManager.mainUpdateTimer.Elapsed += playlistModel.Tick;
@@ -112,6 +103,8 @@ namespace Free_Sharp_Player {
 		}
 
 		public void MainTick(Object o, EventArgs e) {
+			new Thread(() => { }).Start();
+
 			//TODO: main song tick
 
 			//mainModel.UpdateSongProgress(playlistModel.Playing, playlistModel.Played[0], theStreamer.startTime, radioInfo);
@@ -119,7 +112,13 @@ namespace Free_Sharp_Player {
 
 
 		public void Play() { IsPlaying = true; mainModel.streamManager.Play(); }
-		public void Stop() { IsPlaying = false; mainModel.streamManager.Stop(); }
+		public void Stop() { 
+			IsPlaying = false; 
+			mainModel.streamManager.Stop();
+			Dispatcher.Invoke(new Action(() => {
+				MyBuffer.Update(null);
+			}));
+		}
 
 		public void SetVolume(double Volume) {
 			if (Volume < 0 || Volume > 100) throw new ArgumentOutOfRangeException("Volume", Volume, "Volume must be between 0 and 100");

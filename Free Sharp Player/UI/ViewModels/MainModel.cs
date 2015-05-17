@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -37,13 +38,6 @@ namespace Free_Sharp_Player {
 
 		public StreamManager streamManager;
 
-
-		//TODO: add to configs.
-		private String liveColor = "#22cccc";
-		private String notLiveColor = "#ff5555";
-
-		//double click on thing to open playlist
-
 		public MainModel(MainWindow win) {
 			window = win;
 
@@ -57,6 +51,7 @@ namespace Free_Sharp_Player {
 			window.btn_Dislike.Click += btn_Dislike_Click;
 
 			window.MyBuffer.OnSeekDone += (sec) => {
+				PlayedBufferSize += sec;
 				if (streamManager != null)
 					streamManager.Seek(sec);
 			};
@@ -73,11 +68,13 @@ namespace Free_Sharp_Player {
 		public void ConnectThread() {
 			ConnectToStream(StreamQuality.Normal);
 
-			streamManager.mainUpdateTimer.Elapsed += Tick;
 
-			MaxBufferSize = streamManager.MaxBufferSize;
+			window.Dispatcher.Invoke(new Action(() => {
+				MaxBufferSize = streamManager.MaxBufferSize;
+			}));
 
-			streamManager.ManualUpdate();
+			streamManager.UpdateData(null);
+
 		}
 
 		private void ConnectToStream(StreamQuality Quality) {
@@ -110,12 +107,16 @@ namespace Free_Sharp_Player {
 		}
 
 		public void UpdateSong(Track song) {
-			currentSong = song;
-			TheTitle = song.WholeTitle;
-			getVoteStatus tempStatus = getVoteStatus.doPost();
-			//TODO: make this not rely on a post.
-			currentSong.MyVote = tempStatus.vote != null ? (int)tempStatus.vote : 0;
-			ColorLikes(tempStatus.status);
+			new Thread(() => {
+				currentSong = song;
+				window.Dispatcher.Invoke(new Action(() => {
+					TheTitle = song.WholeTitle;
+				}));
+				getVoteStatus tempStatus = getVoteStatus.doPost();
+				//TODO: make this not rely on a post.
+				currentSong.MyVote = tempStatus.vote != null ? (int)tempStatus.vote : 0;
+				ColorLikes(tempStatus.status);
+			}).Start();
 		}
 
 		private void ColorLikes(int? status) {
@@ -152,36 +153,61 @@ namespace Free_Sharp_Player {
 		}
 
 		public void UpdateInfo(getRadioInfo info) {
-			isLive = int.Parse(info.autoDJ) == 0;
-			
+			new Thread(() => {
+				isLive = int.Parse(info.autoDJ) == 0;
+			}).Start();
 		}
 
 		//TODO: make sure to fix this.
 		public void Tick(Object o, EventArgs e) {
-			//lock (theLock) {
-				//window.MyBuffer.Update(streamManager.GetEvents());
-				TotalBufferSize = streamManager.TotalLength;
-				PlayedBufferSize = streamManager.PlayedLegnth;
+			new Thread(() => {
+				lock (theLock) {
+					Thread updateEvents = new Thread(() => {
+						var list = streamManager.GetEvents();
+						window.Dispatcher.Invoke(new Action(() => {
+							window.MyBuffer.Update(list);
+						}));
+					});
 
-				if (isLive || currentSong == null || !window.IsPlaying) {
-					SongLength = -1;
-					SongMaxLength = 1;
-					return;
+					updateEvents.Priority = ThreadPriority.AboveNormal;
+					updateEvents.Start();
+
+
+					if (isLive || currentSong == null || !window.IsPlaying) {
+						window.Dispatcher.Invoke(new Action(() => {
+							SongLength = -1;
+							SongMaxLength = 1;
+						}));
+						return;
+					}
+
+					/*DateTime lastPlayedDate;
+					if (currentSong.localLastPlayed != new DateTime(0)) {
+						lastPlayedDate = currentSong.localLastPlayed;
+					} else {
+						TimeZoneInfo hwZone = TimeZoneInfo.Utc;
+						lastPlayedDate = TimeZoneInfo.ConvertTime(DateTime.Parse(currentSong.lastPlayed), hwZone, TimeZoneInfo.Local);
+					}*/
+
+					//TODO: song progress fix timing issue
+					TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
+					TimeSpan duration = DateTime.Now - currentSong.localLastPlayed;
+
+					window.Dispatcher.Invoke(new Action(() => {
+						double length = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongDuration.TotalSeconds;
+						//TODO: backwards hack to get around lack of "live" indicator.
+						if (length > SongDuration.TotalSeconds) {
+							SongLength = -1;
+							SongMaxLength = 1;
+						} else {
+							SongMaxLength = SongDuration.TotalSeconds;
+							SongLength = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongMaxLength;
+						}
+						TotalBufferSize = streamManager.TotalLength;
+						PlayedBufferSize = streamManager.PlayedLegnth;
+					}));
 				}
-
-				DateTime lastPlayedDate;
-				if (currentSong.localLastPlayed != new DateTime(0)) {
-					lastPlayedDate = currentSong.localLastPlayed;
-				} else {
-					TimeZoneInfo hwZone = TimeZoneInfo.Utc;
-					lastPlayedDate = TimeZoneInfo.ConvertTime(DateTime.Parse(currentSong.lastPlayed), hwZone, TimeZoneInfo.Local);
-				}
-
-				TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
-				TimeSpan duration = DateTime.Now - lastPlayedDate;
-				SongMaxLength = SongDuration.TotalSeconds;
-				SongLength = (duration.TotalSeconds / SongDuration.TotalSeconds ) * 100;
-			//}
+			}).Start();
 		}
 
 
@@ -221,24 +247,6 @@ namespace Free_Sharp_Player {
 				Mouse.Capture(window.Volume, CaptureMode.SubTree);
 				window.Volume.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick, true);
 			}
-			/*DoubleAnimation testan;
-			if (VolumeOpen) {
-				//Mouse.Capture(window.Volume, CaptureMode.SubTree);
-				//window.Volume.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick, true);
-
-				testan = new DoubleAnimation(0, 120, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-				//Util.AnimateWindowMoveY(window, -120);
-			} else {
-				testan = new DoubleAnimation(120, 0, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-				//Util.AnimateWindowMoveY(window, 120);
-			}
-
-			Storyboard test = new Storyboard();
-			test.Children.Add(testan);
-			Storyboard.SetTargetName(testan, window.VolumeMenu.Name);
-			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.HeightProperty));
-			test.Begin(window.VolumeMenu);*/
-
 		}
 
 
@@ -262,23 +270,6 @@ namespace Free_Sharp_Player {
 				Mouse.Capture(window.Extras, CaptureMode.SubTree);
 				window.Extras.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick, true);
 			}
-			/*DoubleAnimation testan;
-			if (ExtrasOpen) {
-				//Mouse.Capture(window.Extras, CaptureMode.SubTree);
-				//window.Extras.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick, true);
-
-				testan = new DoubleAnimation(0, 60, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-				//Util.AnimateWindowMoveY(window, 60);
-			} else {
-				testan = new DoubleAnimation(60, 0, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-				//Util.AnimateWindowMoveY(window, -60);
-			}
-
-			Storyboard test = new Storyboard();
-			test.Children.Add(testan);
-			Storyboard.SetTargetName(testan, window.ExtrasMenu.Name);
-			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.HeightProperty));
-			test.Begin(window.ExtrasMenu);*/
 		}
 
 

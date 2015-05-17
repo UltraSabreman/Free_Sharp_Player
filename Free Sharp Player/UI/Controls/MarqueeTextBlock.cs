@@ -13,6 +13,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Free_Sharp_Player{
 
@@ -44,6 +45,11 @@ namespace Free_Sharp_Player{
 
 		static MarqueeTextBlock() {
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(MarqueeTextBlock), new FrameworkPropertyMetadata(typeof(MarqueeTextBlock)));
+		}
+
+		public MarqueeTextBlock()
+			: base() {
+				Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => { UpdateLayout(); DoMarqueeLogic(); }));
 		}
 
 		public override void OnApplyTemplate() {
@@ -94,9 +100,8 @@ namespace Free_Sharp_Player{
 
 			DoMarqueeLogic();
 		}
-
-
-		private void DoMarqueeLogic() {
+		private bool animating = false;
+		public void DoMarqueeLogic() {
 			if (theCanvas == null) return;
 
 			if (theCanvas != null && textBlock1 != null && textBlock1.ActualWidth >= theCanvas.ActualWidth) {
@@ -113,9 +118,13 @@ namespace Free_Sharp_Player{
 				text1Anim.RepeatBehavior = RepeatBehavior.Forever;
 				text2Anim.RepeatBehavior = RepeatBehavior.Forever;
 
-				textBlock1.BeginAnimation(Canvas.RightProperty, text1Anim);
-				textBlock2.BeginAnimation(Canvas.RightProperty, text2Anim);
+				if (!animating) {
+					textBlock1.BeginAnimation(Canvas.RightProperty, text1Anim);
+					textBlock2.BeginAnimation(Canvas.RightProperty, text2Anim);
+					animating = true;
+				}
 			} else {
+				animating = false;
 				textBlock2.Visibility = Visibility.Hidden;
 				textBlock1.BeginAnimation(Canvas.RightProperty, null);
 				textBlock2.BeginAnimation(Canvas.RightProperty, null);

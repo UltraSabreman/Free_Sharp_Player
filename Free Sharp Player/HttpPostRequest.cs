@@ -30,28 +30,34 @@ namespace Free_Sharp_Player {
 
 				byte[] data = Encoding.ASCII.GetBytes(PostData.ToString());
 
-				HttpWebRequest httpWReq;
+				int tries = 0;
+				while (tries < 3) {
+					HttpWebRequest httpWReq;
 
-				if (addr == null) {
-					httpWReq = (HttpWebRequest)WebRequest.Create(Address);
-					httpWReq.Method = "POST";
-					httpWReq.ContentType = "application/x-www-form-urlencoded";
-					httpWReq.ContentLength = data.Length;
+					if (addr == null) {
+						httpWReq = (HttpWebRequest)WebRequest.Create(Address);
+						httpWReq.Method = "POST";
+						httpWReq.ContentType = "application/x-www-form-urlencoded";
+						httpWReq.ContentLength = data.Length;
 
-					using (Stream stream = httpWReq.GetRequestStream())
-						stream.Write(data, 0, data.Length);
+						using (Stream stream = httpWReq.GetRequestStream())
+							stream.Write(data, 0, data.Length);
 
-				} else {
-					httpWReq = (HttpWebRequest)WebRequest.Create(addr);
-					httpWReq.Method = "POST";
-					httpWReq.ContentType = "application/x-www-form-urlencoded";
-					httpWReq.ContentLength = data.Length;
+					} else {
+						httpWReq = (HttpWebRequest)WebRequest.Create(addr);
+						httpWReq.Method = "POST";
+						httpWReq.ContentType = "application/x-www-form-urlencoded";
+						httpWReq.ContentLength = data.Length;
 
-					using (Stream stream = httpWReq.GetRequestStream())
-						stream.Write(data, 0, data.Length);
+						using (Stream stream = httpWReq.GetRequestStream())
+							stream.Write(data, 0, data.Length);
+					}
+					try {
+						return new StreamReader(((HttpWebResponse)httpWReq.GetResponse()).GetResponseStream()).ReadToEnd();
+					} catch (Exception e) { Util.DumpException(e); }
+					tries++;
 				}
-
-				return new StreamReader(((HttpWebResponse)httpWReq.GetResponse()).GetResponseStream()).ReadToEnd();
+				return null;
 			//}
 		}
 		

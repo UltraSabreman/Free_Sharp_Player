@@ -84,7 +84,7 @@ namespace Free_Sharp_Player {
 		public bool IsPlaying { get; private set;}
 
 
-		public delegate void EventTriggered(EventType e);
+		public delegate void EventTriggered(EventTuple e);
 		public event EventTriggered OnEventTrigger;
 
 		public delegate void Buffering(bool isBuffering);
@@ -206,7 +206,7 @@ namespace Free_Sharp_Player {
 							playHead = playHead.Prev;
 						}
 					} else {
-						double destTime = BufferedTime + secToSeek;
+						double destTime = BufferedTime - secToSeek;
 						while (BufferedTime >= destTime && playHead.Next != null) {
 							BufferedTime -= playHead.FrameLengthSec;
 
@@ -285,7 +285,8 @@ namespace Free_Sharp_Player {
 		public Mp3Frame GetFrame(ref EventType doEvent) {
 	
 			//We dont want to reset this to false if it's already true.
-			doEvent = playHead.Event;
+			if (doEvent == EventType.None)
+				doEvent = playHead.Event;
 			Mp3Frame ret = playHead.Frame;
 
 			BufferedTime -= playHead.FrameLengthSec;
@@ -396,10 +397,13 @@ namespace Free_Sharp_Player {
 						waveOut.Play();
 
 					if (doEvent != EventType.None) {
-						if (doEvent == EventType.SongChange)
+						var tup = new EventTuple() { Event = doEvent };
+						if (doEvent == EventType.SongChange) {
 							startTime = DateTime.Now;
+							tup.EventQueuePosition = TotalTimeInQueue - BufferedTime;
+						}
 						if (OnEventTrigger != null)
-							OnEventTrigger(doEvent);
+							OnEventTrigger(tup);
 					}
 
 					playTimer.Start();
@@ -414,7 +418,7 @@ namespace Free_Sharp_Player {
 			var test = new System.Timers.Timer();
 			test.Interval = 100;
 			test.AutoReset = true;
-			test.Enabled = true;
+			test.Enabled = false;
 
 			test.Elapsed += (o, e) => {
 				lock (printLock) {
@@ -434,7 +438,7 @@ namespace Free_Sharp_Player {
 					oldWaveSecs = totes;
 				}
 			};
-			test.Start();
+			//test.Start();
 		}
 
 		private void AddFrameToWaveBuffer(Mp3Frame frame) {

@@ -9,7 +9,6 @@
 	<Window.Resources>
 		<mc:SliderToVolumeConverter x:Key="SliderToVolConverter"/>
 		<mc:BoolToMuteIcon x:Key="BoolToMuteConverter" />
-		<mc:DurationConverter x:Key="DurationConverter" />
 		<mc:LastPlayedConverter x:Key="LastPlayedConverter" />
 		<mc:TimeInQueueConverter x:Key="TimeInQueueConverter" />
 	</Window.Resources>
@@ -109,8 +108,8 @@
 				<Button Name="btn_PlayPause" ToolTip="Play/Pause the stream"  Content="▶"  VerticalContentAlignment="Center" BorderThickness="0"/>
 			</Grid>
 			<Grid Name="Progress" Grid.Column="1">
-				<mc:DynamicBufferBar  x:Name="MyBuffer" MaxBufferSize="{Binding MaxBufferSize, Mode=OneWay}" TotalBufferSize="{Binding TotalBufferSize, Mode=OneWay}" PlayedBufferSize="{Binding PlayedBufferSize, Mode=OneWay}" 
-									  SongMaxLength="{Binding SongMaxLength, Mode=OneWay}" SongLength="{Binding SongLength, Mode=OneWay}" StreamTitle="{Binding TheTitle, Mode=OneWay}"/>
+				<mc:DynamicBufferBar  x:Name="MyBuffer" MaxBufferSize="{Binding MaxBufferSize, Mode=TwoWay}" TotalBufferSize="{Binding TotalBufferSize, Mode=TwoWay}" PlayedBufferSize="{Binding PlayedBufferSize, Mode=TwoWay}" 
+									  SongMaxLength="{Binding SongMaxLength, Mode=TwoWay}" SongLength="{Binding SongLength, Mode=TwoWay}" StreamTitle="{Binding TheTitle, Mode=TwoWay}"/>
 				<!--
 				<ProgressBar Name="bar_Buffer" Foreground="Gray" Maximum="100" Value="{Binding BufferLen}" BorderThickness="0" />
 				<ProgressBar Name="bar_BufferWindow" Foreground="#22cccc" Background="Transparent" Maximum="100" Value="{Binding PosInBuffer}"  BorderThickness="0"/>
