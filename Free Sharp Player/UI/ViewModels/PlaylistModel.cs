@@ -89,16 +89,23 @@ namespace Free_Sharp_Player {
 			}));
 		}
 
+
+		//TODO: new tracks added in bottom(needs to be on top)
 		private void UpdatePlayedList(List<getLastPlayed> newStuff) {
 			List<getLastPlayed> toRemove = new List<getLastPlayed>();
 
 			if (newStuff == null) return;
+			bool flag = Played.Count == 0;
+
 
 			foreach (getLastPlayed lp in newStuff) {
 				var matches = Played.Where(X => X.trackID == lp.trackID);
-				if (matches.Count() == 0)
-					Played.Add(lp);
-				else
+				if (matches.Count() == 0) {
+					if (flag)
+						Played.Add(lp);
+					else
+						Played.Insert(0, lp);
+				} else
 					matches.ElementAt(0).Update(lp);
 			}
 
@@ -116,12 +123,16 @@ namespace Free_Sharp_Player {
 			List<Track> toRemove = new List<Track>();
 
 			if (newStuff == null) return;
+			bool flag = Queue.Count == 0;
 
 			foreach (Track lp in newStuff) {
 				var matches = Queue.Where(X => X.trackID == lp.trackID);
-				if (matches.Count() == 0)
-					Queue.Add(lp);
-				else
+				if (matches.Count() == 0) {
+					if (flag)
+						Queue.Add(lp);
+					else
+						Queue.Insert(0, lp);
+				} else
 					matches.ElementAt(0).Update(lp);
 			}
 

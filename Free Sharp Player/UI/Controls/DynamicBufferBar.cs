@@ -187,6 +187,8 @@ namespace Free_Sharp_Player {
 			var pos = e.MouseDevice.GetPosition(theCanvas);
 			PlayedBufferSize = Math.Min((pos.X / theCanvas.ActualWidth) * MaxBufferSize, TotalBufferSize);
 			PlayedBufferSize = Math.Max(PlayedBufferSize, 0);
+
+			Playedchanged();
 		}
 
 		void bufferHandle_MouseDown(object sender, MouseButtonEventArgs e) {
@@ -219,9 +221,10 @@ namespace Free_Sharp_Player {
 				if (e.Event == EventType.None || e.EventQueuePosition == 0) continue;
 
 				Image image;
-				if (i < markers.Count)
+				if (i < markers.Count) {
 					image = markers[i];
-				else {
+					image.Visibility = System.Windows.Visibility.Visible;
+				} else {
 					image = new Image();
 					image.IsHitTestVisible = false;
 					markers.Add(image);
@@ -256,6 +259,9 @@ namespace Free_Sharp_Player {
 				mark.DoMarqueeLogic();
 			}
 
+			for (; i < markers.Count; i++) {
+				markers[i].Visibility = System.Windows.Visibility.Collapsed;
+			}
 		}
 
 

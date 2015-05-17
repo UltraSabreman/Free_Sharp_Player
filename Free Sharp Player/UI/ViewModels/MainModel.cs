@@ -155,6 +155,8 @@ namespace Free_Sharp_Player {
 		public void UpdateInfo(getRadioInfo info) {
 			new Thread(() => {
 				isLive = int.Parse(info.autoDJ) == 0;
+				if (isLive)
+					TheTitle = info.title;
 			}).Start();
 		}
 
@@ -181,30 +183,27 @@ namespace Free_Sharp_Player {
 						return;
 					}
 
-					/*DateTime lastPlayedDate;
-					if (currentSong.localLastPlayed != new DateTime(0)) {
-						lastPlayedDate = currentSong.localLastPlayed;
-					} else {
-						TimeZoneInfo hwZone = TimeZoneInfo.Utc;
-						lastPlayedDate = TimeZoneInfo.ConvertTime(DateTime.Parse(currentSong.lastPlayed), hwZone, TimeZoneInfo.Local);
-					}*/
-
 					//TODO: song progress fix timing issue
 					TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
 					TimeSpan duration = DateTime.Now - currentSong.localLastPlayed;
 
 					window.Dispatcher.Invoke(new Action(() => {
+						if (TotalBufferSize <= 0.5 || PlayedBufferSize <= 0.5)
+							Util.PrintLine(TotalBufferSize + " " + PlayedBufferSize);
+
+						TotalBufferSize = streamManager.TotalLength;
+						PlayedBufferSize = streamManager.PlayedLegnth;
+
 						double length = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongDuration.TotalSeconds;
 						//TODO: backwards hack to get around lack of "live" indicator.
 						if (length > SongDuration.TotalSeconds) {
 							SongLength = -1;
 							SongMaxLength = 1;
+							isLive = true;
 						} else {
 							SongMaxLength = SongDuration.TotalSeconds;
 							SongLength = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongMaxLength;
 						}
-						TotalBufferSize = streamManager.TotalLength;
-						PlayedBufferSize = streamManager.PlayedLegnth;
 					}));
 				}
 			}).Start();
