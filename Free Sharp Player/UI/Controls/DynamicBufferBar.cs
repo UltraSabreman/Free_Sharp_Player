@@ -37,7 +37,13 @@ namespace Free_Sharp_Player {
 		/// </summary>
 		public double TotalBufferSize {
 			get { return (double)GetValue(TotalBufferSizeProperty); }
-			set { SetValue(TotalBufferSizeProperty, value); }
+			set {
+				if (!isHeld) {
+					SetValue(TotalBufferSizeProperty, value);
+					if (TotalBufferSize > MaxBufferSize)
+						MaxBufferSize += 1;
+				}
+			}
 		}
 		/// <summary>
 		// Current stream title
@@ -153,12 +159,13 @@ namespace Free_Sharp_Player {
 			bufferHandle.PreviewMouseMove += bufferHandle_MouseMove;
 
 			theCanvas.UpdateLayout();
-
+			Playedchanged();
+			RedoToolTip();
 		}
 
 		
 		public void RedoToolTip() {
-			if (SongLength < 0)
+			if (double.IsNaN(SongLength) || double.IsInfinity(SongLength) || SongLength < 0)
 				ToolTip = "--:-- / --:--";
 			else
 				ToolTip = String.Format("{0:D}:{1:D2} / {2:D}:{3:D2}", (int)SongLength/60, (int) SongLength%60, (int)SongMaxLength/60, (int)SongMaxLength%60);
@@ -166,7 +173,7 @@ namespace Free_Sharp_Player {
 
 
 		public void Playedchanged() {
-			if (theCanvas == null || isHeld) return;
+			if (theCanvas == null) return;
 
 			double hpos = theCanvas.ActualWidth - (((PlayedBufferSize / MaxBufferSize) * theCanvas.ActualWidth) + 5);
 			if (!double.IsNaN(hpos) && !double.IsInfinity(hpos))
@@ -204,7 +211,10 @@ namespace Free_Sharp_Player {
 		}
 
 		public void Update(List<EventTuple> events) {
-			if (events == null || events.Count == 0 && theCanvas != null) {
+			mark.DoMarqueeLogic();
+
+			if (theCanvas == null) return;
+			if (events == null && theCanvas != null) {
 				
 				var slider = theCanvas.Children[0];
 				theCanvas.Children.Clear();
@@ -256,7 +266,6 @@ namespace Free_Sharp_Player {
 
 				}
 
-				mark.DoMarqueeLogic();
 			}
 
 			for (; i < markers.Count; i++) {

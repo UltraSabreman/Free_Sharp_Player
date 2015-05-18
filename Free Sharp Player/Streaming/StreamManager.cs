@@ -45,6 +45,9 @@ namespace Free_Sharp_Player {
 		private List<Track> requested;
 		private Track currentTrack;
 
+		private String firstTrackId = null;
+		private DateTime firstTrackStartTime;
+
 		public StreamManager(String address) {
 			playedList = new List<getLastPlayed>();
 			requested = new List<Track>();
@@ -90,9 +93,14 @@ namespace Free_Sharp_Player {
 
 							//TODO: Song Progress: Fiz timing issue
 							Util.PrintLine(tup.EventQueuePosition);
-							if (tup.EventQueuePosition == 0) {
-								TimeSpan diffrence = DateTime.Parse(currentTrack.lastPlayed) - DateTime.UtcNow;
-								currentTrack.duration = (TimeSpan.Parse(currentTrack.duration) + diffrence).ToString();
+							if (tup.EventQueuePosition == 0 && firstTrackId == null) {
+								firstTrackId = currentTrack.trackID;
+								firstTrackStartTime = DateTime.UtcNow;
+							}
+
+							if (firstTrackId != null && firstTrackId == currentTrack.trackID) {
+								TimeSpan diffrence = DateTime.Parse(currentTrack.lastPlayed) - firstTrackStartTime;
+								currentTrack.duration = (TimeSpan.Parse(currentTrack.duration) + diffrence + TimeSpan.FromSeconds(theQueue.BufferedTime)).ToString();
 							}
 
 							if (currentTrack.WholeTitle == radioInfo.title)

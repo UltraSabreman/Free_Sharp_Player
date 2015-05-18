@@ -56,7 +56,7 @@
 								<Rectangle Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Right" Width="1" Margin="2" Stroke="Black" />
 								<Label Name="lbl_WholeTile" ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" FontSize="10" Grid.Column="1" Padding ="0" Content="{Binding WholeTitle}"/>
 								<Rectangle Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Right" Width="1" Margin="2" Stroke="Black" />
-								<mc:MarqueeTextBlock Content="{Binding Requester}" FontSize="10" Grid.Column="2" />
+								<mc:MarqueeTextBlock Content="{Binding Requester}" ToolTip="The Requester" FontSize="10" Grid.Column="2" />
 							</Grid>
 						</Border>
 					</DataTemplate>
@@ -70,7 +70,7 @@
 					<RowDefinition Height="90"/>
 					<RowDefinition Height="30"/>
 				</Grid.RowDefinitions>
-				<Slider Name="sldr_VolumeSlider" ToolTip="Adjust volume" Orientation="Vertical" Maximum="100" Margin="0,3,0,3" Value="{Binding Volume}" HorizontalAlignment="Center"/>
+				<Slider Name="sldr_VolumeSlider" ToolTip="Adjust volume" Orientation="Vertical" IsMoveToPointEnabled ="True"  Maximum="100" Margin="0,3,0,3" Value="{Binding Volume}" HorizontalAlignment="Center"/>
 				<Button Name="btn_MuteButton" ToolTip="Mute/Un-Mute the stream" Grid.Row="1" Content="{Binding Mute, Converter={StaticResource BoolToMuteConverter}}" BorderThickness="0"/>
 			</Grid>
 		</Popup>

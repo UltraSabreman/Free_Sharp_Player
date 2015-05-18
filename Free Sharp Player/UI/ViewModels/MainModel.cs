@@ -196,7 +196,7 @@ namespace Free_Sharp_Player {
 
 						double length = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongDuration.TotalSeconds;
 						//TODO: backwards hack to get around lack of "live" indicator.
-						if (length > SongDuration.TotalSeconds) {
+						if (length > (SongDuration.TotalSeconds + 5)) {
 							SongLength = -1;
 							SongMaxLength = 1;
 							isLive = true;
