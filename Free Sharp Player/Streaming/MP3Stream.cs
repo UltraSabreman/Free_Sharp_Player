@@ -21,7 +21,7 @@ namespace Free_Sharp_Player {
 
 		private String address;
 		private Thread streamThread;
-		private Timer durationUpdate;
+		private Timer timeOut;
 
 		private StreamQueue theQ;
 		private bool changeNextFrame;
@@ -35,6 +35,14 @@ namespace Free_Sharp_Player {
 			//((HttpWebRequest)HttpWebRequest.Create(address)).GetResponse().Close();
 
 			this.address = address;
+
+			timeOut = new Timer();
+			timeOut.Interval = 5000; //TODO: make this configurable
+			timeOut.AutoReset = false;
+			timeOut.Enabled = true;
+			timeOut.Elapsed += (o, e) => {
+				theQ.AddFrame(null, false);
+			};
 
 			theQ = q;
 
@@ -50,6 +58,7 @@ namespace Free_Sharp_Player {
 				streamThread.Start();
 			}
 
+			SongChanged(null, null);
 		}
 
 
@@ -68,16 +77,7 @@ namespace Free_Sharp_Player {
 
 			try {
 				using (ShoutcastStream theStream = new ShoutcastStream(address)) {
-					theStream.StreamTitleChanged += (o,a) => {
-
-						var info = getRadioInfo.doPost();
-						if (info == null || String.IsNullOrEmpty(info.track_id) || info.track_id == "0")
-							CurrentTrack = new Track() { trackID = "0", title = info.title };
-						else  //This wont be null if we get this far, because it means the track does exist in their database
-							CurrentTrack = getTrack.doPost(int.Parse(info.track_id)).track.First();
-
-						changeNextFrame = true;
-					};
+					theStream.StreamTitleChanged += SongChanged;
 
 					readFullyStream = new ReadFullyStream(theStream);
 					int numFramesLoaded = 0;
@@ -87,27 +87,23 @@ namespace Free_Sharp_Player {
 							Thread.Sleep(500);
 						} else {
 							Mp3Frame frame;
-							var timeout = new Timer();
-							timeout.Interval = 5000; //TODO: make this configurable
-							timeout.AutoReset = false;
-							timeout.Enabled = true;
-							timeout.Elapsed += (o, e) => {
-								theQ.AddFrame(null, false);
-							};
+
+							timeOut.Enabled = true;
+							timeOut.Start();
 
 							try {
 
 								frame = Mp3Frame.LoadFromStream(readFullyStream);
-								timeout.Enabled = false;
-								timeout.Stop();
+								timeOut.Enabled = false;
+								timeOut.Stop();
 
 								theQ.AddFrame(frame, changeNextFrame, CurrentTrack);
 
 								if (changeNextFrame) changeNextFrame = false;
 								numFramesLoaded++;
 							} catch (EndOfStreamException) {
-								timeout.Enabled = false;
-								timeout.Stop();
+								timeOut.Enabled = false;
+								timeOut.Stop();
 
 								theQ.AddFrame(null, false);
 
@@ -130,6 +126,15 @@ namespace Free_Sharp_Player {
 			}
 		}
 
+		private void SongChanged(Object o, EventArgs e) {
+			var info = getRadioInfo.doPost();
+			if (info == null || String.IsNullOrEmpty(info.track_id) || info.track_id == "0")
+				CurrentTrack = new Track() { trackID = "0", title = info.title };
+			else  //This wont be null if we get this far, because it means the track does exist in their database
+				CurrentTrack = getTrack.doPost(int.Parse(info.track_id)).track.First();
+
+			changeNextFrame = true;
+		}
 
 	}
 }

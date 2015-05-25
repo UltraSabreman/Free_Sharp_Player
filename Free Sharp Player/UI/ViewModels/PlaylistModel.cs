@@ -19,38 +19,34 @@ namespace Free_Sharp_Player {
 	class PlaylistModel : ViewModelNotifier {
 		private Object theLock = new Object();
 	
-		public String StreamTitle { get { return GetProp<String>(); } set { SetProp(value); } }
 		public ObservableCollection<getLastPlayed> Played { get { return GetProp<ObservableCollection<getLastPlayed>>(); } set { SetProp(value); } }
 		public ObservableCollection<Track> Queue { get { return GetProp<ObservableCollection<Track>>(); } set { SetProp(value); } }
-		public Track Playing { get { return GetProp<Track>(); } set { SetProp(value); } }
 		public bool IsOpen { get; private set; }
 
-		private double MaxQueueHight;
-		private double MaxPlayedHight;
+		private double MaxQueueHight = 0;
+		private double MaxPlayedHight = 0;
 
-		MainWindow window;
+		private MainWindow window;
+		private StreamManager streamManager;
+
 		private Timer listUpdater = new Timer(10000);
 
-		public PlaylistModel(MainWindow win) {
+		public PlaylistModel(MainWindow win, StreamManager man) {
+			window = win;
+			streamManager = man;
+
 			Played = new ObservableCollection<getLastPlayed>();
 			Queue = new ObservableCollection<Track>();
 
-			SetWindow(win);
-		}
+			streamManager.OnEventTrigger += OnEvent;
+			streamManager.OnQueueTick += OnTick;
+			streamManager.OnBufferingStateChange += OnBufferChange;
 
-		public void SetWindow(MainWindow win) {
-			window = win;
 
 			window.QueueList.DataContext = this;
 			window.PlayedList.DataContext = this;
 
-
-			Tick(null, null);
-
-			MaxQueueHight = 0;
-			MaxPlayedHight = 0;
-
-
+			//Move popups with window
 			window.LocationChanged += (o, e) => {
 				window.Played.HorizontalOffset += 1;
 				window.Played.HorizontalOffset -= 1;
@@ -68,27 +64,34 @@ namespace Free_Sharp_Player {
 			listUpdater.Elapsed += Tick;
 			listUpdater.AutoReset = true;
 			listUpdater.Start();
-
-			StreamTitle = "Not Connected";
 		}
+
+		public void OnEvent(EventTuple ev) { }
+
+		public void OnTick(QueueSettingsTuple set) { }
+
+		public void OnBufferChange(bool isBuffering) { }
+
 
 		public void Tick(Object o, EventArgs e) {
-			//TODO: playlist and other bs
-			new Thread(() => { }).Start();
+			new Thread(() => {
+				var played = getLastPlayed.doPost();
+				var reqs = getRequests.doPost();
+				var queued = new List<Track>();
+				if (reqs != null && reqs.number_of_tracks > 0)
+					queued = reqs.track;
+
+				window.Dispatcher.Invoke(new Action(() => {
+					lock (theLock) {
+						UpdatePlayedList(played);
+
+						UpdateQueue(queued);
+
+						UpdateSize();
+					}
+				}));
+			}).Start();
 		}
-
-		public void UpdateLists(List<getLastPlayed> played, List<Track> queued) {
-			window.Dispatcher.Invoke(new Action(() => {
-				lock (theLock) {
-					UpdatePlayedList(played);
-
-					UpdateQueue(queued);
-
-					UpdateSize();
-				}
-			}));
-		}
-
 
 		//TODO: new tracks added in bottom(needs to be on top)
 		private void UpdatePlayedList(List<getLastPlayed> newStuff) {
@@ -145,20 +148,14 @@ namespace Free_Sharp_Player {
 			toRemove.ForEach(X => Queue.Remove(X));
 		}
 
-		public void UpdateSong(Track song) {
-			new Thread(() => {
-				Playing = song;
-			}).Start();
-		}
-
-		public void UpdateInfo(getRadioInfo info) {
+		/*public void UpdateInfo(getRadioInfo info) {
 			window.Dispatcher.Invoke(new Action(() => {
 				if (!window.IsPlaying)
 					StreamTitle = "Not Connected";
 				else
 					StreamTitle = info.title;
 			}));
-		}
+		}*/
 
 
 		public void UpdateSize() {
@@ -182,7 +179,7 @@ namespace Free_Sharp_Player {
 			IsOpen = !IsOpen;
 			window.Played.IsOpen = IsOpen;
 			window.Queue.IsOpen = IsOpen;
-			
+			listUpdater.Enabled = IsOpen;
 		}
 
 

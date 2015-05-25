@@ -14,9 +14,15 @@ namespace Free_Sharp_Player {
 
 
 		private MainWindow window;
+		private StreamManager streamManager;
 
-		public ExtraMenuModel(MainWindow win) {
+		public ExtraMenuModel(MainWindow win, StreamManager man) {
 			window = win;
+			streamManager = man;
+
+			streamManager.OnEventTrigger += OnEvent;
+			streamManager.OnQueueTick += OnTick;
+			streamManager.OnBufferingStateChange += OnBufferChange;
 
 			window.Extras.DataContext = this;
 
@@ -29,9 +35,11 @@ namespace Free_Sharp_Player {
 			Votes = "---";
 		}
 
-		public void Tick(Object o, EventArgs e) {
-			new Thread(() => { }).Start();
-		}
+		public void OnEvent(EventTuple ev) { }
+
+		public void OnTick(QueueSettingsTuple set) { }
+
+		public void OnBufferChange(bool isBuffering) { }
 
 		public void UpdateInfo(getRadioInfo info) {
 			window.Dispatcher.Invoke(new Action(() => {

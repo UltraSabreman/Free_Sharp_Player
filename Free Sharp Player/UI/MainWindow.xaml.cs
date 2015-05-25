@@ -45,6 +45,7 @@ namespace Free_Sharp_Player {
 
 		//Timer Updater = new Timer(1000);
 
+		private StreamManager streamManager;
 
 		private MainModel mainModel;
 		private VolumeModel volumeModel;
@@ -52,55 +53,63 @@ namespace Free_Sharp_Player {
 		private PlaylistModel playlistModel;
 
 		public MainWindow() {
-
+			AllocConsole();
 			InitializeComponent();
+			btn_PlayPause.IsEnabled = false;
 
 			doubleClickCheck.Elapsed += (o, e) => {
 				isDoubleClicking = false;
 			};
 
-
-			AllocConsole();
-
-			mainModel = new MainModel(this);
-			volumeModel = new VolumeModel(this);
-			extraModel = new ExtraMenuModel(this);
-			playlistModel = new PlaylistModel(this);
-
-			btn_PlayPause.IsEnabled = false;
-			//TODO: UI alert of loading.
 			new Thread(() => {
-				mainModel.ConnectThread();
-
-				mainModel.streamManager.NewCurrentTrack += (Track track) => {
-					lock (trackLock) {
-						mainModel.UpdateSong(track);
-						playlistModel.UpdateSong(track);
-					}
-				};
-
-				mainModel.streamManager.OnRadioUpdate += (getRadioInfo info, List<getLastPlayed> played, List<Track> queued) => {
-					lock (radioLock) {
-						mainModel.UpdateInfo(info);
-						playlistModel.UpdateLists(played, queued);
-						extraModel.UpdateInfo(info);
-						playlistModel.UpdateInfo(info);
-
-					}
-				};
-
-				mainModel.streamManager.mainUpdateTimer.Elapsed += mainModel.Tick;
-				mainModel.streamManager.mainUpdateTimer.Elapsed += volumeModel.Tick;
-				mainModel.streamManager.mainUpdateTimer.Elapsed += extraModel.Tick;
-				mainModel.streamManager.mainUpdateTimer.Elapsed += playlistModel.Tick;
-				mainModel.streamManager.mainUpdateTimer.Elapsed += MainTick;
+				ConnectToStream(StreamQuality.Normal);
+				//streamManager.UpdateData(null);
 
 				Dispatcher.Invoke(new Action(() => {
+					mainModel = new MainModel(this, streamManager);
+					volumeModel = new VolumeModel(this, streamManager);
+					extraModel = new ExtraMenuModel(this, streamManager);
+					playlistModel = new PlaylistModel(this, streamManager);
+
 					btn_PlayPause.IsEnabled = true;
 					Connecting.Visibility = System.Windows.Visibility.Collapsed;
 				}));
+
 			}).Start();
 		}
+
+
+		private void ConnectToStream(StreamQuality Quality) {
+			String address = "";
+			bool Connected = false;
+
+			while (!Connected) {
+
+				getRadioInfo temp = getRadioInfo.doPost();
+
+				using (WebClient wb = new WebClient()) {
+					NameValueCollection data = new NameValueCollection();
+					String tempAddr = temp.servers.medQuality.Split("?".ToCharArray())[0];
+					data["sid"] = temp.servers.medQuality.Split("=".ToCharArray())[1];//(Quality == StreamQuality.Normal ? "1" : (Quality == StreamQuality.Low ? "3" : "2"));
+
+					Byte[] response = wb.UploadValues(tempAddr, "POST", data);
+
+					string[] responseData = System.Text.Encoding.UTF8.GetString(response, 0, response.Length).Split("\n".ToCharArray(), StringSplitOptions.None);
+
+					//Todo: timeout, check for valid return data, find the adress in more dynamic way.
+					address = responseData[2].Split("=".ToCharArray())[1];
+				}
+
+
+				streamManager = new StreamManager(address);
+
+				Connected = true;
+			}
+
+		}
+
+
+		//TODO: run on event
 
 		public void MainTick(Object o, EventArgs e) {
 			new Thread(() => { }).Start();
@@ -111,10 +120,10 @@ namespace Free_Sharp_Player {
 		}
 
 
-		public void Play() { IsPlaying = true; mainModel.streamManager.Play(); }
+		public void Play() { IsPlaying = true; streamManager.Play(); }
 		public void Stop() { 
 			IsPlaying = false; 
-			mainModel.streamManager.Stop();
+			streamManager.Stop();
 			Dispatcher.Invoke(new Action(() => {
 				MyBuffer.Update(null);
 			}));
@@ -123,8 +132,8 @@ namespace Free_Sharp_Player {
 		public void SetVolume(double Volume) {
 			if (Volume < 0 || Volume > 100) throw new ArgumentOutOfRangeException("Volume", Volume, "Volume must be between 0 and 100");
 
-			if (mainModel.streamManager != null)
-				mainModel.streamManager.Volume = (float)Volume / 100;
+			if (streamManager != null)
+				streamManager.Volume = (float)Volume / 100;
 		}
 
 
@@ -138,7 +147,7 @@ namespace Free_Sharp_Player {
 		}
 
 		private void Window_Closed(object sender, EventArgs e) {
-			mainModel.streamManager.Stop();
+			streamManager.Stop();
 			Application.Current.Shutdown();
 		}
 

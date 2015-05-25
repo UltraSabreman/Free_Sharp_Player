@@ -30,17 +30,21 @@ namespace Free_Sharp_Player {
 		private bool isLive;
 
 		private MainWindow window;
+		private StreamManager streamManager;
 
 		private bool VolumeOpen = false;
 		private bool ExtrasOpen = false;
 		MouseButtonEventHandler VolumeOutClick;
 		MouseButtonEventHandler ExtrasOutClick;
 
-		public StreamManager streamManager;
 
-		public MainModel(MainWindow win) {
+		public MainModel(MainWindow win, StreamManager manger) {
 			window = win;
+			streamManager = manger;
 
+			streamManager.OnEventTrigger += OnEvent;
+			streamManager.OnQueueTick += OnTick;
+			streamManager.OnBufferingStateChange += OnBufferChange;
 
 			window.MyBuffer.DataContext = this;
 
@@ -49,6 +53,7 @@ namespace Free_Sharp_Player {
 			window.btn_Extra.Click += btn_Extra_Click;
 			window.btn_Like.Click += btn_Like_Click;
 			window.btn_Dislike.Click += btn_Dislike_Click;
+
 
 			window.MyBuffer.OnSeekDone += (sec) => {
 				PlayedBufferSize += sec;
@@ -63,61 +68,98 @@ namespace Free_Sharp_Player {
 
 			currentSong = null;
 			isLive = false;
+			TheTitle = "Not Connected";
 		}
 
-		public void ConnectThread() {
-			ConnectToStream(StreamQuality.Normal);
+		public void OnEvent(EventTuple ev) {
+			if (ev == null) return;
+			if (ev.Event == EventType.SongChange) {
+				new Thread(() => {
+					currentSong = ev.CurrentSong;
+					if (ev.CurrentSong != null) {
+						window.Dispatcher.Invoke(new Action(() => {
+							TheTitle = ev.CurrentSong.WholeTitle;
+						}));
+					}
 
+					getVoteStatus tempStatus = getVoteStatus.doPost();
+					//TODO: make this not rely on a post.
+					if (currentSong != null) {
+						currentSong.MyVote = (int)(tempStatus.vote ?? 0);
+						ColorLikes(tempStatus.status);
+					}
+				}).Start();
+			}//TODO: something on disconnect?
 
-			window.Dispatcher.Invoke(new Action(() => {
-				MaxBufferSize = streamManager.MaxBufferSize;
-			}));
-
-			streamManager.UpdateData(null);
-
+			if (ev.RadioInfo != null)
+				isLive = int.Parse(ev.RadioInfo.autoDJ) == 0;
+			else
+				isLive = false;
 		}
 
-		private void ConnectToStream(StreamQuality Quality) {
-			String address = "";
-			bool Connected = false;
-
-			while (!Connected) {
-
-				getRadioInfo temp = getRadioInfo.doPost();
-
-				using (WebClient wb = new WebClient()) {
-					NameValueCollection data = new NameValueCollection();
-					String tempAddr = temp.servers.medQuality.Split("?".ToCharArray())[0];
-					data["sid"] = temp.servers.medQuality.Split("=".ToCharArray())[1];//(Quality == StreamQuality.Normal ? "1" : (Quality == StreamQuality.Low ? "3" : "2"));
-
-					Byte[] response = wb.UploadValues(tempAddr, "POST", data);
-
-					string[] responseData = System.Text.Encoding.UTF8.GetString(response, 0, response.Length).Split("\n".ToCharArray(), StringSplitOptions.None);
-
-					//Todo: timeout, check for valid return data, find the adress in more dynamic way.
-					address = responseData[2].Split("=".ToCharArray())[1];
-				}
-
-
-				streamManager = new StreamManager(address);
-
-				Connected = true;
-			}
-
-		}
-
-		public void UpdateSong(Track song) {
+		public void OnTick(QueueSettingsTuple set) {
 			new Thread(() => {
-				currentSong = song;
-				window.Dispatcher.Invoke(new Action(() => {
-					TheTitle = song.WholeTitle;
-				}));
-				getVoteStatus tempStatus = getVoteStatus.doPost();
-				//TODO: make this not rely on a post.
-				currentSong.MyVote = tempStatus.vote != null ? (int)tempStatus.vote : 0;
-				ColorLikes(tempStatus.status);
+				lock (theLock) {
+					MaxBufferSize = set.MaxTimeInQueue;
+
+
+					//Update event list. 
+					new Thread(() => {
+						var list = streamManager.GetEvents();
+						window.Dispatcher.Invoke(new Action(() => {
+							window.MyBuffer.Update(list);
+						}));
+					}).Start();
+
+
+					//TODO: more colors/states.
+					if (isLive || currentSong == null || !window.IsPlaying) {
+						window.Dispatcher.Invoke(new Action(() => {
+							SongLength = -1;
+							SongMaxLength = 1;
+						}));
+						return;
+					}
+					
+					//TODO: song progress fix timing issue
+					TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
+					TimeSpan duration = DateTime.Now - currentSong.localLastPlayed;
+
+					window.Dispatcher.Invoke(new Action(() => {
+						if (TotalBufferSize <= 0.5 || PlayedBufferSize <= 0.5)
+							Util.PrintLine(TotalBufferSize + " " + PlayedBufferSize);
+
+						TotalBufferSize = set.TotalTimeInQueue;
+						PlayedBufferSize = set.TotalTimeInQueue - set.BufferedTime;
+
+						double length = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongDuration.TotalSeconds;
+						//TODO: backwards hack to get around lack of "live" indicator.
+						if (length > (SongDuration.TotalSeconds + 5)) {
+							SongLength = -1;
+							SongMaxLength = 1;
+							isLive = true;
+						} else {
+							SongMaxLength = SongDuration.TotalSeconds;
+							SongLength = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongMaxLength;
+						}
+					}));
+				}
 			}).Start();
 		}
+
+		public void OnBufferChange(bool isBuffering) {
+
+		}
+
+
+		/*public void UpdateInfo(getRadioInfo info) {
+			new Thread(() => {
+				isLive = int.Parse(info.autoDJ) == 0;
+				if (isLive)
+					TheTitle = info.title;
+			}).Start();
+		}*/
+
 
 		private void ColorLikes(int? status) {
 			window.Dispatcher.Invoke(new Action(() => {
@@ -151,64 +193,6 @@ namespace Free_Sharp_Player {
 			}));
 
 		}
-
-		public void UpdateInfo(getRadioInfo info) {
-			new Thread(() => {
-				isLive = int.Parse(info.autoDJ) == 0;
-				if (isLive)
-					TheTitle = info.title;
-			}).Start();
-		}
-
-		//TODO: make sure to fix this.
-		public void Tick(Object o, EventArgs e) {
-			new Thread(() => {
-				lock (theLock) {
-					Thread updateEvents = new Thread(() => {
-						var list = streamManager.GetEvents();
-						window.Dispatcher.Invoke(new Action(() => {
-							window.MyBuffer.Update(list);
-						}));
-					});
-
-					updateEvents.Priority = ThreadPriority.AboveNormal;
-					updateEvents.Start();
-
-
-					if (isLive || currentSong == null || !window.IsPlaying) {
-						window.Dispatcher.Invoke(new Action(() => {
-							SongLength = -1;
-							SongMaxLength = 1;
-						}));
-						return;
-					}
-
-					//TODO: song progress fix timing issue
-					TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
-					TimeSpan duration = DateTime.Now - currentSong.localLastPlayed;
-
-					window.Dispatcher.Invoke(new Action(() => {
-						if (TotalBufferSize <= 0.5 || PlayedBufferSize <= 0.5)
-							Util.PrintLine(TotalBufferSize + " " + PlayedBufferSize);
-
-						TotalBufferSize = streamManager.TotalLength;
-						PlayedBufferSize = streamManager.PlayedLegnth;
-
-						double length = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongDuration.TotalSeconds;
-						//TODO: backwards hack to get around lack of "live" indicator.
-						if (length > (SongDuration.TotalSeconds + 5)) {
-							SongLength = -1;
-							SongMaxLength = 1;
-							isLive = true;
-						} else {
-							SongMaxLength = SongDuration.TotalSeconds;
-							SongLength = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongMaxLength;
-						}
-					}));
-				}
-			}).Start();
-		}
-
 
 		private void btn_PlayPause_Click(object sender, RoutedEventArgs e) {
 			if (window.IsPlaying) {

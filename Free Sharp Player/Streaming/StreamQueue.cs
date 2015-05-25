@@ -13,6 +13,15 @@ using System.Windows;
 namespace Free_Sharp_Player {
 	using Timer = System.Timers.Timer;
 
+
+	public class EventTuple {
+		public EventType Event { get; set; }
+		public double EventQueuePosition { get; set; }
+		public Track CurrentSong { get; set; }
+		public getRadioInfo RadioInfo { get; set; }
+	}
+
+
 	public class StreamFrame {
 		public StreamFrame Next { get; set; }
 		public StreamFrame Prev { get; set; }
@@ -29,14 +38,14 @@ namespace Free_Sharp_Player {
 				}
 			}
 		}
-		public EventType Event { get; set; }
-		public Track NewTrack { get; set; }
+		public EventTuple Event { get; set; }
+
 		public double FrameLengthSec { get; private set; }
 
 		private void GetFrameLengthSec() {
 			if (Frame != null)
 				FrameLengthSec = ((double)Frame.SampleCount / (double)Frame.SampleRate);
-			else 
+			else
 				FrameLengthSec = 0;
 		}
 
@@ -44,25 +53,36 @@ namespace Free_Sharp_Player {
 			Next = null;
 			Prev = null;
 			Frame = null;
-			Event = EventType.None;
+			Event = null;
 		}
 
 		public StreamFrame(Mp3Frame toAdd = null) {
 			Next = null;
 			Prev = null;
+			Event = null;
 			Frame = toAdd;
-			if (Frame == null)
-				Event = EventType.Disconnect;
-			else
-				Event = EventType.None;
 		}
 
 	}
 
-	public class EventTuple {
-		public EventType Event { get; set; }
-		public double EventQueuePosition { get; set; }
-		public Track CurrentSong { get; set; }
+	public class QueueSettingsTuple { 
+		public double MaxBufferedTime { get; set; }	//Minimum time buffered to play (before stream starts buffering again)
+		public double MinBufferedTime { get; set; }	//Minimum time buffered to play (before stream starts buffering again)
+		public double BufferedTime { get; set; }	//Time currently buffered to play
+
+		public double MaxTimeInQueue { get; set; }	//Maximum TOTAL time that can be stored in the queue.
+		public double TotalTimeInQueue { get; set; } //Total size of the queue currently
+
+		public double NumSecToPlay { get; set; }
+
+		public void Copy(QueueSettingsTuple src) {
+			MaxBufferedTime = src.MaxBufferedTime;
+			MinBufferedTime = src.MinBufferedTime;
+			BufferedTime = src.BufferedTime;
+			MaxTimeInQueue = src.MaxTimeInQueue;
+			TotalTimeInQueue = src.TotalTimeInQueue;
+			NumSecToPlay = src.NumSecToPlay;
+		}
 	}
 
 	public class StreamQueue {
@@ -70,28 +90,34 @@ namespace Free_Sharp_Player {
 		private Object playLock = new Object();
 		private Object printLock = new Object();
 
-		//TODO: impliement queue seek
-		//public int PosInQueue { get; set; } //change pos function
 
-		public double MaxBufferdTime { get; set; }	//Minimum time buffered to play (before stream starts buffering again)
-		public double MinBufferdTime { get; set; }	//Minimum time buffered to play (before stream starts buffering again)
-		public double MaxTineInQueue { get; set; }	//Maximum TOTAL time that can be stored in the queue.
-		public double BufferedTime { get; set; }	//Time currently buffered to play
-		public double TotalTimeInQueue { get; set; } //Total size of the queue currently
+		private QueueSettingsTuple Settings { get; set; }
+		private float volume = 0.5f;
+		public float Volume { 
+			get {
+				return volume;
+			}
+			set {
+				if (volumeProvider != null)
+					volumeProvider.Volume = value;
+				volume = value;
+			}
+		}
 
-		public double NumSecToPlay { get; set; }
-		public float Volume { get; set; }
+
 		public bool IsPlaying { get; private set;}
 
 
+		#region events
 		public delegate void EventTriggered(EventTuple e);
 		public event EventTriggered OnEventTrigger;
 
 		public delegate void Buffering(bool isBuffering);
 		public event Buffering OnBufferingStateChange;
 
-		public delegate void Disconnect();
-		public event Disconnect OnStreamDisconnect;
+		public delegate void QueueTick(QueueSettingsTuple theStuff);
+		public event QueueTick OnQueueTick;
+		#endregion events
 
 		private bool buffering;
 
@@ -116,15 +142,11 @@ namespace Free_Sharp_Player {
 		private double diff;
 		private double totalTime;
 
-		public StreamQueue(int maxBuff = 30, int maxQueue = 300, double minBuffer = 3, double insertSec = 0.5) {
+		public StreamQueue(QueueSettingsTuple newSettings){ 
 			playTimer = new Timer(250);
 			playTimer.Elapsed += PlayFrame;
 
-			MinBufferdTime = minBuffer;
-			MaxBufferdTime = maxBuff;
-			MaxTineInQueue = maxQueue;
-			NumSecToPlay = insertSec;
-			Volume = 0.5f;
+			Settings = newSettings;
 
 			buffering = false;
 
@@ -138,35 +160,48 @@ namespace Free_Sharp_Player {
 
 			playTimer.Start();
 
-			StreamInfo();
+			//StreamInfo();
 		}
 
-		public void AddFrame(Mp3Frame frame, bool changed = false, Track theTrack = null) {
+
+		public void AddFrame(Mp3Frame frame, bool changed = false, Track theTrack = null, getRadioInfo info = null) {
 			lock (addLock) {
 				StreamFrame temp = new StreamFrame(frame);
 				if (changed) {
-					temp.Event = EventType.SongChange;
-					temp.NewTrack = theTrack;
-				}
+					var tup = new EventTuple() { Event = EventType.SongChange };
+					tup.EventQueuePosition = Settings.TotalTimeInQueue - Settings.BufferedTime;
+					tup.CurrentSong = theTrack;
+					tup.RadioInfo = info;
+
+					temp.Event = tup;
+				} else if (frame == null) {
+					var tup = new EventTuple() { Event = EventType.Disconnect };
+					tup.EventQueuePosition = Settings.TotalTimeInQueue - Settings.BufferedTime;
+
+					temp.Event = tup;
+				} else
+					temp.Event = null;
+
+
 				if (tail == null) {
 					playHead = head = tail = temp;
-					BufferedTime += temp.FrameLengthSec;
-					TotalTimeInQueue += temp.FrameLengthSec;
+					Settings.BufferedTime += temp.FrameLengthSec;
+					Settings.TotalTimeInQueue += temp.FrameLengthSec;
 				} else {
 					tail.Next = temp;
 					temp.Prev = tail;
 					tail = tail.Next;
 
-					TotalTimeInQueue += temp.FrameLengthSec;
-					BufferedTime += temp.FrameLengthSec;
+					Settings.TotalTimeInQueue += temp.FrameLengthSec;
+					Settings.BufferedTime += temp.FrameLengthSec;
 
-					if (TotalTimeInQueue >= MaxTineInQueue) {
+					if (Settings.TotalTimeInQueue >= Settings.MaxTimeInQueue) {
 						if (playHead == head) {
 							playHead = playHead.Next;
-							BufferedTime -= head.FrameLengthSec;
+							Settings.BufferedTime -= head.FrameLengthSec;
 						}
 						
-						TotalTimeInQueue -= head.FrameLengthSec;
+						Settings.TotalTimeInQueue -= head.FrameLengthSec;
 						head = head.Next;
 						head.Prev.Delete();
 						head.Prev = null;
@@ -183,8 +218,8 @@ namespace Free_Sharp_Player {
 				StreamFrame cur = head;
 				double time = 0;
 				while (cur != null) {
-					if (cur.Event != EventType.None)
-						nums.Add(new EventTuple {Event = cur.Event, EventQueuePosition = time, CurrentSong = cur.NewTrack});
+					if (cur.Event != null && cur.Event.Event != EventType.None)
+						nums.Add(cur.Event);
 
 					time += cur.FrameLengthSec;
 					cur = cur.Next;
@@ -194,21 +229,28 @@ namespace Free_Sharp_Player {
 			}
 		}
 
+		//TODO: remove code duplication
 		public void Seek(double secToSeek) {
 			lock (playLock) {
 				lock (addLock) {
 					if (secToSeek < 0) {
-						double destTime = BufferedTime - secToSeek;
+						double destTime = Settings.BufferedTime - secToSeek;
 
-						while (BufferedTime <= destTime && playHead.Prev != null) {
-							BufferedTime += playHead.FrameLengthSec;
+						while (Settings.BufferedTime <= destTime && playHead.Prev != null) {
+							Settings.BufferedTime += playHead.FrameLengthSec;
+							if (playHead.Event != null && playHead.Event.Event != EventType.None) {
+								fireEvent(playHead.Event);
+							}
 
 							playHead = playHead.Prev;
 						}
 					} else {
-						double destTime = BufferedTime - secToSeek;
-						while (BufferedTime >= destTime && playHead.Next != null) {
-							BufferedTime -= playHead.FrameLengthSec;
+						double destTime = Settings.BufferedTime - secToSeek;
+						while (Settings.BufferedTime >= destTime && playHead.Next != null) {
+							Settings.BufferedTime -= playHead.FrameLengthSec;
+							if (playHead.Event != null && playHead.Event.Event != EventType.None) {
+								fireEvent(playHead.Event);
+							}
 
 							playHead = playHead.Next;
 						}
@@ -219,51 +261,7 @@ namespace Free_Sharp_Player {
 		}
 
 		public bool IsBufferFull() {
-			return BufferedTime >= MaxBufferdTime;
-		}
-
-		public void Draw() {
-			var white = ConsoleColor.White;
-			var green = ConsoleColor.Green;
-			var black = ConsoleColor.Black;
-			var yellow = ConsoleColor.Yellow;
-			char b = '█';
-
-			List<EventTuple> thing = GetAllEvents();
-
-			double percentfull = (TotalTimeInQueue / MaxTineInQueue) * 100;
-			double percentBuff = (BufferedTime / TotalTimeInQueue);
-
-			Util.Print(white, "[");
-			bool changed = false;
-			for (int i = 0; i < 100; i++) {
-				if (i < percentfull) {
-					double buff = (1-percentBuff) * percentfull;
-					if (i < buff)
-						Util.Print(yellow, b);
-					else {
-						if (!changed) {
-							changed = true;
-							Console.CursorTop += 1;
-							Console.CursorLeft -= 1;
-							Util.Print(white, "P");
-							Console.CursorTop -= 1;
-						}
-						Util.Print(green, b);
-					}
-				} else
-					Util.Print(black, b);
-			}
-			Util.PrintLine(white, "]");
-
-			foreach (EventTuple e in thing) {
-				int pos =  (int)Math.Max(Math.Round((e.EventQueuePosition / TotalTimeInQueue) * ((TotalTimeInQueue / MaxTineInQueue) * 100)), 0);
-				Console.CursorLeft = pos;
-				if (e.Event == EventType.SongChange)
-					Util.Print(ConsoleColor.Cyan, "S");
-				else if (e.Event == EventType.Disconnect)
-					Util.Print(ConsoleColor.Red, "D");
-			}
+			return Settings.BufferedTime >= Settings.MaxBufferedTime;
 		}
 
 		public void PurgeQueue() {
@@ -279,17 +277,6 @@ namespace Free_Sharp_Player {
 			playHead = null;
 		}
 
-		public Mp3Frame GetFrame(ref EventType doEvent) {
-			if (doEvent == EventType.None)
-				doEvent = playHead.Event;
-			Mp3Frame ret = playHead.Frame;
-
-			BufferedTime -= playHead.FrameLengthSec;
-			playHead = playHead.Next;
-
-			return ret;
-		}
-
 		public void Play() {
 			if (IsPlaying) return;
 			startTime = DateTime.Now;
@@ -303,9 +290,8 @@ namespace Free_Sharp_Player {
 			PurgeQueue();
 
 			lock (playLock) {
-
-				BufferedTime = 0;
-				TotalTimeInQueue = 0;
+				Settings.BufferedTime = 0;
+				Settings.TotalTimeInQueue = 0;
 
 				if (waveOut != null) {
 					waveOut.Stop();
@@ -326,8 +312,23 @@ namespace Free_Sharp_Player {
 		}
 
 
+		private Mp3Frame GetFrame(ref EventTuple doEvent) {
+			if (playHead.Event != null && playHead.Event.Event != EventType.None)
+				doEvent = playHead.Event;
+
+			Mp3Frame ret = playHead.Frame;
+			Settings.BufferedTime -= playHead.FrameLengthSec;
+			playHead = playHead.Next;
+
+			return ret;
+		}
+
 		private void PlayFrame(Object o, EventArgs e) {
 			lock (playLock) {
+				//TODO: is this the right place for the tick event?
+				if (OnQueueTick != null)
+					OnQueueTick(Settings);
+
 				try {
 					//Check if queue has shit in it.
 					if (playHead == null) return;
@@ -335,7 +336,7 @@ namespace Free_Sharp_Player {
 					if (!IsPlaying) return;
 
 					//Don't play if we're buffering.
-					if (BufferedTime < MinBufferdTime) {
+					if (Settings.BufferedTime < Settings.MinBufferedTime) {
 						if (!buffering && OnBufferingStateChange != null)
 							OnBufferingStateChange(buffering);
 						buffering = true;
@@ -365,14 +366,14 @@ namespace Free_Sharp_Player {
 
 					//Get time in wave buffer and diffrence between that and what we want
 					double inWavBuff = (bufferedWaveProvider == null ? 0 : bufferedWaveProvider.BufferedDuration.TotalSeconds);
-					double diff = NumSecToPlay - inWavBuff;
+					double diff = Settings.NumSecToPlay - inWavBuff;
 
 					if (diff <= 0)
 						diff = 0.1;
 
 					playTimer.Interval = diff * 1000;
 
-					EventType doEvent = EventType.None;
+					EventTuple doEvent = null;
 					totalTime = 0;
 					double oldTotalTime = -1; //This prevents a deadlock
 					frames = 0;
@@ -391,15 +392,8 @@ namespace Free_Sharp_Player {
 					if (waveOut != null && waveOut.PlaybackState != PlaybackState.Playing)
 						waveOut.Play();
 
-					if (doEvent != EventType.None) {
-						var tup = new EventTuple() { Event = doEvent };
-						if (doEvent == EventType.SongChange) {
-							startTime = DateTime.Now;
-							tup.EventQueuePosition = TotalTimeInQueue - BufferedTime;
-						}
-						if (OnEventTrigger != null)
-							OnEventTrigger(tup);
-					}
+					if (doEvent != null)
+						fireEvent(doEvent);
 
 					playTimer.Start();
 
@@ -409,31 +403,9 @@ namespace Free_Sharp_Player {
 			}
 		}
 
-		private void StreamInfo() {
-			var test = new System.Timers.Timer();
-			test.Interval = 100;
-			test.AutoReset = true;
-			test.Enabled = false;
-
-			test.Elapsed += (o, e) => {
-				lock (printLock) {
-					Console.Clear();
-					Util.PrintLine("Frames Played: ", ConsoleColor.Cyan, frames);
-					Util.PrintLine("Time Diffrence: ", ConsoleColor.White, String.Format("{0:0.000}", diff));
-					Util.PrintLine("Time Loaded: ", ConsoleColor.DarkYellow, String.Format("{0:0.000}", totalTime));
-					double BuffDelta = BufferedTime - oldBuffSecs;
-					double totes = bufferedWaveProvider!= null ? bufferedWaveProvider.BufferedDuration.TotalSeconds : -1;
-					double WaveDelta = totes - oldWaveSecs;
-					Util.PrintLine("Time In Buffer: ", ConsoleColor.DarkYellow, TotalTimeInQueue);
-					Util.PrintLine("Time In Stream Buffer: ", ConsoleColor.DarkYellow, String.Format("{0:0.000}", BufferedTime), ConsoleColor.White, " Δ", ": ", (BuffDelta < 0 ? ConsoleColor.Red : ConsoleColor.Green), String.Format("{0:0.000}", BuffDelta));
-					Util.PrintLine("Time In Wave Buffer: ", ConsoleColor.DarkYellow, String.Format("{0:0.000}", totes), ConsoleColor.White, " Δ", ": ", (WaveDelta < 0 ? ConsoleColor.Red : ConsoleColor.Green), String.Format("{0:0.000}", WaveDelta));
-					Util.PrintLine("Time Since songChange: ", ConsoleColor.Yellow, startTime - DateTime.Now);
-					Draw();
-					oldBuffSecs = BufferedTime;
-					oldWaveSecs = totes;
-				}
-			};
-			//test.Start();
+		private void fireEvent(EventTuple tup) {
+			if (OnEventTrigger != null)
+				OnEventTrigger(tup);
 		}
 
 		private void AddFrameToWaveBuffer(Mp3Frame frame) {
@@ -445,7 +417,7 @@ namespace Free_Sharp_Player {
 					decompressor = CreateFrameDecompressor(frame);
 
 					bufferedWaveProvider = new BufferedWaveProvider(decompressor.OutputFormat);
-					bufferedWaveProvider.BufferDuration = TimeSpan.FromSeconds(MaxTineInQueue); // allow us to get well ahead of ourselves
+					bufferedWaveProvider.BufferDuration = TimeSpan.FromSeconds(Settings.MaxTimeInQueue); // allow us to get well ahead of ourselves
 					oldSampleRate = frame.SampleRate;
 					//this.bufferedWaveProvider.BufferedDuration = 250;
 				}
@@ -463,5 +435,80 @@ namespace Free_Sharp_Player {
 		private static IMp3FrameDecompressor CreateFrameDecompressor(Mp3Frame frame) {
 			return new AcmMp3FrameDecompressor(new Mp3WaveFormat(frame.SampleRate, frame.ChannelMode == ChannelMode.Mono ? 1 : 2, frame.FrameLength, frame.BitRate));
 		}
+
+		#region CLI Output
+
+		public void Draw() {
+			var white = ConsoleColor.White;
+			var green = ConsoleColor.Green;
+			var black = ConsoleColor.Black;
+			var yellow = ConsoleColor.Yellow;
+			char b = '█';
+
+			List<EventTuple> thing = GetAllEvents();
+
+			double percentfull = (Settings.TotalTimeInQueue / Settings.MaxTimeInQueue) * 100;
+			double percentBuff = (Settings.BufferedTime / Settings.TotalTimeInQueue);
+
+			Util.Print(white, "[");
+			bool changed = false;
+			for (int i = 0; i < 100; i++) {
+				if (i < percentfull) {
+					double buff = (1 - percentBuff) * percentfull;
+					if (i < buff)
+						Util.Print(yellow, b);
+					else {
+						if (!changed) {
+							changed = true;
+							Console.CursorTop += 1;
+							Console.CursorLeft -= 1;
+							Util.Print(white, "P");
+							Console.CursorTop -= 1;
+						}
+						Util.Print(green, b);
+					}
+				} else
+					Util.Print(black, b);
+			}
+			Util.PrintLine(white, "]");
+
+			foreach (EventTuple e in thing) {
+				int pos = (int)Math.Max(Math.Round((e.EventQueuePosition / Settings.TotalTimeInQueue) * ((Settings.TotalTimeInQueue / Settings.MaxTimeInQueue) * 100)), 0);
+				Console.CursorLeft = pos;
+				if (e.Event == EventType.SongChange)
+					Util.Print(ConsoleColor.Cyan, "S");
+				else if (e.Event == EventType.Disconnect)
+					Util.Print(ConsoleColor.Red, "D");
+			}
+		}
+		private void StreamInfo() {
+			var test = new System.Timers.Timer();
+			test.Interval = 100;
+			test.AutoReset = true;
+			test.Enabled = false;
+
+			test.Elapsed += (o, e) => {
+				lock (printLock) {
+					Console.Clear();
+					Util.PrintLine("Frames Played: ", ConsoleColor.Cyan, frames);
+					Util.PrintLine("Time Diffrence: ", ConsoleColor.White, String.Format("{0:0.000}", diff));
+					Util.PrintLine("Time Loaded: ", ConsoleColor.DarkYellow, String.Format("{0:0.000}", totalTime));
+					double BuffDelta = Settings.BufferedTime - oldBuffSecs;
+					double totes = bufferedWaveProvider != null ? bufferedWaveProvider.BufferedDuration.TotalSeconds : -1;
+					double WaveDelta = totes - oldWaveSecs;
+					Util.PrintLine("Time In Buffer: ", ConsoleColor.DarkYellow, Settings.TotalTimeInQueue);
+					Util.PrintLine("Time In Stream Buffer: ", ConsoleColor.DarkYellow, String.Format("{0:0.000}", Settings.BufferedTime), ConsoleColor.White, " Δ", ": ", (BuffDelta < 0 ? ConsoleColor.Red : ConsoleColor.Green), String.Format("{0:0.000}", BuffDelta));
+					Util.PrintLine("Time In Wave Buffer: ", ConsoleColor.DarkYellow, String.Format("{0:0.000}", totes), ConsoleColor.White, " Δ", ": ", (WaveDelta < 0 ? ConsoleColor.Red : ConsoleColor.Green), String.Format("{0:0.000}", WaveDelta));
+					Util.PrintLine("Time Since songChange: ", ConsoleColor.Yellow, startTime - DateTime.Now);
+					Draw();
+					oldBuffSecs = Settings.BufferedTime;
+					oldWaveSecs = totes;
+				}
+			};
+			test.Start();
+		}
+
+		#endregion CLI Output
+
 	}
 }

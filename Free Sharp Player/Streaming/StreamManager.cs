@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace Free_Sharp_Player {
 	using System.Threading;
-	using Timer = System.Timers.Timer;
 
 	/* Road to success:
 	 * 1) Make everything event based and make seek start events when seeks poast them (get rid of all timers except the one in playedlistmodel)
@@ -25,7 +24,6 @@ namespace Free_Sharp_Player {
 		private Object theLock = new Object();
 
 		public bool IsPlaying { get; private set; }
-		public Timer mainUpdateTimer { get; private set; }
 		public float Volume {
 			get {
 				if (theQueue != null)
@@ -39,43 +37,68 @@ namespace Free_Sharp_Player {
 			}
 		}
 
-		public double MaxBufferSize { get { return theQueue.MaxTineInQueue; } set { theQueue.MaxTineInQueue = value; } }
-		public double PlayedLegnth { get { return theQueue.TotalTimeInQueue - theQueue.BufferedTime; } }
-		public double TotalLength { get { return theQueue.TotalTimeInQueue; } }
-
-		public delegate void TrackUpdate(Track track);
+		/*public delegate void TrackUpdate(Track track);
 		public event TrackUpdate NewCurrentTrack;
 
 		public delegate void RadioUpdate(getRadioInfo info, List<getLastPlayed> played, List<Track> request);
-		public event RadioUpdate OnRadioUpdate;
+		public event RadioUpdate OnRadioUpdate;*/
+
+		#region Wrappped Queue Events
+		public delegate void EventTriggered(EventTuple e);
+		public event EventTriggered OnEventTrigger;
+
+		public delegate void Buffering(bool isBuffering);
+		public event Buffering OnBufferingStateChange;
+
+		public delegate void QueueTick(QueueSettingsTuple theStuff);
+		public event QueueTick OnQueueTick;
+		#endregion
 
 
 		private MP3Stream theStream;
 		private StreamQueue theQueue;
 
-		private getRadioInfo radioInfo;
+		/*private getRadioInfo radioInfo;
 		private List<getLastPlayed> playedList;
 		private List<Track> requested;
-		private Track currentTrack;
+		private Track currentTrack;*/
 
 		private String firstTrackId = null;
 		private DateTime firstTrackStartTime;
 
 		public StreamManager(String address) {
-			playedList = new List<getLastPlayed>();
-			requested = new List<Track>();
+			//playedList = new List<getLastPlayed>();
+			//requested = new List<Track>();
 
+			//int maxBuff = 30, int maxQueue = 300, double minBuffer = 3, double insertSec = 0.5)
+			QueueSettingsTuple tup = new QueueSettingsTuple() {
+				MaxBufferedTime = 30,
+				MaxTimeInQueue = 300,
+				MinBufferedTime = 3,
+				NumSecToPlay = 0.5
+			};
 
-			theQueue = new StreamQueue();
+			theQueue = new StreamQueue(tup);
 			theStream = new MP3Stream(address, theQueue);
 
-			theQueue.OnEventTrigger += UpdateData;
+			//theQueue.OnEventTrigger += UpdateData;
 
-			mainUpdateTimer = new Timer(1000);
-			mainUpdateTimer.AutoReset = true;
-			mainUpdateTimer.Enabled = false;
-			mainUpdateTimer.Elapsed += (o, e) => { UpdateData(null); };
-			mainUpdateTimer.Start();
+			#region Queue Event Wrappers
+			theQueue.OnEventTrigger += (e) => {
+				if (OnEventTrigger != null)
+					OnEventTrigger(e);
+			};
+
+			theQueue.OnBufferingStateChange += (b) => {
+				if (OnBufferingStateChange != null)
+					OnBufferingStateChange(b);
+			};
+
+			theQueue.OnQueueTick += (s) => {
+				if (OnQueueTick != null)
+					OnQueueTick(s);
+			};
+			#endregion
 		}
 
 		public List<EventTuple> GetEvents() {
@@ -86,8 +109,9 @@ namespace Free_Sharp_Player {
 			theQueue.Seek(sec);
 		}
 
+		//TODO: run on event
 		//TODO: potentual issues with disconnect.
-		public void UpdateData(EventTuple tup) {
+		/*public void UpdateData(EventTuple tup) {
 			new Thread(() => {
 				if (IsPlaying && theStream.EndOfStream)
 					theStream.Play(); //restart stream if needed
@@ -134,7 +158,7 @@ namespace Free_Sharp_Player {
 						OnRadioUpdate(radioInfo, playedList, requested);
 				}
 			}).Start();
-		}
+		}*/
 
 		public void Play() {
 			if (IsPlaying) return;
@@ -142,7 +166,7 @@ namespace Free_Sharp_Player {
 
 			theStream.Play();
 			theQueue.Play();
-			UpdateData(new EventTuple() { Event = EventType.SongChange, EventQueuePosition = 0 });
+			//UpdateData(new EventTuple() { Event = EventType.SongChange, EventQueuePosition = 0 });
 			//mainUpdateTimer.Enabled = true;
 		}
 

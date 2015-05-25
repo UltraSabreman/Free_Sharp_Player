@@ -22,9 +22,16 @@ namespace Free_Sharp_Player {
 		} }
 
 		private MainWindow window;
+		private StreamManager streamManager;
 
-		public VolumeModel(MainWindow win) {
+
+		public VolumeModel(MainWindow win, StreamManager man) {
 			window = win;
+			streamManager = man;
+
+			streamManager.OnEventTrigger += OnEvent;
+			streamManager.OnQueueTick += OnTick;
+			streamManager.OnBufferingStateChange += OnBufferChange;
 
 			window.Volume.DataContext = this;
 
@@ -39,9 +46,12 @@ namespace Free_Sharp_Player {
 			Volume = 25; //TODO: save/load this
 		}
 
-		public void Tick(Object o, EventArgs e) {
-			new Thread(() => { }).Start();
-		}
+		public void OnEvent(EventTuple ev) { }
+
+		public void OnTick(QueueSettingsTuple set) { }
+
+		public void OnBufferChange(bool isBuffering) { }
+	
 
 		private void ResetCapture(object o, object e) {
 			Mouse.Capture(window.Volume, CaptureMode.SubTree);
