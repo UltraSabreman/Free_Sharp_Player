@@ -17,7 +17,7 @@ namespace Free_Sharp_Player {
 
 		public bool IsPlaying { get; private set; }
 		public bool EndOfStream { get; private set; }
-		public String StreamTitle { get; private set; }
+		public Track CurrentTrack { get; private set; }
 
 		private String address;
 		private Thread streamThread;
@@ -25,7 +25,6 @@ namespace Free_Sharp_Player {
 
 		private StreamQueue theQ;
 		private bool changeNextFrame;
-		private String newTitle;
 
 		public MP3Stream(String address, StreamQueue q) {
 			Util.ToggleAllowUnsafeHeaderParsing(true);
@@ -40,7 +39,7 @@ namespace Free_Sharp_Player {
 			theQ = q;
 
 			changeNextFrame = true;
-			newTitle = "";
+			CurrentTrack = null;
 		}
 
 		public void Play() {
@@ -70,7 +69,13 @@ namespace Free_Sharp_Player {
 			try {
 				using (ShoutcastStream theStream = new ShoutcastStream(address)) {
 					theStream.StreamTitleChanged += (o,a) => {
-						newTitle = theStream.StreamTitle;
+
+						var info = getRadioInfo.doPost();
+						if (info == null || String.IsNullOrEmpty(info.track_id) || info.track_id == "0")
+							CurrentTrack = new Track() { trackID = "0", title = info.title };
+						else  //This wont be null if we get this far, because it means the track does exist in their database
+							CurrentTrack = getTrack.doPost(int.Parse(info.track_id)).track.First();
+
 						changeNextFrame = true;
 					};
 
@@ -96,7 +101,7 @@ namespace Free_Sharp_Player {
 								timeout.Enabled = false;
 								timeout.Stop();
 
-								theQ.AddFrame(frame, changeNextFrame, newTitle);
+								theQ.AddFrame(frame, changeNextFrame, CurrentTrack);
 
 								if (changeNextFrame) changeNextFrame = false;
 								numFramesLoaded++;
@@ -123,11 +128,6 @@ namespace Free_Sharp_Player {
 					readFullyStream.Dispose();
 				}
 			}
-
-			/*catch (Exception e) {
-				Util.DumpException(e);
-				throw e;
-			}*/
 		}
 
 

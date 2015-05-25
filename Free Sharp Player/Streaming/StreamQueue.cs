@@ -30,7 +30,7 @@ namespace Free_Sharp_Player {
 			}
 		}
 		public EventType Event { get; set; }
-		public String NewTitle { get; set; }
+		public Track NewTrack { get; set; }
 		public double FrameLengthSec { get; private set; }
 
 		private void GetFrameLengthSec() {
@@ -62,7 +62,7 @@ namespace Free_Sharp_Player {
 	public class EventTuple {
 		public EventType Event { get; set; }
 		public double EventQueuePosition { get; set; }
-		public String CurrentTitle { get; set; }
+		public Track CurrentSong { get; set; }
 	}
 
 	public class StreamQueue {
@@ -141,12 +141,12 @@ namespace Free_Sharp_Player {
 			StreamInfo();
 		}
 
-		public void AddFrame(Mp3Frame frame, bool changed = false, String streamTitle = null) {
+		public void AddFrame(Mp3Frame frame, bool changed = false, Track theTrack = null) {
 			lock (addLock) {
 				StreamFrame temp = new StreamFrame(frame);
 				if (changed) {
 					temp.Event = EventType.SongChange;
-					temp.NewTitle = streamTitle;
+					temp.NewTrack = theTrack;
 				}
 				if (tail == null) {
 					playHead = head = tail = temp;
@@ -184,7 +184,7 @@ namespace Free_Sharp_Player {
 				double time = 0;
 				while (cur != null) {
 					if (cur.Event != EventType.None)
-						nums.Add(new EventTuple {Event = cur.Event, EventQueuePosition = time, CurrentTitle = cur.NewTitle});
+						nums.Add(new EventTuple {Event = cur.Event, EventQueuePosition = time, CurrentSong = cur.NewTrack});
 
 					time += cur.FrameLengthSec;
 					cur = cur.Next;
@@ -267,24 +267,19 @@ namespace Free_Sharp_Player {
 		}
 
 		public void PurgeQueue() {
-			//lock (addLock) {
-
-				while (head != null) {
-					var temp = head.Next;
-					if (temp != null)
-						temp.Prev = null;
-					if (head != null)
-						head.Delete();
-					head = temp;
-				}
-				tail = null;
-				playHead = null;
-			//}
+			while (head != null) {
+				var temp = head.Next;
+				if (temp != null)
+					temp.Prev = null;
+				if (head != null)
+					head.Delete();
+				head = temp;
+			}
+			tail = null;
+			playHead = null;
 		}
 
 		public Mp3Frame GetFrame(ref EventType doEvent) {
-	
-			//We dont want to reset this to false if it's already true.
 			if (doEvent == EventType.None)
 				doEvent = playHead.Event;
 			Mp3Frame ret = playHead.Frame;

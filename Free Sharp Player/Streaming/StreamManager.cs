@@ -8,6 +8,19 @@ namespace Free_Sharp_Player {
 	using System.Threading;
 	using Timer = System.Timers.Timer;
 
+	/* Road to success:
+	 * 1) Make everything event based and make seek start events when seeks poast them (get rid of all timers except the one in playedlistmodel)
+	 * 2) Stream manager exposes all evetns and public functions from quue, nothing else
+	 * 3) All models refernce a stream manager and subscribe to approprate aevents
+	 * 4) Make song progress colors be 4, one for playing, 1 for stream title != current song, 1 for live, 1 for stopped/Dced
+	 * 5) Make all ui update on eithe revents or interaction
+	 * 6) Make very basic song request UI, bind played buttons to like/dislike, and very basic song info ui
+	 * ----- Version Change
+	 * 7) Redo UI code + XAML to match MVVM patter
+	 * 8) add colors themeing + redo (if needed) request ui and info ui
+	 * 9) version 1.0!
+	 */
+
 	public class StreamManager {
 		private Object theLock = new Object();
 
