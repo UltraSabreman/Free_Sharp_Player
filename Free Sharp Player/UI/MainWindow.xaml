@@ -147,6 +147,7 @@
 									<ColumnDefinition Width="40"/>
 									<ColumnDefinition Width="430"/>
 									<ColumnDefinition Width="30"/>
+									<ColumnDefinition Width="20"/>
 								</Grid.ColumnDefinitions>
 								
 								<Label Name="lbl_PlayedTime" ToolTip="When Track was last played" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding last_played, Converter={StaticResource LastPlayedConverter}}"/>
@@ -158,8 +159,8 @@
 										<ColumnDefinition Width="12"/>
 										<ColumnDefinition Width="12"/>
 									</Grid.ColumnDefinitions>
-									<Button Name="btn_Like2" ToolTip="Rate up" Content="C" Grid.Column="0" Foreground="DarkGreen" FontFamily="Wingdings" BorderThickness="0"/>
-									<Button Name="btn_Dislike2" ToolTip="Rate down" Content="D" Grid.Column="1" Foreground="DarkRed" FontFamily="Wingdings" BorderThickness="0"/>
+									<Button Name="btn_Like2" Tag="{Binding trackID}" ToolTip="Rate up" Content="C" Grid.Column="0" Foreground="DarkGreen" FontFamily="Wingdings" BorderThickness="0" Click="btn_Like2_Click"/>
+									<Button Name="btn_Dislike2" Tag="{Binding trackID}" ToolTip="Rate down" Content="D" Grid.Column="1" Foreground="DarkRed" FontFamily="Wingdings" BorderThickness="0" Click="btn_Dislike2_Click"/>
 								</Grid>
 							</Grid>
 						</Border>

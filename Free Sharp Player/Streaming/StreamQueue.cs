@@ -163,7 +163,6 @@ namespace Free_Sharp_Player {
 
 			playTimer.Start();
 
-			Util.PrintLine("sdfsdfsd");
 			//StreamInfo();
 		}
 

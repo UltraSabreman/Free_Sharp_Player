@@ -142,7 +142,6 @@ namespace Free_Sharp_Player {
 		}
 
 		private void SongChanged(Object o, EventArgs e) {
-			Util.PrintLine(ConsoleColor.Green, "Song Changed");
 			CurrentInfo = getRadioInfo.doPost();
 			if (CurrentInfo == null || String.IsNullOrEmpty(CurrentInfo.track_id) || CurrentInfo.track_id == "0")
 				CurrentTrack = new Track() { trackID = "0", title = CurrentInfo.title };

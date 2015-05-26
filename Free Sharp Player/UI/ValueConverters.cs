@@ -30,7 +30,19 @@ namespace Free_Sharp_Player {
 			throw new NotImplementedException();
 		}
 	}
+	public class ReqToBoolConverter : IValueConverter {
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+			if (((int) value) == 0)
+				return false;
+			else
+				return true;
+		}
 
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+			// Do the conversion from visibility to bool
+			throw new NotImplementedException();
+		}
+	}
 
 	public class SongLengthSafetyConverter : IValueConverter {
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Free_Sharp_Player {
@@ -35,6 +36,7 @@ namespace Free_Sharp_Player {
 			window.btn_Favor.Click += ResetCapture;
 			window.btn_Request.Click += ResetCapture;
 			window.btn_Settings.Click += ResetCapture;
+			window.btn_Request.Click += btn_Request_Click;
 
 			Votes = "---";
 		}
@@ -63,6 +65,12 @@ namespace Free_Sharp_Player {
 			window.Dispatcher.Invoke(new Action(() => {
 				Votes = rating;
 			}));
+		}
+
+
+		private void btn_Request_Click(object sender, RoutedEventArgs e) {
+			BasicRequestUI ui = new BasicRequestUI();
+			ui.Show();
 		}
 
 
