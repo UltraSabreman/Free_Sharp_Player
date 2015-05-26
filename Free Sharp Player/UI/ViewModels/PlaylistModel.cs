@@ -64,6 +64,8 @@ namespace Free_Sharp_Player {
 			listUpdater.Elapsed += Tick;
 			listUpdater.AutoReset = true;
 			listUpdater.Start();
+
+			Tick();
 		}
 
 		public void OnEvent(EventTuple ev) { }
@@ -73,7 +75,7 @@ namespace Free_Sharp_Player {
 		public void OnBufferChange(bool isBuffering) { }
 
 
-		public void Tick(Object o, EventArgs e) {
+		public void Tick(Object o = null, EventArgs e = null) {
 			new Thread(() => {
 				var played = getLastPlayed.doPost();
 				var reqs = getRequests.doPost();
@@ -82,13 +84,15 @@ namespace Free_Sharp_Player {
 					queued = reqs.track;
 
 				window.Dispatcher.Invoke(new Action(() => {
-					lock (theLock) {
+					
 						UpdatePlayedList(played);
 
 						UpdateQueue(queued);
 
 						UpdateSize();
-					}
+
+						Util.PrintLine("asdfadfasdf");
+					
 				}));
 			}).Start();
 		}
@@ -180,6 +184,8 @@ namespace Free_Sharp_Player {
 			window.Played.IsOpen = IsOpen;
 			window.Queue.IsOpen = IsOpen;
 			listUpdater.Enabled = IsOpen;
+			if (IsOpen)
+				Tick();
 		}
 
 

@@ -89,7 +89,8 @@ namespace Free_Sharp_Player {
 						ColorLikes(tempStatus.status);
 					}
 				}).Start();
-			}//TODO: something on disconnect?
+			}
+			//TODO: something on disconnect?
 
 			if (ev.RadioInfo != null)
 				isLive = int.Parse(ev.RadioInfo.autoDJ) == 0;
@@ -123,7 +124,7 @@ namespace Free_Sharp_Player {
 					
 					//TODO: song progress fix timing issue
 					TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
-					TimeSpan duration = DateTime.Now - currentSong.localLastPlayed;
+					TimeSpan duration = DateTime.Now - (currentSong.localLastPlayed + new TimeSpan(0,0,0, (int)set.BufferedTime, 0));
 
 					window.Dispatcher.Invoke(new Action(() => {
 						if (TotalBufferSize <= 0.5 || PlayedBufferSize <= 0.5)
@@ -134,14 +135,14 @@ namespace Free_Sharp_Player {
 
 						double length = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongDuration.TotalSeconds;
 						//TODO: backwards hack to get around lack of "live" indicator.
-						if (length > (SongDuration.TotalSeconds + 5)) {
+						/*if (length > (SongDuration.TotalSeconds + 5)) {
 							SongLength = -1;
 							SongMaxLength = 1;
 							isLive = true;
-						} else {
+						} else {*/
 							SongMaxLength = SongDuration.TotalSeconds;
 							SongLength = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongMaxLength;
-						}
+						//}
 					}));
 				}
 			}).Start();

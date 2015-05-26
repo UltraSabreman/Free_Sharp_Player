@@ -124,6 +124,9 @@ namespace Free_Sharp_Player {
 		private StreamFrame head;
 		private StreamFrame tail;
 		private StreamFrame playHead;
+
+		private List<EventTuple> allEvents = new List<EventTuple>();
+		
 		private Timer playTimer;
 
 		private IWavePlayer waveOut;
@@ -160,28 +163,21 @@ namespace Free_Sharp_Player {
 
 			playTimer.Start();
 
+			Util.PrintLine("sdfsdfsd");
 			//StreamInfo();
 		}
 
 
-		public void AddFrame(Mp3Frame frame, bool changed = false, Track theTrack = null, getRadioInfo info = null) {
+		public void AddFrame(Mp3Frame frame, EventTuple theEvent = null) {
 			lock (addLock) {
 				StreamFrame temp = new StreamFrame(frame);
-				if (changed) {
-					var tup = new EventTuple() { Event = EventType.SongChange };
-					tup.EventQueuePosition = Settings.TotalTimeInQueue - Settings.BufferedTime;
-					tup.CurrentSong = theTrack;
-					tup.RadioInfo = info;
 
-					temp.Event = tup;
-				} else if (frame == null) {
-					var tup = new EventTuple() { Event = EventType.Disconnect };
-					tup.EventQueuePosition = Settings.TotalTimeInQueue - Settings.BufferedTime;
+				if (theEvent != null) {
+					theEvent.EventQueuePosition = Settings.TotalTimeInQueue;
+					allEvents.Add(theEvent);
+				}
 
-					temp.Event = tup;
-				} else
-					temp.Event = null;
-
+				temp.Event = theEvent;
 
 				if (tail == null) {
 					playHead = head = tail = temp;
@@ -202,6 +198,11 @@ namespace Free_Sharp_Player {
 						}
 						
 						Settings.TotalTimeInQueue -= head.FrameLengthSec;
+
+						allEvents.RemoveAt(0);
+						foreach (EventTuple e in allEvents)
+							e.EventQueuePosition -= head.FrameLengthSec;
+
 						head = head.Next;
 						head.Prev.Delete();
 						head.Prev = null;
@@ -213,19 +214,7 @@ namespace Free_Sharp_Player {
 
 		public List<EventTuple> GetAllEvents() {
 			lock (addLock) {
-				List<EventTuple> nums = new List<EventTuple>();
-
-				StreamFrame cur = head;
-				double time = 0;
-				while (cur != null) {
-					if (cur.Event != null && cur.Event.Event != EventType.None)
-						nums.Add(cur.Event);
-
-					time += cur.FrameLengthSec;
-					cur = cur.Next;
-				}
-
-				return nums;
+				return new List<EventTuple>(allEvents);
 			}
 		}
 
@@ -238,9 +227,6 @@ namespace Free_Sharp_Player {
 
 						while (Settings.BufferedTime <= destTime && playHead.Prev != null) {
 							Settings.BufferedTime += playHead.FrameLengthSec;
-							if (playHead.Event != null && playHead.Event.Event != EventType.None) {
-								fireEvent(playHead.Event);
-							}
 
 							playHead = playHead.Prev;
 						}
@@ -248,12 +234,13 @@ namespace Free_Sharp_Player {
 						double destTime = Settings.BufferedTime - secToSeek;
 						while (Settings.BufferedTime >= destTime && playHead.Next != null) {
 							Settings.BufferedTime -= playHead.FrameLengthSec;
-							if (playHead.Event != null && playHead.Event.Event != EventType.None) {
-								fireEvent(playHead.Event);
-							}
 
 							playHead = playHead.Next;
 						}
+					}
+
+					if (playHead.Event != null) {
+						fireEvent(playHead.Event);
 					}
 					
 				}
@@ -318,6 +305,10 @@ namespace Free_Sharp_Player {
 
 			Mp3Frame ret = playHead.Frame;
 			Settings.BufferedTime -= playHead.FrameLengthSec;
+
+			if (playHead.Next != null)
+				playHead.Next.Event.EventQueuePosition -= playHead.FrameLengthSec;
+
 			playHead = playHead.Next;
 
 			return ret;
@@ -404,6 +395,7 @@ namespace Free_Sharp_Player {
 		}
 
 		private void fireEvent(EventTuple tup) {
+
 			if (OnEventTrigger != null)
 				OnEventTrigger(tup);
 		}
@@ -505,7 +497,7 @@ namespace Free_Sharp_Player {
 					oldWaveSecs = totes;
 				}
 			};
-			test.Start();
+			//test.Start();
 		}
 
 		#endregion CLI Output

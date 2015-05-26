@@ -54,6 +54,7 @@ namespace Free_Sharp_Player {
 
 		public MainWindow() {
 			AllocConsole();
+
 			InitializeComponent();
 			btn_PlayPause.IsEnabled = false;
 

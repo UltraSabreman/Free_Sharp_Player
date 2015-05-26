@@ -16,7 +16,6 @@ namespace Free_Sharp_Player {
 		private int receivedBytes;
 		private Stream netStream;
 		public bool connected { get; private set; }
-		private bool doEvetns = false;
 
 		private string streamTitle;
 		private string address;
@@ -69,13 +68,9 @@ namespace Free_Sharp_Player {
 			string newStreamTitle = m.Groups[1].Value.Trim();
 
 
-			if (newStreamTitle != streamTitle) {
-				if (!doEvetns && !String.IsNullOrEmpty(newStreamTitle))
-					doEvetns = true;
-				else {
-					streamTitle = newStreamTitle;
-					OnStreamTitleChanged();
-				}
+			if (newStreamTitle != streamTitle && !String.IsNullOrEmpty(newStreamTitle)) {
+				streamTitle = newStreamTitle;
+				OnStreamTitleChanged();
 			}
 		}
 

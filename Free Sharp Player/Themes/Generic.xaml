@@ -131,7 +131,7 @@
 										Canvas.Right="{Binding HandlePosition, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" >
 								</Button>
 							</Canvas>
-							<local:MarqueeTextBlock x:Name="StreamTitle" Margin="3,0,0,0"  Content="{Binding StreamTitle, RelativeSource={RelativeSource TemplatedParent}}" 
+							<local:MarqueeTextBlock x:Name="StreamTitle" Margin="1,0,1,0"  Content="{Binding StreamTitle, RelativeSource={RelativeSource TemplatedParent}}" 
 								   VerticalContentAlignment="Center" FontSize="14" Background="Transparent" IsHitTestVisible="False"/>
 						</Grid>
 					</Border>

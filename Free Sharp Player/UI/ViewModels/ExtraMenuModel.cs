@@ -15,6 +15,9 @@ namespace Free_Sharp_Player {
 
 		private MainWindow window;
 		private StreamManager streamManager;
+		private int updateCount = 0;
+
+		private Track currentTrack;
 
 		public ExtraMenuModel(MainWindow win, StreamManager man) {
 			window = win;
@@ -25,6 +28,7 @@ namespace Free_Sharp_Player {
 			streamManager.OnBufferingStateChange += OnBufferChange;
 
 			window.Extras.DataContext = this;
+			window.ExtrasMenu.Opened += UpdateRating;
 
 			window.btn_Like.Click += ResetCapture;
 			window.btn_Dislike.Click += ResetCapture;
@@ -35,18 +39,32 @@ namespace Free_Sharp_Player {
 			Votes = "---";
 		}
 
-		public void OnEvent(EventTuple ev) { }
+		public void OnEvent(EventTuple ev) {
+			if (ev.Event != EventType.Disconnect)
+				currentTrack = ev.CurrentSong;
+		}
 
-		public void OnTick(QueueSettingsTuple set) { }
+		public void OnTick(QueueSettingsTuple set) { } 
 
 		public void OnBufferChange(bool isBuffering) { }
 
-		public void UpdateInfo(getRadioInfo info) {
+		public void UpdateRating(Object o, EventArgs e) {
+			if (currentTrack == null || String.IsNullOrEmpty(currentTrack.trackID) || currentTrack.trackID == "0") {
+				Votes = "---";
+				return;
+			}
+
+			var trackList = getTrack.doPost((int?)int.Parse(currentTrack.trackID));
+			if (trackList == null || trackList.total_records == "0") 
+				return;
+
+			String rating = trackList.track.First().rating;
+
 			window.Dispatcher.Invoke(new Action(() => {
-				if (info != null && !String.IsNullOrEmpty(info.rating))
-					Votes = info.rating;
+				Votes = rating;
 			}));
 		}
+
 
 		private void ResetCapture(object o, object e) {
 			Mouse.Capture(window.Extras, CaptureMode.SubTree);

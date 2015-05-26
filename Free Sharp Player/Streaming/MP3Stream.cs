@@ -17,7 +17,10 @@ namespace Free_Sharp_Player {
 
 		public bool IsPlaying { get; private set; }
 		public bool EndOfStream { get; private set; }
-		public Track CurrentTrack { get; private set; }
+
+		private Track CurrentTrack;
+		private getRadioInfo CurrentInfo;
+		private EventTuple normalEvent;
 
 		private String address;
 		private Thread streamThread;
@@ -25,6 +28,7 @@ namespace Free_Sharp_Player {
 
 		private StreamQueue theQ;
 		private bool changeNextFrame;
+		private bool firstRun = true;
 
 		public MP3Stream(String address, StreamQueue q) {
 			Util.ToggleAllowUnsafeHeaderParsing(true);
@@ -41,7 +45,7 @@ namespace Free_Sharp_Player {
 			timeOut.AutoReset = false;
 			timeOut.Enabled = true;
 			timeOut.Elapsed += (o, e) => {
-				theQ.AddFrame(null, false);
+				theQ.AddFrame(null, new EventTuple() { Event = EventType.Disconnect });
 			};
 
 			theQ = q;
@@ -58,7 +62,7 @@ namespace Free_Sharp_Player {
 				streamThread.Start();
 			}
 
-			SongChanged(null, null);
+			//SongChanged(null, null);
 		}
 
 
@@ -97,15 +101,26 @@ namespace Free_Sharp_Player {
 								timeOut.Enabled = false;
 								timeOut.Stop();
 
-								theQ.AddFrame(frame, changeNextFrame, CurrentTrack);
+								if (changeNextFrame) {
+									theQ.AddFrame(frame, new EventTuple() { CurrentSong = CurrentTrack, RadioInfo = CurrentInfo, Event = EventType.SongChange });
+									changeNextFrame = false;
+									normalEvent = null;
+								} else {
+									if (normalEvent == null)
+										normalEvent = new EventTuple() { CurrentSong = CurrentTrack, RadioInfo = CurrentInfo, Event = EventType.None };
+									theQ.AddFrame(frame, normalEvent);
+								}
 
-								if (changeNextFrame) changeNextFrame = false;
+								if (firstRun) {
+									SongChanged(null, null);
+									firstRun = false;
+								}
 								numFramesLoaded++;
 							} catch (EndOfStreamException) {
 								timeOut.Enabled = false;
 								timeOut.Stop();
 
-								theQ.AddFrame(null, false);
+								theQ.AddFrame(null, new EventTuple() { Event = EventType.Disconnect });
 
 								EndOfStream = true;
 								break;
@@ -127,11 +142,17 @@ namespace Free_Sharp_Player {
 		}
 
 		private void SongChanged(Object o, EventArgs e) {
-			var info = getRadioInfo.doPost();
-			if (info == null || String.IsNullOrEmpty(info.track_id) || info.track_id == "0")
-				CurrentTrack = new Track() { trackID = "0", title = info.title };
-			else  //This wont be null if we get this far, because it means the track does exist in their database
-				CurrentTrack = getTrack.doPost(int.Parse(info.track_id)).track.First();
+			Util.PrintLine(ConsoleColor.Green, "Song Changed");
+			CurrentInfo = getRadioInfo.doPost();
+			if (CurrentInfo == null || String.IsNullOrEmpty(CurrentInfo.track_id) || CurrentInfo.track_id == "0")
+				CurrentTrack = new Track() { trackID = "0", title = CurrentInfo.title };
+			else {  //This wont be null if we get this far, because it means the track does exist in their database
+				var trackList =  getTrack.doPost(int.Parse(CurrentInfo.track_id)).track;
+				if (trackList == null || trackList.Count == 0)
+					CurrentTrack = new Track() { trackID = "0", title = CurrentInfo.title };
+				else 
+					CurrentTrack = trackList.First();
+			}
 
 			changeNextFrame = true;
 		}

@@ -37,12 +37,6 @@ namespace Free_Sharp_Player {
 			}
 		}
 
-		/*public delegate void TrackUpdate(Track track);
-		public event TrackUpdate NewCurrentTrack;
-
-		public delegate void RadioUpdate(getRadioInfo info, List<getLastPlayed> played, List<Track> request);
-		public event RadioUpdate OnRadioUpdate;*/
-
 		#region Wrappped Queue Events
 		public delegate void EventTriggered(EventTuple e);
 		public event EventTriggered OnEventTrigger;
@@ -58,19 +52,7 @@ namespace Free_Sharp_Player {
 		private MP3Stream theStream;
 		private StreamQueue theQueue;
 
-		/*private getRadioInfo radioInfo;
-		private List<getLastPlayed> playedList;
-		private List<Track> requested;
-		private Track currentTrack;*/
-
-		private String firstTrackId = null;
-		private DateTime firstTrackStartTime;
-
 		public StreamManager(String address) {
-			//playedList = new List<getLastPlayed>();
-			//requested = new List<Track>();
-
-			//int maxBuff = 30, int maxQueue = 300, double minBuffer = 3, double insertSec = 0.5)
 			QueueSettingsTuple tup = new QueueSettingsTuple() {
 				MaxBufferedTime = 30,
 				MaxTimeInQueue = 300,
@@ -80,8 +62,6 @@ namespace Free_Sharp_Player {
 
 			theQueue = new StreamQueue(tup);
 			theStream = new MP3Stream(address, theQueue);
-
-			//theQueue.OnEventTrigger += UpdateData;
 
 			#region Queue Event Wrappers
 			theQueue.OnEventTrigger += (e) => {
@@ -109,65 +89,13 @@ namespace Free_Sharp_Player {
 			theQueue.Seek(sec);
 		}
 
-		//TODO: run on event
-		//TODO: potentual issues with disconnect.
-		/*public void UpdateData(EventTuple tup) {
-			new Thread(() => {
-				if (IsPlaying && theStream.EndOfStream)
-					theStream.Play(); //restart stream if needed
-
-				lock (theLock) {
-					//get all played tracks
-					radioInfo = getRadioInfo.doPost();
-					playedList.Clear();
-
-					playedList = getLastPlayed.doPost();
-					//update current track if nessesary
-					if (tup != null) {
-						if (tup.Event == EventType.SongChange) {
-
-							currentTrack = getTrack.doPost(int.Parse(playedList.First().trackID)).track[0];
-
-							//TODO: Song Progress: Fiz timing issue
-							Util.PrintLine(tup.EventQueuePosition);
-							if (tup.EventQueuePosition == 0 && firstTrackId == null) {
-								firstTrackId = currentTrack.trackID;
-								firstTrackStartTime = DateTime.UtcNow;
-							}
-
-							if (firstTrackId != null && firstTrackId == currentTrack.trackID) {
-								TimeSpan diffrence = DateTime.Parse(currentTrack.lastPlayed) - firstTrackStartTime;
-								currentTrack.duration = (TimeSpan.Parse(currentTrack.duration) + diffrence + TimeSpan.FromSeconds(theQueue.BufferedTime)).ToString();
-							}
-
-							if (currentTrack.WholeTitle == radioInfo.title)
-								currentTrack.lastPlayed = DateTime.UtcNow.ToString();
-
-							if (NewCurrentTrack != null)
-								NewCurrentTrack(currentTrack);
-						} else if (tup.Event == EventType.Disconnect) {
-							//TODO: handle disconnect.  Ui hooks?
-						}
-					}
-
-					//get list of requested tracks + radio info
-					requested = getRequests.doPost().track;
-					
-
-					if (OnRadioUpdate != null)
-						OnRadioUpdate(radioInfo, playedList, requested);
-				}
-			}).Start();
-		}*/
-
+		
 		public void Play() {
 			if (IsPlaying) return;
 			IsPlaying = true;
 
 			theStream.Play();
 			theQueue.Play();
-			//UpdateData(new EventTuple() { Event = EventType.SongChange, EventQueuePosition = 0 });
-			//mainUpdateTimer.Enabled = true;
 		}
 
 		public void Stop() {
@@ -176,7 +104,6 @@ namespace Free_Sharp_Player {
 
 			theStream.Stop();
 			theQueue.Stop();
-			//mainUpdateTimer.Enabled = false;
 		}
 
 
