@@ -73,7 +73,7 @@ namespace Free_Sharp_Player {
 
 		public void OnEvent(EventTuple ev) {
 			if (ev == null) return;
-			if (ev.Event == EventType.SongChange) {
+			if (ev.Event == EventType.SongChange || ev.Event == EventType.None) {
 				new Thread(() => {
 					currentSong = ev.CurrentSong;
 					if (ev.CurrentSong != null) {

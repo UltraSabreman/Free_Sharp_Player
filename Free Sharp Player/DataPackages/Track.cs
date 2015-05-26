@@ -13,7 +13,7 @@ namespace Free_Sharp_Player {
 
 		public String title { get { return GetProp<String>(); } set { SetProp(value); } }
 
-		public String WholeTitle { get { return artist.Trim() + (!String.IsNullOrEmpty(title) ? " - " + title.Trim() : ""); } }
+		public String WholeTitle { get { return (!String.IsNullOrEmpty(artist) ? artist.Trim() + " - " : "") + title.Trim(); } }
 
 
 		public String duration { get; set; }

@@ -230,13 +230,21 @@ namespace Free_Sharp_Player {
 
 							playHead = playHead.Prev;
 						}
+
+						Settings.MaxBufferedTime -= secToSeek;
 					} else {
 						double destTime = Settings.BufferedTime - secToSeek;
+
 						while (Settings.BufferedTime >= destTime && playHead.Next != null) {
 							Settings.BufferedTime -= playHead.FrameLengthSec;
 
 							playHead = playHead.Next;
 						}
+
+
+
+						Settings.MaxBufferedTime += secToSeek;
+
 					}
 
 					if (playHead.Event != null) {
