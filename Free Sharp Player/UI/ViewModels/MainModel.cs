@@ -114,7 +114,7 @@ namespace Free_Sharp_Player {
 
 
 					//TODO: more colors/states.
-					if (isLive || currentSong == null || !window.IsPlaying) {
+					if (isLive || currentSong == null || !window.IsPlaying || currentSong.duration == null) {
 						window.Dispatcher.Invoke(new Action(() => {
 							SongLength = -1;
 							SongMaxLength = 1;
