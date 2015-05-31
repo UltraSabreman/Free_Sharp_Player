@@ -83,6 +83,7 @@
     </Compile>
     <Compile Include="UI\Controls\DynamicBufferBar.cs" />
     <Compile Include="UI\Controls\MarqueeTextBlock.cs" />
+    <Compile Include="UI\Controls\RatingControl.cs" />
     <Compile Include="UI\TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
@@ -153,6 +154,12 @@
     <Resource Include="Misc\ToDo.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\LikeButton.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\DislikeButton.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Content Include="Resources\stripes.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

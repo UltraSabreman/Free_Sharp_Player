@@ -139,4 +139,53 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style TargetType="{x:Type local:RatingControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+				<ControlTemplate TargetType="{x:Type local:RatingControl}">
+					<Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+
+						<Grid >
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="30"/>
+								<ColumnDefinition Width="30"/>
+								<ColumnDefinition Width="30"/>
+								<ColumnDefinition Width="30"/>
+							</Grid.ColumnDefinitions>
+							<Button Name="btn_Like" ToolTip="Rate up" Grid.Column="0" BorderThickness="0" IsEnabled="False">
+								<Button.Content>
+									<Rectangle Width="30" Height="30">
+										<Rectangle.Fill>
+											<SolidColorBrush Color="#007700"/>
+										</Rectangle.Fill>
+										<Rectangle.OpacityMask>
+											<ImageBrush ImageSource="/Free Sharp Player;component/Resources/LikeButton.png"/>
+										</Rectangle.OpacityMask>
+									</Rectangle>
+								</Button.Content>
+							</Button>
+							<Button Name="btn_Dislike" ToolTip="Rate down" Grid.Column="3" BorderThickness="0" IsEnabled="False">
+								<Button.Content>
+									<Rectangle Width="30" Height="30">
+										<Rectangle.Fill>
+											<SolidColorBrush Color="#770000"/>
+										</Rectangle.Fill>
+										<Rectangle.OpacityMask>
+											<ImageBrush ImageSource="/Free Sharp Player;component/Resources/DislikeButton.png"/>
+										</Rectangle.OpacityMask>
+									</Rectangle>
+								</Button.Content>
+							</Button>
+							
+							<Label Name="lbl_Votes" ToolTip="Track Rating" Content="{Binding Votes}" Grid.Column="1" Grid.ColumnSpan="2" 
+								   HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+						</Grid>
+					</Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

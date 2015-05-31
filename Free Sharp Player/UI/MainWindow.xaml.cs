@@ -166,11 +166,5 @@ namespace Free_Sharp_Player {
 			}
 		}
 
-		private void btn_Like2_Click(object sender, RoutedEventArgs e) {
-		}
-
-		private void btn_Dislike2_Click(object sender, RoutedEventArgs e) {
-		}
-
 	}
 }

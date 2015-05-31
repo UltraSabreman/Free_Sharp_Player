@@ -104,14 +104,14 @@ namespace Free_Sharp_Player {
 			if (newStuff == null) return;
 			bool flag = Played.Count == 0;
 
-
+			int index = 0;
 			foreach (getLastPlayed lp in newStuff) {
 				var matches = Played.Where(X => X.trackID == lp.trackID);
 				if (matches.Count() == 0) {
 					if (flag)
 						Played.Add(lp);
 					else
-						Played.Insert(0, lp);
+						Played.Insert(index++, lp);
 				} else
 					matches.ElementAt(0).Update(lp);
 			}
@@ -132,13 +132,14 @@ namespace Free_Sharp_Player {
 			if (newStuff == null) return;
 			bool flag = Queue.Count == 0;
 
+			int index = 0;
 			foreach (Track lp in newStuff) {
 				var matches = Queue.Where(X => X.trackID == lp.trackID);
 				if (matches.Count() == 0) {
 					if (flag)
 						Queue.Add(lp);
 					else
-						Queue.Insert(0, lp);
+						Queue.Insert(index++, lp);
 				} else
 					matches.ElementAt(0).Update(lp);
 			}

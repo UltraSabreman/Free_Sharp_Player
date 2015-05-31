@@ -18,8 +18,7 @@ namespace Free_Sharp_Player {
 			var payload = new Dictionary<String, Object> {
 				{"action", "setVote"},
 			};
-			if (trackID == null) return null;
-			payload["trackID"] = Uri.EscapeUriString(trackID);
+			if (trackID == null) payload["trackID"] = Uri.EscapeUriString(trackID);
 			payload["modifier"] = Uri.EscapeUriString(vote.ToString());
 			
 

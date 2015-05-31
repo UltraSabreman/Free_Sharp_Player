@@ -51,8 +51,6 @@ namespace Free_Sharp_Player {
 			window.btn_PlayPause.Click += btn_PlayPause_Click;
 			window.btn_Volume.Click += btn_Volume_Click;
 			window.btn_Extra.Click += btn_Extra_Click;
-			window.btn_Like.Click += btn_Like_Click;
-			window.btn_Dislike.Click += btn_Dislike_Click;
 
 
 			window.MyBuffer.OnSeekDone += (sec) => {
@@ -86,7 +84,6 @@ namespace Free_Sharp_Player {
 					//TODO: make this not rely on a post.
 					if (currentSong != null) {
 						currentSong.MyVote = (int)(tempStatus.vote ?? 0);
-						ColorLikes(tempStatus.status);
 					}
 				}).Start();
 			}
@@ -118,6 +115,9 @@ namespace Free_Sharp_Player {
 						window.Dispatcher.Invoke(new Action(() => {
 							SongLength = -1;
 							SongMaxLength = 1;
+
+							TotalBufferSize = set.TotalTimeInQueue;
+							PlayedBufferSize = set.TotalTimeInQueue - set.BufferedTime;
 						}));
 						return;
 					}
@@ -161,40 +161,6 @@ namespace Free_Sharp_Player {
 			}).Start();
 		}*/
 
-
-		private void ColorLikes(int? status) {
-			window.Dispatcher.Invoke(new Action(() => {
-				if (status != null && status == 0) {
-					window.btn_Like.IsEnabled = false;
-					window.btn_Dislike.IsEnabled = false;
-				} else {
-					window.btn_Like.IsEnabled = true;
-					window.btn_Dislike.IsEnabled = true;
-
-					if (currentSong.MyVote == 1) {
-						window.btn_Like.Background = Brushes.DarkGreen;
-						window.btn_Like.Foreground = Brushes.Black;
-
-						window.btn_Dislike.Background = Brushes.Transparent;
-						window.btn_Dislike.Foreground = Brushes.DarkRed;
-					} else if (currentSong.MyVote == -1) {
-						window.btn_Like.Background = Brushes.Transparent;
-						window.btn_Like.Foreground = Brushes.DarkGreen;
-
-						window.btn_Dislike.Background = Brushes.DarkRed;
-						window.btn_Dislike.Foreground = Brushes.Black;
-					} else {
-						window.btn_Like.Background = Brushes.Transparent;
-						window.btn_Like.Foreground = Brushes.DarkGreen;
-
-						window.btn_Dislike.Background = Brushes.Transparent;
-						window.btn_Dislike.Foreground = Brushes.DarkRed;
-					}
-				}
-			}));
-
-		}
-
 		private void btn_PlayPause_Click(object sender, RoutedEventArgs e) {
 			if (window.IsPlaying) {
 				window.Stop();
@@ -234,18 +200,6 @@ namespace Free_Sharp_Player {
 		}
 
 
-
-		private void btn_Like_Click(object sender, RoutedEventArgs e) {
-			currentSong.MyVote += (currentSong.MyVote + 1 > 1 ? -1 : 1);
-			ColorLikes(null);
-			setVote.doPost(currentSong.MyVote, currentSong.trackID);
-		}
-		private void btn_Dislike_Click(object sender, RoutedEventArgs e) {
-			currentSong.MyVote += (currentSong.MyVote - 1 < -1 ? 1 : -1);
-			ColorLikes(null);
-			setVote.doPost(currentSong.MyVote, currentSong.trackID);
-
-		}
 
 		private void btn_Extra_Click(object sender, RoutedEventArgs e) {
 			ExtrasOpen = !ExtrasOpen;

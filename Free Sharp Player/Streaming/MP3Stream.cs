@@ -153,6 +153,23 @@ namespace Free_Sharp_Player {
 					CurrentTrack = trackList.First();
 			}
 
+			bool set = false;
+			if (CurrentTrack.trackID != "0" && CurrentTrack.WholeTitle != CurrentInfo.title) {
+				
+				var last = getLastPlayed.doPost();
+				if (last != null && last.Count != 0 && last.First().WholeTitle == CurrentInfo.title) {
+					var tracks = getTrack.doPost(int.Parse(last.First().trackID));
+					if (tracks != null && tracks.track != null && tracks.track.Count != 0) {
+						CurrentTrack = tracks.track.First();
+						set = true;
+					}
+				}
+				if (!set)
+					CurrentTrack = new Track() { trackID = "0", title = CurrentInfo.title };
+			}
+
+			Util.PrintLine(ConsoleColor.Green, CurrentTrack.trackID);
+
 			changeNextFrame = true;
 		}
 
