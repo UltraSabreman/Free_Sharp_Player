@@ -90,9 +90,6 @@ namespace Free_Sharp_Player {
 						UpdateQueue(queued);
 
 						UpdateSize();
-
-						Util.PrintLine("asdfadfasdf");
-					
 				}));
 			}).Start();
 		}

@@ -64,6 +64,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Attributes.cs" />
     <Compile Include="Configs.cs" />
     <Compile Include="DataPackages\JSONObjects\getRequests.cs" />
     <Compile Include="DataPackages\JSONObjects\getRadioInfo.cs" />
@@ -165,12 +166,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\disconnect.png">
+    <Resource Include="Resources\disconnect.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\songchange.png">
+    </Resource>
+    <Resource Include="Resources\songchange.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    </Resource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

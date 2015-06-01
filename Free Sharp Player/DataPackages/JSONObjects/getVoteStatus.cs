@@ -10,10 +10,12 @@ namespace Free_Sharp_Player {
 		public int? vote; //my vote.
 		public int? status; //if here i can vote
 
-		public static getVoteStatus doPost() {
+		public static getVoteStatus doPost(String trackid = null) {
 			var payload = new Dictionary<String, Object> {
 				{"action", "getVoteStatus"},
 			};
+
+			if (trackid != null) payload["trackID"] = Uri.EscapeUriString(trackid);
 
 			String result = HttpPostRequest.PostRequest(payload);
 			getVoteStatus temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(getVoteStatus)) as getVoteStatus;

@@ -19,7 +19,12 @@
 		</Grid.ColumnDefinitions>
 
 		<mc:MarqueeTextBlock Grid.Row="1" mc:Content="~~~~Dat Scrolling Text~~~~" VerticalContentAlignment="Stretch"  Background="Pink" x:Name="MyTextControlTest" />
-		<mc:RatingControl Grid.Row="2" />
+		<Rectangle Fill="Gray" Grid.Row="2"/>
+		<mc:RatingControl Grid.Row="2" Width="120"  Height="30" ShowRating="True" FontSize="15" >
+			<mc:RatingControl.BoundTrack>
+				<mc:Track rating="34" artist="cat" title="asdf" />
+			</mc:RatingControl.BoundTrack>
+		</mc:RatingControl>
 		<TextBlock Grid.Row="3" Text="Some Long Text" Background="Pink" Name="NormalTextControl" />
 		<ProgressBar Name="prog" Grid.Row="4" Maximum="100" IsEnabled="True"/>
 

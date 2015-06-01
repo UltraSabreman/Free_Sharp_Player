@@ -146,7 +146,7 @@ namespace Free_Sharp_Player {
 			if (CurrentInfo == null || String.IsNullOrEmpty(CurrentInfo.track_id) || CurrentInfo.track_id == "0")
 				CurrentTrack = new Track() { trackID = "0", title = CurrentInfo.title };
 			else {  //This wont be null if we get this far, because it means the track does exist in their database
-				var trackList =  getTrack.doPost(int.Parse(CurrentInfo.track_id)).track;
+				var trackList =  getTrack.doPost(CurrentInfo.track_id).track;
 				if (trackList == null || trackList.Count == 0)
 					CurrentTrack = new Track() { trackID = "0", title = CurrentInfo.title };
 				else 
@@ -158,9 +158,9 @@ namespace Free_Sharp_Player {
 				
 				var last = getLastPlayed.doPost();
 				if (last != null && last.Count != 0 && last.First().WholeTitle == CurrentInfo.title) {
-					var tracks = getTrack.doPost(int.Parse(last.First().trackID));
-					if (tracks != null && tracks.track != null && tracks.track.Count != 0) {
-						CurrentTrack = tracks.track.First();
+					Track tempTrack = getTrack.GetSingleTrack(last.First().trackID);
+					if (tempTrack != null) {
+						CurrentTrack = tempTrack;
 						set = true;
 					}
 				}

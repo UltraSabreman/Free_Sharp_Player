@@ -11,15 +11,13 @@ using System.Windows.Media;
 namespace Free_Sharp_Player {
 	class ExtraMenuModel : ViewModelNotifier {
 		public String Votes { get { return GetProp<String>(); } set { SetProp(value); } }
+		public Track CurrentSong { get { return GetProp<Track>(); } set { SetProp(value); } }
 
 		//TODO: set votes to "---" when stopped.
 
 
 		private MainWindow window;
 		private StreamManager streamManager;
-		private int updateCount = 0;
-
-		private Track currentSong;
 
 		public ExtraMenuModel(MainWindow win, StreamManager man) {
 			window = win;
@@ -32,11 +30,6 @@ namespace Free_Sharp_Player {
 			window.Extras.DataContext = this;
 			window.ExtrasMenu.Opened += UpdateRating;
 
-			window.btn_Like.Click += btn_Like_Click;
-			window.btn_Like.Click += ResetCapture;
-			window.btn_Dislike.Click += btn_Dislike_Click;
-			window.btn_Dislike.Click += ResetCapture;
-
 			window.btn_Favor.Click += ResetCapture;
 			window.btn_Request.Click += ResetCapture;
 			window.btn_Settings.Click += ResetCapture;
@@ -48,64 +41,28 @@ namespace Free_Sharp_Player {
 
 
 
-		private void ColorLikes(int? status = null) {
-			window.Dispatcher.Invoke(new Action(() => {
-				if (status != null && status == 0) {
-					window.btn_Like.IsEnabled = false;
-					window.btn_Dislike.IsEnabled = false;
-				} else {
-					window.btn_Like.IsEnabled = true;
-					window.btn_Dislike.IsEnabled = true;
-
-					if (currentSong.MyVote == 1) {
-						window.btn_Like.Background = Brushes.DarkGreen;
-						window.btn_Like.Foreground = Brushes.Black;
-
-						window.btn_Dislike.Background = Brushes.Transparent;
-						window.btn_Dislike.Foreground = Brushes.DarkRed;
-					} else if (currentSong.MyVote == -1) {
-						window.btn_Like.Background = Brushes.Transparent;
-						window.btn_Like.Foreground = Brushes.DarkGreen;
-
-						window.btn_Dislike.Background = Brushes.DarkRed;
-						window.btn_Dislike.Foreground = Brushes.Black;
-					} else {
-						window.btn_Like.Background = Brushes.Transparent;
-						window.btn_Like.Foreground = Brushes.DarkGreen;
-
-						window.btn_Dislike.Background = Brushes.Transparent;
-						window.btn_Dislike.Foreground = Brushes.DarkRed;
-					}
-				}
-			}));
-
-		}
-
-
 		private void btn_Like_Click(object sender, RoutedEventArgs e) {
-			currentSong.MyVote = (currentSong.MyVote == 1 ? -1 : 1);
+			CurrentSong.MyVote = (CurrentSong.MyVote == 1 ? -1 : 1);
 
-			int rating = int.Parse(currentSong.rating) + currentSong.MyVote;
+			int rating = int.Parse(CurrentSong.rating) + CurrentSong.MyVote;
 			Votes = rating.ToString();
 
-			ColorLikes();
-			setVote.doPost(currentSong.MyVote, currentSong.trackID);
+			setVote.doPost(CurrentSong.MyVote, CurrentSong.trackID);
 		}
 
 		private void btn_Dislike_Click(object sender, RoutedEventArgs e) {
-			currentSong.MyVote += (currentSong.MyVote - 1 < -1 ? 1 : -1);
+			CurrentSong.MyVote += (CurrentSong.MyVote - 1 < -1 ? 1 : -1);
 
-			int rating = int.Parse(currentSong.rating) + currentSong.MyVote;
+			int rating = int.Parse(CurrentSong.rating) + CurrentSong.MyVote;
 			Votes = rating.ToString();
 
-			ColorLikes();
-			setVote.doPost(currentSong.MyVote, currentSong.trackID);
+			setVote.doPost(CurrentSong.MyVote, CurrentSong.trackID);
 
 		}
 
 		public void OnEvent(EventTuple ev) {
 			if (ev.Event != EventType.Disconnect)
-				currentSong = ev.CurrentSong;
+				CurrentSong = ev.CurrentSong;
 		}
 
 		public void OnTick(QueueSettingsTuple set) { } 
@@ -114,21 +71,16 @@ namespace Free_Sharp_Player {
 
 		public void UpdateRating(Object o, EventArgs e) {
 			getRadioInfo info = getRadioInfo.doPost();
-			if (info.autoDJ != "1")
-				ColorLikes(0);
-			else
-				ColorLikes();
 
-			if (currentSong == null || String.IsNullOrEmpty(currentSong.trackID) || currentSong.trackID == "0") {
+			if (CurrentSong == null || String.IsNullOrEmpty(CurrentSong.trackID) || CurrentSong.trackID == "0") {
 				Votes = "---";
 				return;
 			}
 
-			var trackList = getTrack.doPost((int?)int.Parse(currentSong.trackID));
-			if (trackList == null || trackList.total_records == "0") 
-				return;
+			Track tempTrack = getTrack.GetSingleTrack(CurrentSong.trackID);
+			if (tempTrack == null) return;
 
-			String rating = trackList.track.First().rating;
+			String rating = tempTrack.rating;
 
 			window.Dispatcher.Invoke(new Action(() => {
 				Votes = rating;

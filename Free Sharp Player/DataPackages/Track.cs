@@ -19,6 +19,8 @@ namespace Free_Sharp_Player {
 		public String duration { get; set; }
 		public String plays { get; set; }
 
+		public Track This { get { return this; } }
+
 		public String rating { get { return GetProp<String>(); } set { SetProp(value); } }
 		public String requests { get; set; }
 

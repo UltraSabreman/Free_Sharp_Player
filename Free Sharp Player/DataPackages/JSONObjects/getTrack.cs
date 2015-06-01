@@ -30,11 +30,11 @@ namespace Free_Sharp_Player {
 			return doPost(null, null, null, rating, ratingEq);
 		}
 
-		public static getTrack doPost(int? trackId) {
+		public static getTrack doPost(String trackId) {
 			return doPost(trackId, null, null, null, null);
 		}
 
-		public static getTrack doPost(int? trackId, String track, String artist, int? rating, String ratingEq, int page = 1, int limit = 20) {
+		public static getTrack doPost(String trackId, String track, String artist, int? rating, String ratingEq, int page = 1, int limit = 20) {
 			var payload = new Dictionary<String, Object> {
 				{"action", "getTrack"},
 				{"page", Uri.EscapeUriString(page.ToString())},
@@ -42,7 +42,7 @@ namespace Free_Sharp_Player {
 			};
 
 			if (trackId != null) 
-				payload["trackid"] = trackId;
+				payload["trackid"] = Uri.EscapeUriString(trackId);
 			else {
 				if (track == null && artist == null && rating == null)
 					throw new ArgumentNullException("Must provide either artist, rating, or track");
@@ -60,7 +60,15 @@ namespace Free_Sharp_Player {
 			getTrack temp = JsonConvert.DeserializeObject(Util.StringToDict(result)["data"], typeof(getTrack)) as getTrack;
 
 			return temp;
-		}	
+		}
+
+		public static Track GetSingleTrack(String trackId) {
+			getTrack ret = doPost(trackId);
+			if (ret != null && ret.track != null && ret.track.Count != 0)
+				return ret.track.First();
+			else
+				return null;
+		}
 
 	}
 }

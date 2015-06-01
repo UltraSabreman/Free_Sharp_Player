@@ -133,12 +133,12 @@ namespace Free_Sharp_Player {
 
 			songChangeImage = new BitmapImage();
 			songChangeImage.BeginInit();
-			songChangeImage.UriSource = new Uri(System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"Resources\songchange.png"));
+			songChangeImage.UriSource = new Uri("/Free Sharp Player;component/Resources/songchange.png", UriKind.RelativeOrAbsolute);// new Uri(System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"Resources\songchange.png"));
 			songChangeImage.EndInit();
 
 			disconnectImage = new BitmapImage();
 			disconnectImage.BeginInit();
-			disconnectImage.UriSource = new Uri(System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"Resources\disconnect.png"));
+			disconnectImage.UriSource = new Uri("/Free Sharp Player;component/Resources/disconnect.png", UriKind.RelativeOrAbsolute);// new Uri(System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"Resources\disconnect.png"));
 			disconnectImage.EndInit();
 
 			Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => { done = true; }));

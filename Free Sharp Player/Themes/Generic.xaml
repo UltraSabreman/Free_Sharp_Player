@@ -150,38 +150,42 @@
 
 						<Grid >
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="30"/>
-								<ColumnDefinition Width="30"/>
-								<ColumnDefinition Width="30"/>
-								<ColumnDefinition Width="30"/>
+								<ColumnDefinition Name="LikeColumn" Width="*"/>
+								<ColumnDefinition Name="RatingColumn1" Width="*" />
+								<ColumnDefinition Name="RatingColumn2" Width="*" />
+								<ColumnDefinition Name="DislikeColumn" Width="*"/>
 							</Grid.ColumnDefinitions>
-							<Button Name="btn_Like" ToolTip="Rate up" Grid.Column="0" BorderThickness="0" IsEnabled="False">
+
+							<Button Name="btn_Like" ToolTip="Rate up" Grid.Column="0" BorderThickness="0" Height="{TemplateBinding Height}" Padding="0" 
+									Width="{Binding ButtonWidth, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" HorizontalAlignment="Left">
 								<Button.Content>
-									<Rectangle Width="30" Height="30">
-										<Rectangle.Fill>
-											<SolidColorBrush Color="#007700"/>
-										</Rectangle.Fill>
+									<Rectangle Fill="#007700" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Button}}" 
+											   Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Button}}">
 										<Rectangle.OpacityMask>
 											<ImageBrush ImageSource="/Free Sharp Player;component/Resources/LikeButton.png"/>
 										</Rectangle.OpacityMask>
 									</Rectangle>
 								</Button.Content>
 							</Button>
-							<Button Name="btn_Dislike" ToolTip="Rate down" Grid.Column="3" BorderThickness="0" IsEnabled="False">
+
+							<Button Name="btn_Dislike" ToolTip="Rate down" Grid.Column="3" BorderThickness="0" Height="{TemplateBinding Height}" Padding="0"
+									Width="{Binding ButtonWidth, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" HorizontalAlignment="Right">
 								<Button.Content>
-									<Rectangle Width="30" Height="30">
-										<Rectangle.Fill>
-											<SolidColorBrush Color="#770000"/>
-										</Rectangle.Fill>
+									<Rectangle Fill="#770000" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Button}}" 
+											   Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Button}}">
 										<Rectangle.OpacityMask>
 											<ImageBrush ImageSource="/Free Sharp Player;component/Resources/DislikeButton.png"/>
 										</Rectangle.OpacityMask>
 									</Rectangle>
 								</Button.Content>
 							</Button>
-							
-							<Label Name="lbl_Votes" ToolTip="Track Rating" Content="{Binding Votes}" Grid.Column="1" Grid.ColumnSpan="2" 
-								   HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+
+							<Label Name="lbl_Votes" ToolTip="Track Rating" Content="{Binding Votes, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" Grid.Column="1" Grid.ColumnSpan="2" 
+								    HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="{TemplateBinding FontSize}" Padding="0" />
+							<!--
+							<Label Name="RateBlocker" Content="Cant Rate" Background="#dd333333" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontFamily="Bold" 
+								   BorderBrush="Black" BorderThickness="1" Grid.ColumnSpan="4" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Foreground="LightGray" />
+							-->
 						</Grid>
 					</Border>
                 </ControlTemplate>

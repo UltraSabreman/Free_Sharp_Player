@@ -30,6 +30,7 @@ namespace Free_Sharp_Player {
 			throw new NotImplementedException();
 		}
 	}
+
 	public class ReqToBoolConverter : IValueConverter {
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
 			if (((int) value) == 0)
