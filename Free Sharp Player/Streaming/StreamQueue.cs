@@ -86,7 +86,7 @@ namespace Free_Sharp_Player {
 	}
 
 	public class StreamQueue {
-		private Object addLock = new Object();
+		public static Object addLock = new Object(); //This is dumb
 		private Object playLock = new Object();
 		private Object printLock = new Object();
 
@@ -213,7 +213,7 @@ namespace Free_Sharp_Player {
 
 		public List<EventTuple> GetAllEvents() {
 			lock (addLock) {
-				return new List<EventTuple>(allEvents);
+				return allEvents;
 			}
 		}
 

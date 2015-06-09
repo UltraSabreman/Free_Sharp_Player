@@ -227,46 +227,48 @@ namespace Free_Sharp_Player {
 
 			if (!done) return;
 			int i = 0;
-			foreach (EventTuple e in events) {
-				if (e.Event == EventType.None || e.EventQueuePosition == 0) continue;
+            lock (StreamQueue.addLock) {
+                foreach (EventTuple e in events) {
+                    if (e.Event == EventType.None || e.EventQueuePosition == 0) continue;
 
-				Image image;
-				if (i < markers.Count) {
-					image = markers[i];
-					image.Visibility = System.Windows.Visibility.Visible;
-				} else {
-					image = new Image();
-					image.IsHitTestVisible = false;
-					markers.Add(image);
-					theCanvas.Children.Add(image);
-				}
-				i++;
+                    Image image;
+                    if (i < markers.Count) {
+                        image = markers[i];
+                        image.Visibility = System.Windows.Visibility.Visible;
+                    } else {
+                        image = new Image();
+                        image.IsHitTestVisible = false;
+                        markers.Add(image);
+                        theCanvas.Children.Add(image);
+                    }
+                    i++;
 
-				BitmapImage thePic;
-				if (e.Event == EventType.Disconnect)
-					thePic = disconnectImage;
-				else
-					thePic = songChangeImage;
+                    BitmapImage thePic;
+                    if (e.Event == EventType.Disconnect)
+                        thePic = disconnectImage;
+                    else
+                        thePic = songChangeImage;
 
-				image.Source = thePic;
-				image.Height = theCanvas.ActualHeight;
-				image.SetValue(Canvas.TopProperty, theCanvas.ActualHeight / 2 - thePic.PixelHeight / 2);
+                    image.Source = thePic;
+                    image.Height = theCanvas.ActualHeight;
+                    image.SetValue(Canvas.TopProperty, theCanvas.ActualHeight / 2 - thePic.PixelHeight / 2);
 
 
-				if (theCanvas == null || double.IsNaN(theCanvas.ActualWidth) || double.IsInfinity(theCanvas.ActualWidth))
-					continue;
+                    if (theCanvas == null || double.IsNaN(theCanvas.ActualWidth) || double.IsInfinity(theCanvas.ActualWidth))
+                        continue;
 
-				double lol = theCanvas.ActualWidth;
+                    double lol = theCanvas.ActualWidth;
 
-				if (TotalBufferSize != 0 && MaxBufferSize != 0) {
-					double sizeOfProgress = (TotalBufferSize / MaxBufferSize) * theCanvas.ActualWidth;
-					double pos = lol - (((e.EventQueuePosition / TotalBufferSize) * sizeOfProgress) + (thePic.PixelWidth / 2));
-					if (!double.IsNaN(pos) && !double.IsInfinity(pos))
-						image.SetValue(Canvas.RightProperty, pos);
+                    if (TotalBufferSize != 0 && MaxBufferSize != 0) {
+                        double sizeOfProgress = (TotalBufferSize / MaxBufferSize) * theCanvas.ActualWidth;
+                        double pos = lol - (((e.EventQueuePosition / TotalBufferSize) * sizeOfProgress) + (thePic.PixelWidth / 2));
+                        if (!double.IsNaN(pos) && !double.IsInfinity(pos))
+                            image.SetValue(Canvas.RightProperty, pos);
 
-				}
+                    }
 
-			}
+                }
+            }
 
 			for (; i < markers.Count; i++) {
 				markers[i].Visibility = System.Windows.Visibility.Collapsed;
