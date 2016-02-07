@@ -1,22 +1,13 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
 
 namespace Free_Sharp_Player {
-	using Timer = System.Timers.Timer;
+    using Timer = System.Timers.Timer;
 
-	class PlaylistModel : ViewModelNotifier {
+    class PlaylistModel : ViewModelNotifier {
 		private Object theLock = new Object();
 	
 		public ObservableCollection<getLastPlayed> Played { get { return GetProp<ObservableCollection<getLastPlayed>>(); } set { SetProp(value); } }
@@ -27,22 +18,16 @@ namespace Free_Sharp_Player {
 		private double MaxPlayedHight = 0;
 
 		private MainWindow window;
-		private StreamManager streamManager;
-
+	
 		private Timer listUpdater = new Timer(10000);
 
-		public PlaylistModel(MainWindow win, StreamManager man) {
+		public PlaylistModel(MainWindow win) {
 			window = win;
-			streamManager = man;
 
 			Played = new ObservableCollection<getLastPlayed>();
 			Queue = new ObservableCollection<Track>();
 
-			streamManager.OnEventTrigger += OnEvent;
-			streamManager.OnQueueTick += OnTick;
-			streamManager.OnBufferingStateChange += OnBufferChange;
-
-
+  
 			window.QueueList.DataContext = this;
 			window.PlayedList.DataContext = this;
 
@@ -67,13 +52,6 @@ namespace Free_Sharp_Player {
 
 			Tick();
 		}
-
-		public void OnEvent(EventTuple ev) { }
-
-		public void OnTick(QueueSettingsTuple set) { }
-
-		public void OnBufferChange(bool isBuffering) { }
-
 
 		public void Tick(Object o = null, EventArgs e = null) {
 			new Thread(() => {

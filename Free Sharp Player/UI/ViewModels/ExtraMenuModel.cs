@@ -17,17 +17,15 @@ namespace Free_Sharp_Player {
 
 
 		private MainWindow window;
-		private StreamManager streamManager;
+		private MusicStream stream;
 
-		public ExtraMenuModel(MainWindow win, StreamManager man) {
+		public ExtraMenuModel(MainWindow win, MusicStream man) {
 			window = win;
-			streamManager = man;
+            stream = man;
 
-			streamManager.OnEventTrigger += OnEvent;
-			streamManager.OnQueueTick += OnTick;
-			streamManager.OnBufferingStateChange += OnBufferChange;
+            //stream.OnStreamEvent += OnEvent;
 
-			window.Extras.DataContext = this;
+            window.Extras.DataContext = this;
 			window.ExtrasMenu.Opened += UpdateRating;
 
 			window.btn_Favor.Click += ResetCapture;
@@ -60,18 +58,11 @@ namespace Free_Sharp_Player {
 
 		}
 
-		public void OnEvent(EventTuple ev) {
-			if (ev.Event != EventType.Disconnect)
-				CurrentSong = ev.CurrentSong;
+		public void UpdateSong(Track song) {
+			CurrentSong = song;
 		}
 
-		public void OnTick(QueueSettingsTuple set) { } 
-
-		public void OnBufferChange(bool isBuffering) { }
-
 		public void UpdateRating(Object o, EventArgs e) {
-			getRadioInfo info = getRadioInfo.doPost();
-
 			if (CurrentSong == null || String.IsNullOrEmpty(CurrentSong.trackID) || CurrentSong.trackID == "0") {
 				Votes = "---";
 				return;

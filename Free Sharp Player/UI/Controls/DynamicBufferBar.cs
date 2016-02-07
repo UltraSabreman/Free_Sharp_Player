@@ -210,7 +210,7 @@ namespace Free_Sharp_Player {
 			 PlayedBufferSize--;
 		}
 
-		public void Update(List<EventTuple> events) {
+		public void Update(List<MusicStream.EventTuple> events) {
 			mark.DoMarqueeLogic();
 
 			if (theCanvas == null) return;
@@ -227,8 +227,8 @@ namespace Free_Sharp_Player {
 
 			if (!done) return;
 			int i = 0;
-            lock (StreamQueue.addLock) {
-                foreach (EventTuple e in events) {
+            lock (MusicStream.addLock) {
+                foreach (MusicStream.EventTuple e in events) {
                     if (e.Event == EventType.None || e.EventQueuePosition == 0) continue;
 
                     Image image;
@@ -244,7 +244,7 @@ namespace Free_Sharp_Player {
                     i++;
 
                     BitmapImage thePic;
-                    if (e.Event == EventType.Disconnect)
+                    if (e.Event == EventType.StateChange)
                         thePic = disconnectImage;
                     else
                         thePic = songChangeImage;

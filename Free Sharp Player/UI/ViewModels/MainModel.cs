@@ -15,6 +15,8 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 
 namespace Free_Sharp_Player {
+    using Timer = System.Timers.Timer;
+
 	public class MainModel : ViewModelNotifier {
 		private Object theLock = new Object();
 
@@ -30,21 +32,18 @@ namespace Free_Sharp_Player {
 		private bool isLive;
 
 		private MainWindow window;
-		private StreamManager streamManager;
+		private MusicStream streamManager;
 
 		private bool VolumeOpen = false;
 		private bool ExtrasOpen = false;
 		MouseButtonEventHandler VolumeOutClick;
 		MouseButtonEventHandler ExtrasOutClick;
 
+        Timer ticker = new Timer(100);
 
-		public MainModel(MainWindow win, StreamManager manger) {
+        public MainModel(MainWindow win, MusicStream manger) {
 			window = win;
 			streamManager = manger;
-
-			streamManager.OnEventTrigger += OnEvent;
-			streamManager.OnQueueTick += OnTick;
-			streamManager.OnBufferingStateChange += OnBufferChange;
 
 			window.MyBuffer.DataContext = this;
 
@@ -52,8 +51,14 @@ namespace Free_Sharp_Player {
 			window.btn_Volume.Click += btn_Volume_Click;
 			window.btn_Extra.Click += btn_Extra_Click;
 
+            ticker.AutoReset = true;
+            ticker.Elapsed += (o, e) => {
+                OnTick();
+            };
+            ticker.Start();
 
-			window.MyBuffer.OnSeekDone += (sec) => {
+
+            window.MyBuffer.OnSeekDone += (sec) => {
 				PlayedBufferSize += sec;
 				if (streamManager != null)
 					streamManager.Seek(sec);
@@ -69,41 +74,42 @@ namespace Free_Sharp_Player {
 			TheTitle = "Not Connected";
 		}
 
-		public void OnEvent(EventTuple ev) {
-			if (ev == null) return;
-			if (ev.Event == EventType.SongChange || ev.Event == EventType.None) {
-				new Thread(() => {
-					currentSong = ev.CurrentSong;
-					if (ev.CurrentSong != null) {
-						window.Dispatcher.Invoke(new Action(() => {
-							TheTitle = ev.CurrentSong.WholeTitle;
-						}));
-					}
+		public void UpdateSong(Track song) {
+			if (song == null) return;
+            new Thread(() => {
 
-					getVoteStatus tempStatus = getVoteStatus.doPost();
-					//TODO: make this not rely on a post.
-					if (currentSong != null) {
-						currentSong.MyVote = (int)(tempStatus.vote ?? 0);
-					}
-				}).Start();
-			}
-			//TODO: something on disconnect?
+                currentSong = song;
+                if (currentSong != null) {
+                    window.Dispatcher.Invoke(new Action(() => {
+                        TheTitle = currentSong.WholeTitle;
+                    }));
 
-			if (ev.RadioInfo != null)
-				isLive = int.Parse(ev.RadioInfo.autoDJ) == 0;
-			else
-				isLive = false;
+
+                    getVoteStatus tempStatus = getVoteStatus.doPost();
+                    if (currentSong != null) {
+                        currentSong.MyVote = (int)(tempStatus.vote ?? 0);
+                    }
+                }
+            }).Start();
+
 		}
 
-		public void OnTick(QueueSettingsTuple set) {
+        public void UpdateInfo(getRadioInfo info) {
+            if (info != null)
+                isLive = int.Parse(info.autoDJ) == 0;
+            else
+                isLive = false;
+        }
+
+		public void OnTick() {
 			new Thread(() => {
 				lock (theLock) {
-					MaxBufferSize = set.MaxTimeInQueue;
+					MaxBufferSize = streamManager.MaxTimeInQueue;
 
 
 					//Update event list. 
 					new Thread(() => {
-						var list = streamManager.GetEvents();
+						var list = streamManager.GetAllEvents();
 						window.Dispatcher.Invoke(new Action(() => {
 							window.MyBuffer.Update(list);
 						}));
@@ -116,22 +122,22 @@ namespace Free_Sharp_Player {
 							SongLength = -1;
 							SongMaxLength = 1;
 
-							TotalBufferSize = set.TotalTimeInQueue;
-							PlayedBufferSize = set.TotalTimeInQueue - set.BufferedTime;
+							TotalBufferSize = streamManager.TotalTimeInQueue;
+							PlayedBufferSize = streamManager.TotalTimeInQueue - streamManager.BufferedTime;
 						}));
 						return;
 					}
 					
 					//TODO: song progress fix timing issue
 					TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
-					TimeSpan duration = DateTime.Now - (currentSong.localLastPlayed + new TimeSpan(0,0,0, (int)set.BufferedTime, 0));
+					TimeSpan duration = DateTime.Now - (currentSong.localLastPlayed + new TimeSpan(0,0,0, (int)streamManager.BufferedTime, 0));
 
 					window.Dispatcher.Invoke(new Action(() => {
 						if (TotalBufferSize <= 0.5 || PlayedBufferSize <= 0.5)
 							Util.PrintLine(TotalBufferSize + " " + PlayedBufferSize);
 
-						TotalBufferSize = set.TotalTimeInQueue;
-						PlayedBufferSize = set.TotalTimeInQueue - set.BufferedTime;
+						TotalBufferSize = streamManager.TotalTimeInQueue;
+						PlayedBufferSize = streamManager.TotalTimeInQueue - streamManager.BufferedTime;
 
 						double length = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongDuration.TotalSeconds;
 						//TODO: backwards hack to get around lack of "live" indicator.

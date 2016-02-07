@@ -7,14 +7,10 @@ using System.Threading;
 namespace Free_Sharp_Player {
     using Timer = System.Timers.Timer;
 
-    public enum EventType { None, SongChange, StateChange }
-    public enum StreamState { Buffering, Stopped, Paused, Playing }
-
-
 	public class MusicStream {
         #region Public Properties
-        public double MaxBufferdTime { get; set; }	    //Maxnimum time to buffer before we stop downloading
-		public double MinBufferdTime { get; set; }	    //Minimum time buffered to play (before stream starts buffering again)
+        public double MaxBufferedTime { get; set; }	    //Maxnimum time to buffer before we stop downloading
+		public double MinBufferedTime { get; set; }	    //Minimum time buffered to play (before stream starts buffering again)
 		public double MaxTimeInQueue { get; set; }	    //Maximum TOTAL time that can be stored in the queue.
 		public double BufferedTime { get; set; }	    //Time currently buffered to play
 		public double TotalTimeInQueue { get; set; }    //Total size of the queue currently
@@ -35,7 +31,7 @@ namespace Free_Sharp_Player {
         #endregion
 
         #region Private Variables
-        private Object addLock = new Object();
+        public static Object addLock = new Object();
         private Object playLock = new Object();
         private Object printLock = new Object();
 
@@ -52,6 +48,8 @@ namespace Free_Sharp_Player {
 		private IWavePlayer waveOut;
 		private VolumeWaveProvider16 volumeProvider;
 		private BufferedWaveProvider bufferedWaveProvider;
+
+        private List<EventTuple> allEvents = new List<EventTuple>();
 
 		private Byte[] buffer; // needs to be big enough to hold a decompressed frame
 		private IMp3FrameDecompressor decompressor;
@@ -74,8 +72,8 @@ namespace Free_Sharp_Player {
         public MusicStream(String streamAddress, int maxBuff = 30, int maxQueue = 300, double minBuffer = 3, double insertSec = 0.5, float initVolume = 0.5f) {
             address = streamAddress;
 
-			MinBufferdTime = minBuffer;
-			MaxBufferdTime = maxBuff;
+			MinBufferedTime = minBuffer;
+			MaxBufferedTime = maxBuff;
 			MaxTimeInQueue = maxQueue;
 			NumSecToPlay = insertSec;
 			Volume = 0.5f;
@@ -210,6 +208,7 @@ namespace Free_Sharp_Player {
 						head.Prev = null;
 					}
 				}
+                temp.PositionInQueue = TotalTimeInQueue;
 
 			}
 		}
@@ -243,21 +242,25 @@ namespace Free_Sharp_Player {
 
 							playHead = playHead.Prev;
 						}
-					} else {
+
+                        MaxBufferedTime -= secToSeek;
+                    } else {
 						double destTime = BufferedTime + secToSeek;
 						while (BufferedTime >= destTime && playHead.Next != null) {
 							BufferedTime -= playHead.FrameLengthSec;
 
 							playHead = playHead.Next;
 						}
-					}
-					
-				}
+
+                        MaxBufferedTime += secToSeek;
+                    }
+
+                }
 			}
 		}
 
 		public bool IsBufferFull() {
-			return BufferedTime >= MaxBufferdTime;
+			return BufferedTime >= MaxBufferedTime;
 		}
 
 		private void PurgeQueue() {
@@ -330,7 +333,7 @@ namespace Free_Sharp_Player {
 					if (State == StreamState.Stopped || State == StreamState.Paused) return;
 
 					//Don't play if we're buffering.
-					if (BufferedTime < MinBufferdTime) {
+					if (BufferedTime < MinBufferedTime) {
                         if (State != StreamState.Buffering) {
                             if (OnStreamEvent != null)
                                 OnStreamEvent(new EventTuple(EventType.StateChange, State));
@@ -376,7 +379,7 @@ namespace Free_Sharp_Player {
                             }
                             
                             //TODO: set EventQueuePosition?
-                            OnStreamEvent(new EventTuple(temp.Event, State) { CurrentTitle = temp.NewTitle, EventQueuePosition = -1 });
+                            OnStreamEvent(new EventTuple(temp.Event, State) { CurrentTitle = temp.NewTitle, EventQueuePosition = temp.PositionInQueue });
                         }
 
                         AddFrameToWaveBuffer(temp.Frame);
@@ -516,6 +519,7 @@ namespace Free_Sharp_Player {
             }
             public EventType Event { get; set; }
             public String NewTitle { get; set; }
+            public double PositionInQueue { get; set; }
             public double FrameLengthSec { get; private set; }
 
             private void GetFrameLengthSec() {

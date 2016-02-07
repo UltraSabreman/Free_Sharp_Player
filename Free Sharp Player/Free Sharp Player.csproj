@@ -77,8 +77,7 @@
     <Compile Include="DataPackages\PlaylistData.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="HttpPostRequest.cs" />
-    <Compile Include="Streaming\StreamManager.cs" />
-    <Compile Include="Streaming\StreamQueue.cs" />
+    <Compile Include="Streaming\MusicStream.cs" />
     <Compile Include="UI\BasicRequestUI.xaml.cs">
       <DependentUpon>BasicRequestUI.xaml</DependentUpon>
     </Compile>
@@ -94,7 +93,6 @@
     <Compile Include="UI\PropChanged.cs" />
     <Compile Include="Streaming\ReadFullyStream.cs" />
     <Compile Include="Streaming\ShoutcastStream.cs" />
-    <Compile Include="Streaming\MP3Stream.cs" />
     <Compile Include="UI\ViewModels\VolumeModel.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="UI\ValueConverters.cs" />

@@ -38,9 +38,9 @@ namespace Free_Sharp_Player.UI {
 				Dispatcher.Invoke(new Action(() => {
 					MyTextControlTest.Content = "~~~~Dat Scrolling Text~~~~";
 
-					List<EventTuple> events = new List<EventTuple>() {
-						new EventTuple() {Event = EventType.SongChange, EventQueuePosition = 25},
-						new EventTuple() {Event = EventType.Disconnect, EventQueuePosition = 50}
+					List<MusicStream.EventTuple> events = new List<MusicStream.EventTuple>() {
+						new MusicStream.EventTuple(EventType.SongChange, StreamState.None) {EventQueuePosition = 25},
+						new MusicStream.EventTuple(EventType.StateChange, StreamState.None) {EventQueuePosition = 50}
 					};
 
 					//MyBuffer.Update("Some long stream name - artist", 100, 90, 75, 120, 35, events);

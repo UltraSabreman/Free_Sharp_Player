@@ -22,14 +22,21 @@ using NAudio;
 using NAudio.Wave;
 using System.Diagnostics;
 using System.Timers;
+using Newtonsoft.Json;
+using System.Windows.Media.Animation;
 
-//Todo: fix song timing
-//Todo: fix retarted locups
-
+/*
+ * TODO: 
+ * Make sure nothig is taking up UI thread for requests
+ * Move ALL logic out of models and into controllers
+ * Decouple the shit out of it so nothing needs access to the Queues variables
+ * Make sure api calls can only happen when applicable! (IE: can only vote on currently playing song)
+ * Fix song dealys
+ * Fix starting/stopping stream 
+*/
 namespace Free_Sharp_Player {
 	using Timer = System.Timers.Timer;
-	using Newtonsoft.Json;
-	using System.Windows.Media.Animation;
+
 
 	public partial class MainWindow : Window {
 		private Object trackLock = new Object();
@@ -45,7 +52,7 @@ namespace Free_Sharp_Player {
 
 		//Timer Updater = new Timer(1000);
 
-		private StreamManager streamManager;
+		private MusicStream theQueue;
 
 		private MainModel mainModel;
 		private VolumeModel volumeModel;
@@ -67,10 +74,10 @@ namespace Free_Sharp_Player {
 				//streamManager.UpdateData(null);
 
 				Dispatcher.Invoke(new Action(() => {
-					mainModel = new MainModel(this, streamManager);
-					volumeModel = new VolumeModel(this, streamManager);
-					extraModel = new ExtraMenuModel(this, streamManager);
-					playlistModel = new PlaylistModel(this, streamManager);
+					mainModel = new MainModel(this, theQueue);
+					volumeModel = new VolumeModel(this);
+					extraModel = new ExtraMenuModel(this, theQueue);
+					playlistModel = new PlaylistModel(this);
 
 					btn_PlayPause.IsEnabled = true;
 					Connecting.Visibility = System.Windows.Visibility.Collapsed;
@@ -102,17 +109,55 @@ namespace Free_Sharp_Player {
 				}
 
 
-				streamManager = new StreamManager(address);
+                theQueue = new MusicStream(address, Convert.ToInt32(Configs.Get("MaxBufferLenSec")), Convert.ToInt32(Configs.Get("MaxTotalBufferdSongSec"))
+                    , Convert.ToInt32(Configs.Get("MinBufferLenSec")), Convert.ToDouble(Configs.Get("Volume")));
 
-				Connected = true;
+                theQueue.OnStreamEvent += (MusicStream.EventTuple e) => {
+                    Update(e);
+                };
+
+                Connected = true;
 			}
 
 		}
 
+        private void Update(MusicStream.EventTuple e) {
+            Thread.Sleep(2000);
+            getRadioInfo radioInfo = getRadioInfo.doPost();
 
-		//TODO: run on event
+            if (e != null) {
+                if (e.Event == EventType.SongChange) {
+                    List<getLastPlayed> playedList = getLastPlayed.doPost();
 
-		public void MainTick(Object o, EventArgs e) {
+                    Track currentTrack = getTrack.doPost(playedList.First().trackID).track[0];
+                    //currentTrack.localLastPlayed = DateTime.Now;
+
+                    lock (trackLock) {
+                        extraModel.UpdateSong(currentTrack);
+                        mainModel.UpdateSong(currentTrack);
+                    }
+                } else if (e.Event == EventType.StateChange) {
+                    //The only time we're reciving this event is when the state changes
+                    //to Buffering and back to Playing.
+
+                    if (e.State == StreamState.Buffering) {
+
+                    } else {
+
+                    }
+                }
+            }
+
+            lock (radioLock) {
+                mainModel.UpdateInfo(radioInfo);
+            }
+
+            mainModel.OnTick();
+        }
+
+        //TODO: run on event
+
+        public void MainTick(Object o, EventArgs e) {
 			new Thread(() => { }).Start();
 
 			//TODO: main song tick
@@ -121,10 +166,11 @@ namespace Free_Sharp_Player {
 		}
 
 
-		public void Play() { IsPlaying = true; streamManager.Play(); }
+		public void Play() { IsPlaying = true; theQueue.Play(); }
 		public void Stop() { 
-			IsPlaying = false; 
-			streamManager.Stop();
+			IsPlaying = false;
+            theQueue.Stop();
+            //What is this.
 			Dispatcher.Invoke(new Action(() => {
 				MyBuffer.Update(null);
 			}));
@@ -133,8 +179,8 @@ namespace Free_Sharp_Player {
 		public void SetVolume(double Volume) {
 			if (Volume < 0 || Volume > 100) throw new ArgumentOutOfRangeException("Volume", Volume, "Volume must be between 0 and 100");
 
-			if (streamManager != null)
-				streamManager.Volume = (float)Volume / 100;
+			if (theQueue != null)
+                theQueue.Volume = (float)Volume / 100;
 		}
 
 
@@ -148,7 +194,7 @@ namespace Free_Sharp_Player {
 		}
 
 		private void Window_Closed(object sender, EventArgs e) {
-			streamManager.Stop();
+            theQueue.Stop();
 			Application.Current.Shutdown();
 		}
 

@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 
 namespace Free_Sharp_Player {
-	class VolumeModel : ViewModelNotifier {
+    class VolumeModel : ViewModelNotifier {
 
 		private double oldVolume = 0;
 		public double Volume { get { return GetProp<double>(); } set { SetProp(value); } }
@@ -22,16 +16,9 @@ namespace Free_Sharp_Player {
 		} }
 
 		private MainWindow window;
-		private StreamManager streamManager;
 
-
-		public VolumeModel(MainWindow win, StreamManager man) {
+		public VolumeModel(MainWindow win) {
 			window = win;
-			streamManager = man;
-
-			streamManager.OnEventTrigger += OnEvent;
-			streamManager.OnQueueTick += OnTick;
-			streamManager.OnBufferingStateChange += OnBufferChange;
 
 			window.Volume.DataContext = this;
 
@@ -46,12 +33,6 @@ namespace Free_Sharp_Player {
 			Volume = 25; //TODO: save/load this
 		}
 
-		public void OnEvent(EventTuple ev) { }
-
-		public void OnTick(QueueSettingsTuple set) { }
-
-		public void OnBufferChange(bool isBuffering) { }
-	
 
 		private void ResetCapture(object o, object e) {
 			Mouse.Capture(window.Volume, CaptureMode.SubTree);
