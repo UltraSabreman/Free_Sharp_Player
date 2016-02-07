@@ -13,19 +13,25 @@ namespace Free_Sharp_Player {
 
 		public String title { get { return GetProp<String>(); } set { SetProp(value); } }
 
-		public String WholeTitle { get { return artist + " - " + title; } set { } }
+		public String WholeTitle { get { return (!String.IsNullOrEmpty(artist) ? artist.Trim() + " - " : "") + title.Trim(); } }
 
 
 		public String duration { get; set; }
 		public String plays { get; set; }
+
+		public Track This { get { return this; } }
 
 		public String rating { get { return GetProp<String>(); } set { SetProp(value); } }
 		public String requests { get; set; }
 
 		public int favorites { get { return GetProp<int>(); } set { SetProp(value); } }
 
-		public String lastPlayed { get; set; }
-		public DateTime localLastPlayed { get; set; }
+		public String lastPlayed { get; set; } //THIS IS UTC TIME IF GOT FROM getTrack
+		public DateTime localLastPlayed {
+			get {
+				return TimeZoneInfo.ConvertTimeFromUtc(DateTime.Parse(lastPlayed), TimeZoneInfo.Local);
+			}
+		}
 
 		public int requestable { get { return GetProp<int>(); } set { SetProp(value); } }
 
@@ -42,6 +48,24 @@ namespace Free_Sharp_Player {
 
 		public override string ToString() {
 			return JsonConvert.SerializeObject(this, Formatting.None);
+		}
+
+		public void Update(Track src) {
+			trackID = src.trackID;
+			artist = src.artist;
+			title = src.title;
+			duration = src.duration;
+			plays = src.plays;
+			rating = src.rating;
+			requests = src.requests;
+			favorites = src.favorites;
+			lastPlayed = src.lastPlayed;
+			requestable = src.requestable;
+			RequestTime = src.RequestTime;
+			forced = src.forced;
+			Requester = src.Requester;
+			Priority = src.Priority;
+			MyVote = src.MyVote;
 		}
 
 		public void Print() {

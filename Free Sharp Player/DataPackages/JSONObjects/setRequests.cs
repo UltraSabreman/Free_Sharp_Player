@@ -26,10 +26,17 @@ namespace Free_Sharp_Player {
 	 * 
 	 * requester
 	 * trackID
-
+	 * 
+	    "error": {
+        "status": 3,
+        "code": 500,
+        "message": "You must wait an hour in between requests"
+    }
 	 */
 	public class setRequests : ViewModelNotifier {
 		public int? submitted;
+		public RequestError error;
+		//TODO: hanlde errors (Add error checking return)
 
 		public static setRequests doPost(String trackID) {
 			var payload = new Dictionary<String, Object> {
@@ -44,5 +51,10 @@ namespace Free_Sharp_Player {
 		}
 	}
 
+	public class RequestError {
+		public int status;
+		public int code;
+		public String message;
+	}
 
 }

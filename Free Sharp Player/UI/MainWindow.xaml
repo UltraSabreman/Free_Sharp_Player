@@ -1,17 +1,16 @@
 ﻿<Window x:Class="Free_Sharp_Player.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:UISpace="clr-namespace:Free_Sharp_Player"
+		xmlns:mc="clr-namespace:Free_Sharp_Player"
 		Name="mainPlayerWindow"
         Title="MainWindow" Height="30" Width="500" 
 		KeyUp="Window_KeyUp" Closed="Window_Closed" WindowStyle="None" AllowsTransparency="True" ClipToBounds="False"
 		Background="Transparent" ResizeMode="CanMinimize" SizeToContent="Height" >
 	<Window.Resources>
-		<UISpace:SliderToVolumeConverter x:Key="SliderToVolConverter"/>
-		<UISpace:BoolToMuteIcon x:Key="BoolToMuteConverter" />
-		<UISpace:DurationConverter x:Key="DurationConverter" />
-		<UISpace:LastPlayedConverter x:Key="LastPlayedConverter" />
-		<UISpace:TimeInQueueConverter x:Key="TimeInQueueConverter" />
+		<mc:SliderToVolumeConverter x:Key="SliderToVolConverter"/>
+		<mc:BoolToMuteIcon x:Key="BoolToMuteConverter" />
+		<mc:LastPlayedConverter x:Key="LastPlayedConverter" />
+		<mc:TimeInQueueConverter x:Key="TimeInQueueConverter" />
 	</Window.Resources>
 	<Grid MouseDown="Grid_MouseDown" MouseUp="Grid_MouseLeftButtonUp" >
 	
@@ -57,10 +56,7 @@
 								<Rectangle Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Right" Width="1" Margin="2" Stroke="Black" />
 								<Label Name="lbl_WholeTile" ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" FontSize="10" Grid.Column="1" Padding ="0" Content="{Binding WholeTitle}"/>
 								<Rectangle Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Right" Width="1" Margin="2" Stroke="Black" />
-								<Canvas Name="can_Requester" ToolTip="Reqester Nickname"  ClipToBounds="True" Grid.Column="6"  >
-									<TextBlock Name="txt_Requester" Text="{Binding Requester}" FontSize="10" Padding ="0" />
-									<TextBlock Name="txt_Requester2" Visibility="Hidden" Text="{Binding Requester}"  FontSize="10" Padding ="0"/>
-								</Canvas>
+								<mc:MarqueeTextBlock Content="{Binding Requester}" ToolTip="The Requester" FontSize="10" Grid.Column="2" />
 							</Grid>
 						</Border>
 					</DataTemplate>
@@ -74,7 +70,7 @@
 					<RowDefinition Height="90"/>
 					<RowDefinition Height="30"/>
 				</Grid.RowDefinitions>
-				<Slider Name="sldr_VolumeSlider" ToolTip="Adjust volume" Orientation="Vertical" Maximum="100" Margin="0,3,0,3" Value="{Binding Volume}" HorizontalAlignment="Center"/>
+				<Slider Name="sldr_VolumeSlider" ToolTip="Adjust volume" Orientation="Vertical" IsMoveToPointEnabled ="True"  Maximum="100" Margin="0,3,0,3" Value="{Binding Volume}" HorizontalAlignment="Center"/>
 				<Button Name="btn_MuteButton" ToolTip="Mute/Un-Mute the stream" Grid.Row="1" Content="{Binding Mute, Converter={StaticResource BoolToMuteConverter}}" BorderThickness="0"/>
 			</Grid>
 		</Popup>
@@ -91,9 +87,7 @@
 					<ColumnDefinition Width="30"/>
 					<ColumnDefinition Width="30"/>
 				</Grid.ColumnDefinitions>
-				<Button Name="btn_Like" ToolTip="Rate up" Content="C" Grid.Column="0" Foreground="DarkGreen" FontFamily="Wingdings" FontSize="24" BorderThickness="0" IsEnabled="False"/>
-				<Button Name="btn_Dislike" ToolTip="Rate down" Content="D" Grid.Column="3" Foreground="DarkRed" FontFamily="Wingdings" FontSize="24" BorderThickness="0" IsEnabled="False"/>
-				<Label Name="lbl_Votes" ToolTip="Track Rating" Content="{Binding Votes}" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+				<mc:RatingControl x:Name="SongRating" BoundTrack="{Binding CurrentSong}" FontSize="15" Grid.ColumnSpan="4" ShowRating="True" />
 				<Button Name="btn_Favor" ToolTip="Add Track to local favorites" Content="«" Grid.Row="1" Foreground="#dfd000" FontFamily="wingdings" FontSize="24" BorderThickness="0" />
 				<Button Name="btn_Request" ToolTip="Request Track" Content="Request" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="0" />
 				<Button Name="btn_Settings" ToolTip="Settings" Content="⚙" Grid.Row="1" Grid.Column="3" BorderThickness="0" FontSize="19"  />
@@ -112,13 +106,14 @@
 				<Button Name="btn_PlayPause" ToolTip="Play/Pause the stream"  Content="▶"  VerticalContentAlignment="Center" BorderThickness="0"/>
 			</Grid>
 			<Grid Name="Progress" Grid.Column="1">
+				<mc:DynamicBufferBar  x:Name="MyBuffer" MaxBufferSize="{Binding MaxBufferSize, Mode=TwoWay}" TotalBufferSize="{Binding TotalBufferSize, Mode=TwoWay}" PlayedBufferSize="{Binding PlayedBufferSize, Mode=TwoWay}" 
+									  SongMaxLength="{Binding SongMaxLength, Mode=TwoWay}" SongLength="{Binding SongLength, Mode=TwoWay}" StreamTitle="{Binding TheTitle, Mode=TwoWay}"/>
+				<!--
 				<ProgressBar Name="bar_Buffer" Foreground="Gray" Maximum="100" Value="{Binding BufferLen}" BorderThickness="0" />
 				<ProgressBar Name="bar_BufferWindow" Foreground="#22cccc" Background="Transparent" Maximum="100" Value="{Binding PosInBuffer}"  BorderThickness="0"/>
-				<Canvas Name="can_TrackName" ClipToBounds="True" Margin="4,0,4,0">
-					<TextBlock Name="txt_TrackName" Text="{Binding StreamTitle}" Margin="0,7,0,0"/>
-					<TextBlock Name="txt_TrackName2" Visibility="Hidden" Text="{Binding StreamTitle}" Margin="0,7,0,0"/>
-				</Canvas>
+				<mc:MarqueeTextBlock x:Name="mrq_trackName" Content="{Binding StreamTitle}" FontSize="14" VerticalContentAlignment="Center" VerticalAlignment="Center"  Height="30" Margin="4,3,4,0"/>
 				<ProgressBar Name="bar_SongTime" Foreground="{Binding SongTimeColor}" Maximum="100" Value="{Binding SongProgress}" BorderThickness="0" Margin="0,28,0,0" ToolTip="{Binding SongProgressText}"/>
+				-->
 			</Grid>
 			<Grid Name="OpenVolume" ToolTip="Volume" Grid.Column="2">
 				<Button Name="btn_Volume" Content="Vol" BorderThickness="0"/>
@@ -149,26 +144,28 @@
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="40"/>
 									<ColumnDefinition Width="430"/>
-									<ColumnDefinition Width="30"/>
+									<!--<ColumnDefinition Width="30"/>
+									<ColumnDefinition Width="20"/>-->
 								</Grid.ColumnDefinitions>
 								
 								<Label Name="lbl_PlayedTime" ToolTip="When Track was last played" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="0" FontSize="10" Content="{Binding last_played, Converter={StaticResource LastPlayedConverter}}"/>
 								<Rectangle Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Right" Width="1" Margin="2" Stroke="Black" />
-								<Label Name="lbl_WholeTile2" ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="left" Padding="0" FontSize="10" Grid.Column="1" Content="{Binding WholeTitle}"/>
+								<mc:MarqueeTextBlock Name="lbl_WholeTile2" Content="{Binding WholeTitle}" FontSize="10" Grid.Column="1"  ToolTip="Track title" VerticalContentAlignment="Center" HorizontalContentAlignment="left" />
+								<!--
 								<Rectangle Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Right" Width="1" Margin="2" Stroke="Black" />
-								<Grid Grid.Column="6" HorizontalAlignment="Center">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="12"/>
-										<ColumnDefinition Width="12"/>
-									</Grid.ColumnDefinitions>
-									<Button Name="btn_Like2" ToolTip="Rate up" Content="C" Grid.Column="0" Foreground="DarkGreen" FontFamily="Wingdings" BorderThickness="0"/>
-									<Button Name="btn_Dislike2" ToolTip="Rate down" Content="D" Grid.Column="1" Foreground="DarkRed" FontFamily="Wingdings" BorderThickness="0"/>
-								</Grid>
+								TODO: figure out how to bind to getLastPlayed return.
+								<mc:RatingControl Grid.Column="2" BoundTrack="{Binding This}" ShowRating="False" />
+								-->
 							</Grid>
 						</Border>
 					</DataTemplate>
 				</ListView.ItemTemplate>
 			</ListView>
 		</Popup>
+		<Border Name="Connecting" Background="#ccaaaaaa" BorderBrush="Transparent">
+			<Label Content="Connecting To Stream" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" HorizontalContentAlignment="Center"
+				   FontSize="18" Padding="0"/>
+		</Border>
+
 	</Grid>
 </Window>

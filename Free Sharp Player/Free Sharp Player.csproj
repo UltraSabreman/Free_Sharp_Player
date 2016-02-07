@@ -39,9 +39,9 @@
       <HintPath>..\packages\NAudio.1.7.3\lib\net35\NAudio.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -64,20 +64,29 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Attributes.cs" />
     <Compile Include="Configs.cs" />
     <Compile Include="DataPackages\JSONObjects\getRequests.cs" />
     <Compile Include="DataPackages\JSONObjects\getRadioInfo.cs" />
     <Compile Include="DataPackages\JSONObjects\getTrack.cs" />
-    <Compile Include="DataPackages\JSONObjects\lastPlayed.cs" />
+    <Compile Include="DataPackages\JSONObjects\getLastPlayed.cs" />
     <Compile Include="DataPackages\JSONObjects\setRequests.cs" />
     <Compile Include="DataPackages\JSONObjects\setVote.cs" />
     <Compile Include="DataPackages\JSONObjects\getVoteStatus.cs" />
     <Compile Include="DataPackages\Track.cs" />
     <Compile Include="DataPackages\PlaylistData.cs" />
+    <Compile Include="Enums.cs" />
     <Compile Include="HttpPostRequest.cs" />
-    <Compile Include="Streaming\MusicStream.cs" />
-    <Compile Include="UI\GridLengthAnimation.cs">
-      <SubType>Code</SubType>
+    <Compile Include="Streaming\StreamManager.cs" />
+    <Compile Include="Streaming\StreamQueue.cs" />
+    <Compile Include="UI\BasicRequestUI.xaml.cs">
+      <DependentUpon>BasicRequestUI.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Controls\DynamicBufferBar.cs" />
+    <Compile Include="UI\Controls\MarqueeTextBlock.cs" />
+    <Compile Include="UI\Controls\RatingControl.cs" />
+    <Compile Include="UI\TestWindow.xaml.cs">
+      <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\ViewModels\ExtraMenuModel.cs" />
     <Compile Include="UI\ViewModels\MainModel.cs" />
@@ -85,9 +94,18 @@
     <Compile Include="UI\PropChanged.cs" />
     <Compile Include="Streaming\ReadFullyStream.cs" />
     <Compile Include="Streaming\ShoutcastStream.cs" />
+    <Compile Include="Streaming\MP3Stream.cs" />
     <Compile Include="UI\ViewModels\VolumeModel.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="UI\ValueConverters.cs" />
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\BasicRequestUI.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -100,6 +118,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="UI\TestWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -131,6 +153,25 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Misc\ToDo.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\LikeButton.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\DislikeButton.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Content Include="Resources\stripes.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\disconnect.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\songchange.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

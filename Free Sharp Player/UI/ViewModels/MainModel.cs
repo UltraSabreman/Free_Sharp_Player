@@ -1,9 +1,12 @@
 ﻿using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,17 +18,19 @@ namespace Free_Sharp_Player {
 	public class MainModel : ViewModelNotifier {
 		private Object theLock = new Object();
 
-		public int PosInBuffer { get { return GetProp<int>(); } set { SetProp(value); } }
-		public int BufferLen { get { return GetProp<int>(); } set { SetProp(value); } }
-		public int SongLength { get { return GetProp<int>(); } set { SetProp(value); } }
-		public int SongProgress { get { return GetProp<int>(); } set { SetProp(value); } }
-		public String SongTimeColor { get { return GetProp<String>(); } set { SetProp(value); } }
-		public String SongProgressText { get { return GetProp<String>(); } set { SetProp(value); } }
+
+		public double MaxBufferSize { get { return GetProp<double>(); } set { SetProp(value); } }
+		public double TotalBufferSize { get { return GetProp<double>(); } set { SetProp(value); } }
+		public double PlayedBufferSize { get { return GetProp<double>(); } set { SetProp(value); } }
+		public double SongMaxLength { get { return GetProp<double>(); } set { SetProp(value); } }
+		public double SongLength { get { return GetProp<double>(); } set { SetProp(value); } }
+		public String TheTitle { get { return GetProp<String>(); } set { SetProp(value); } }
 
 		private Track currentSong;
 		private bool isLive;
 
 		private MainWindow window;
+		private StreamManager streamManager;
 
 		private bool VolumeOpen = false;
 		private bool ExtrasOpen = false;
@@ -33,26 +38,26 @@ namespace Free_Sharp_Player {
 		MouseButtonEventHandler ExtrasOutClick;
 
 
-		//TODO: add to configs.
-		private String liveColor = "#22cccc";
-		private String notLiveColor = "#ff5555";
-
-		//double click on thing to open playlist
-
-		public MainModel(MainWindow win) {
+		public MainModel(MainWindow win, StreamManager manger) {
 			window = win;
+			streamManager = manger;
 
+			streamManager.OnEventTrigger += OnEvent;
+			streamManager.OnQueueTick += OnTick;
+			streamManager.OnBufferingStateChange += OnBufferChange;
 
-			window.bar_Buffer.DataContext = this;
-			window.bar_BufferWindow.DataContext = this;
-			window.bar_SongTime.DataContext = this;
+			window.MyBuffer.DataContext = this;
 
 			window.btn_PlayPause.Click += btn_PlayPause_Click;
 			window.btn_Volume.Click += btn_Volume_Click;
 			window.btn_Extra.Click += btn_Extra_Click;
-			window.btn_Like.Click += btn_Like_Click;
-			window.btn_Dislike.Click += btn_Dislike_Click;
 
+
+			window.MyBuffer.OnSeekDone += (sec) => {
+				PlayedBufferSize += sec;
+				if (streamManager != null)
+					streamManager.Seek(sec);
+			};
 
 			VolumeOutClick = new MouseButtonEventHandler(HandleClickOutsideOfVolume);
 			ExtrasOutClick = new MouseButtonEventHandler(HandleClickOutsideOfExtras);
@@ -61,79 +66,100 @@ namespace Free_Sharp_Player {
 
 			currentSong = null;
 			isLive = false;
+			TheTitle = "Not Connected";
 		}
 
-
-		public void UpdateSong(Track song) {
-			currentSong = song;
-
-			getVoteStatus tempStatus = getVoteStatus.doPost();
-			//TODO: make this not rely on a post.
-			currentSong.MyVote = tempStatus.vote != null ? (int)tempStatus.vote : 0;
-			ColorLikes(tempStatus.status);
-		}
-
-		private void ColorLikes(int? status) {
-			window.Dispatcher.Invoke(new Action(() => {
-				if (status != null && status == 0) {
-					window.btn_Like.IsEnabled = false;
-					window.btn_Dislike.IsEnabled = false;
-				} else {
-					window.btn_Like.IsEnabled = true;
-					window.btn_Dislike.IsEnabled = true;
-
-					if (currentSong.MyVote == 1) {
-						window.btn_Like.Background = Brushes.DarkGreen;
-						window.btn_Like.Foreground = Brushes.Black;
-
-						window.btn_Dislike.Background = Brushes.Transparent;
-						window.btn_Dislike.Foreground = Brushes.DarkRed;
-					} else if (currentSong.MyVote == -1) {
-						window.btn_Like.Background = Brushes.Transparent;
-						window.btn_Like.Foreground = Brushes.DarkGreen;
-
-						window.btn_Dislike.Background = Brushes.DarkRed;
-						window.btn_Dislike.Foreground = Brushes.Black;
-					} else {
-						window.btn_Like.Background = Brushes.Transparent;
-						window.btn_Like.Foreground = Brushes.DarkGreen;
-
-						window.btn_Dislike.Background = Brushes.Transparent;
-						window.btn_Dislike.Foreground = Brushes.DarkRed;
+		public void OnEvent(EventTuple ev) {
+			if (ev == null) return;
+			if (ev.Event == EventType.SongChange || ev.Event == EventType.None) {
+				new Thread(() => {
+					currentSong = ev.CurrentSong;
+					if (ev.CurrentSong != null) {
+						window.Dispatcher.Invoke(new Action(() => {
+							TheTitle = ev.CurrentSong.WholeTitle;
+						}));
 					}
-				}
-			}));
 
-		}
-
-		public void UpdateInfo(getRadioInfo info) {
-			isLive = int.Parse(info.autoDJ) == 0;
-		}
-
-		public void Tick(Object o, EventArgs e) {
-			lock (theLock) {
-				if (isLive || currentSong == null || !window.IsPlaying) {
-					SongTimeColor = notLiveColor;
-					SongProgress = 100;
-					return;
-				} else
-					SongTimeColor = liveColor;
-
-				DateTime lastPlayedDate;
-				if (currentSong.localLastPlayed != new DateTime(0)) {
-					lastPlayedDate = currentSong.localLastPlayed;
-				} else {
-					TimeZoneInfo hwZone = TimeZoneInfo.Utc;
-					lastPlayedDate = TimeZoneInfo.ConvertTime(DateTime.Parse(currentSong.lastPlayed), hwZone, TimeZoneInfo.Local);
-				}
-
-				TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
-				TimeSpan duration = DateTime.Now - lastPlayedDate;
-				SongProgress = (int)((duration.TotalSeconds / SongDuration.TotalSeconds) * 100);
-				SongProgressText = "Duration: " + duration.TotalSeconds + ", SongDuration: " + (SongDuration.TotalSeconds);
+					getVoteStatus tempStatus = getVoteStatus.doPost();
+					//TODO: make this not rely on a post.
+					if (currentSong != null) {
+						currentSong.MyVote = (int)(tempStatus.vote ?? 0);
+					}
+				}).Start();
 			}
+			//TODO: something on disconnect?
+
+			if (ev.RadioInfo != null)
+				isLive = int.Parse(ev.RadioInfo.autoDJ) == 0;
+			else
+				isLive = false;
 		}
 
+		public void OnTick(QueueSettingsTuple set) {
+			new Thread(() => {
+				lock (theLock) {
+					MaxBufferSize = set.MaxTimeInQueue;
+
+
+					//Update event list. 
+					new Thread(() => {
+						var list = streamManager.GetEvents();
+						window.Dispatcher.Invoke(new Action(() => {
+							window.MyBuffer.Update(list);
+						}));
+					}).Start();
+
+
+					//TODO: more colors/states.
+					if (isLive || currentSong == null || !window.IsPlaying || currentSong.duration == null) {
+						window.Dispatcher.Invoke(new Action(() => {
+							SongLength = -1;
+							SongMaxLength = 1;
+
+							TotalBufferSize = set.TotalTimeInQueue;
+							PlayedBufferSize = set.TotalTimeInQueue - set.BufferedTime;
+						}));
+						return;
+					}
+					
+					//TODO: song progress fix timing issue
+					TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
+					TimeSpan duration = DateTime.Now - (currentSong.localLastPlayed + new TimeSpan(0,0,0, (int)set.BufferedTime, 0));
+
+					window.Dispatcher.Invoke(new Action(() => {
+						if (TotalBufferSize <= 0.5 || PlayedBufferSize <= 0.5)
+							Util.PrintLine(TotalBufferSize + " " + PlayedBufferSize);
+
+						TotalBufferSize = set.TotalTimeInQueue;
+						PlayedBufferSize = set.TotalTimeInQueue - set.BufferedTime;
+
+						double length = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongDuration.TotalSeconds;
+						//TODO: backwards hack to get around lack of "live" indicator.
+						/*if (length > (SongDuration.TotalSeconds + 5)) {
+							SongLength = -1;
+							SongMaxLength = 1;
+							isLive = true;
+						} else {*/
+							SongMaxLength = SongDuration.TotalSeconds;
+							SongLength = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongMaxLength;
+						//}
+					}));
+				}
+			}).Start();
+		}
+
+		public void OnBufferChange(bool isBuffering) {
+
+		}
+
+
+		/*public void UpdateInfo(getRadioInfo info) {
+			new Thread(() => {
+				isLive = int.Parse(info.autoDJ) == 0;
+				if (isLive)
+					TheTitle = info.title;
+			}).Start();
+		}*/
 
 		private void btn_PlayPause_Click(object sender, RoutedEventArgs e) {
 			if (window.IsPlaying) {
@@ -171,39 +197,9 @@ namespace Free_Sharp_Player {
 				Mouse.Capture(window.Volume, CaptureMode.SubTree);
 				window.Volume.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick, true);
 			}
-			/*DoubleAnimation testan;
-			if (VolumeOpen) {
-				//Mouse.Capture(window.Volume, CaptureMode.SubTree);
-				//window.Volume.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, VolumeOutClick, true);
-
-				testan = new DoubleAnimation(0, 120, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-				//Util.AnimateWindowMoveY(window, -120);
-			} else {
-				testan = new DoubleAnimation(120, 0, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-				//Util.AnimateWindowMoveY(window, 120);
-			}
-
-			Storyboard test = new Storyboard();
-			test.Children.Add(testan);
-			Storyboard.SetTargetName(testan, window.VolumeMenu.Name);
-			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.HeightProperty));
-			test.Begin(window.VolumeMenu);*/
-
 		}
 
 
-
-		private void btn_Like_Click(object sender, RoutedEventArgs e) {
-			currentSong.MyVote += (currentSong.MyVote + 1 > 1 ? -1 : 1);
-			ColorLikes(null);
-			setVote.doPost(currentSong.MyVote, currentSong.trackID);
-		}
-		private void btn_Dislike_Click(object sender, RoutedEventArgs e) {
-			currentSong.MyVote += (currentSong.MyVote - 1 < -1 ? 1 : -1);
-			ColorLikes(null);
-			setVote.doPost(currentSong.MyVote, currentSong.trackID);
-
-		}
 
 		private void btn_Extra_Click(object sender, RoutedEventArgs e) {
 			ExtrasOpen = !ExtrasOpen;
@@ -212,23 +208,6 @@ namespace Free_Sharp_Player {
 				Mouse.Capture(window.Extras, CaptureMode.SubTree);
 				window.Extras.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick, true);
 			}
-			/*DoubleAnimation testan;
-			if (ExtrasOpen) {
-				//Mouse.Capture(window.Extras, CaptureMode.SubTree);
-				//window.Extras.AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent, ExtrasOutClick, true);
-
-				testan = new DoubleAnimation(0, 60, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-				//Util.AnimateWindowMoveY(window, 60);
-			} else {
-				testan = new DoubleAnimation(60, 0, new Duration(new TimeSpan(0, 0, 0, 0, 100)), FillBehavior.HoldEnd);
-				//Util.AnimateWindowMoveY(window, -60);
-			}
-
-			Storyboard test = new Storyboard();
-			test.Children.Add(testan);
-			Storyboard.SetTargetName(testan, window.ExtrasMenu.Name);
-			Storyboard.SetTargetProperty(testan, new PropertyPath(Grid.HeightProperty));
-			test.Begin(window.ExtrasMenu);*/
 		}
 
 

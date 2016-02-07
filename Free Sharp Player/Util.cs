@@ -121,6 +121,8 @@ namespace Free_Sharp_Player {
 
 
 		public static Dictionary<String, String> StringToDict(String msg) {
+			if (msg == null) return null;
+
 			var outd = new Dictionary<String, String>();
 
 			var test = JsonConvert.DeserializeObject(msg) as JObject;

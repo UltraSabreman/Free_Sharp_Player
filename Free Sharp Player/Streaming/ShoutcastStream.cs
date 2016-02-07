@@ -67,8 +67,8 @@ namespace Free_Sharp_Player {
 			Match m = Regex.Match(metaString, "StreamTitle='(.*)';.*");
 			string newStreamTitle = m.Groups[1].Value.Trim();
 
-			
-			if (!newStreamTitle.Equals(streamTitle)) {
+
+			if (newStreamTitle != streamTitle && !String.IsNullOrEmpty(newStreamTitle)) {
 				streamTitle = newStreamTitle;
 				OnStreamTitleChanged();
 			}
@@ -170,7 +170,7 @@ namespace Free_Sharp_Player {
 				//	bytesRead += result;
 				//}
 				return result;
-			} catch (TimeoutException e) {
+			} catch (TimeoutException) {
 				connected = false;
 				netStream.Close();
 				Connect();
