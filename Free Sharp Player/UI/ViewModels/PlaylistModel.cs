@@ -77,27 +77,25 @@ namespace Free_Sharp_Player {
 		}
 
 		public void Tick(Object o, EventArgs e) {
-			//TODO: playlist and other bs
+            window.Dispatcher.Invoke(new Action(() => {
+                lock (theLock) {
+                    Played.Clear();
+                    List<lastPlayed> tempPlayed = lastPlayed.doPost();
+                    if (tempPlayed != null)
+                        tempPlayed.ForEach(Played.Add);
 
-		}
+                    Queue.Clear();
+                    getRequests tempQueue = getRequests.doPost();
+                    if (tempQueue != null && tempQueue.track != null)
+                        tempQueue.track.ForEach(Queue.Add);
 
-		public void UpdateLists(List<lastPlayed> played, List<Track> queued) {
-			window.Dispatcher.Invoke(new Action(() => {
-				lock (theLock) {
-					Played.Clear();
-					if (played != null)
-						played.ForEach(Played.Add);
+                    UpdateSize();
+                    //window.PlayedList.Margin = new Thickness(0, MinPlayedHeight, 0, 0);
+                    //window.QueueList.Margin = new Thickness(0, 0, 0, MinQueueHeight);
+                }
+            }));
 
-					Queue.Clear();
-					if (queued != null)
-						queued.ForEach(Queue.Add);
-
-					UpdateSize();
-					//window.PlayedList.Margin = new Thickness(0, MinPlayedHeight, 0, 0);
-					//window.QueueList.Margin = new Thickness(0, 0, 0, MinQueueHeight);
-				}
-			}));
-		}
+        }
 
 		public void UpdateSong(Track song) {
 			Playing = song;

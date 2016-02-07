@@ -22,7 +22,11 @@ namespace Free_Sharp_Player {
 		//Here you can define defaults for all values. This is a string-object dictionary so anything can be used for a value.
 		private static ConfigMap Settings = new ConfigMap() {
 			{ "AppID", "ultrasaberman.freesharpplayer" },
-			{ "MaxBufferLenSec", 300}
+			{ "MaxBufferLenSec", 30},
+			{ "MinBufferLenSec", 3},
+            { "MaxTotalBufferdSongSec", 300},
+
+            { "Volume", 0.5 }
 		};
 
 		/// <summary>
@@ -42,8 +46,28 @@ namespace Free_Sharp_Player {
 			}
 		}
 
+        public static T Get<T>(String key) {
+            if (Settings.ContainsKey(key))
+                return (T)Settings[key];
+            else
+                return default(T);
+        }
+
+        public static Object Get(String key) {
+            if (Settings.ContainsKey(key))
+                return Settings[key];
+            else
+                return null;
+        }
+
+        public static void Set(String key, Object value) {
+            Settings[key] = value;
+            if (AutoSave)
+                WriteConfigs();
+        }
+
 		//Reads the config file
-		private static void ReadConfigs() {
+		public static void ReadConfigs() {
 			using (StreamReader rd = new StreamReader(path)) {
 				//Replace with your preffered method of de-serialization
 				ConfigMap temp = new JsonSerializer().Deserialize(rd, typeof(ConfigMap)) as ConfigMap;
@@ -54,8 +78,8 @@ namespace Free_Sharp_Player {
 			}
 		}
 
-		//writes the config file.
-		private static void WriteConfigs() {
+        //writes the config file.
+        public static void WriteConfigs() {
 			using (StreamWriter wr = new StreamWriter(new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite)))
 				//Replace with your preffered method of serialization
 				JsonSerializer.Create(new JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented }).Serialize(wr, Settings);
@@ -69,64 +93,5 @@ namespace Free_Sharp_Player {
 
 		}
 
-		/// <summary>
-		/// This class acts as a gateway to our settings. This should be the only thing (And it's instance)
-		/// that's exposed in the config class. All interaction with configs should happen only through it.
-		/// </summary>
-		public sealed class ConfigurationPropertyIndexer {
-			/// <summary>
-			/// Access a spesifed config to assing to it or read it.
-			/// On assingment, will create the config if it doesn't exhist and if
-			/// autodave is set to true, it will write to the file.
-			/// </summary>
-			/// <param name="name">The Key</param>
-			/// <returns>The config object</returns>
-			public object this[string name] {
-				get {
-					return (Configs.Settings.ContainsKey(name) ? Configs.Settings[name] : null);
-				}
-				set {
-					Configs.Settings[name] = value;
-					if (AutoSave)
-						Save();
-				}
-			}
-
-			/// <summary>
-			/// Remove the spesifed config.
-			/// </summary>
-			/// <param name="name">The Key</param>
-			/// <returns>False: the key did not exhist.
-			/// True: The key was removed</returns>
-			public bool RemoveConfig(String name) {
-				if (Configs.Settings.ContainsKey(name)) {
-					Configs.Settings.Remove(name);
-					if (AutoSave)
-						Save();
-					return true;
-				}
-				return false;
-			}
-
-			/// <summary>
-			/// Saves the configs to file.
-			/// </summary>
-			public void Save() {
-				Configs.WriteConfigs();
-			}
-
-			/// <summary>
-			/// Allows you to re-read the config file.
-			/// </summary>
-			public void Open() {
-				Configs.ReadConfigs();
-			}
-		}
-
-		/// <summary>
-		/// Gives read/write access to the configurations.
-		/// This should be the only public member in the config class.
-		/// </summary>
-		public static ConfigurationPropertyIndexer Properties = new ConfigurationPropertyIndexer();
 	}
 }

@@ -22,6 +22,8 @@ using NAudio;
 using NAudio.Wave;
 using System.Diagnostics;
 using System.Timers;
+using Newtonsoft.Json;
+using System.Windows.Media.Animation;
 
 //TODO: hanlde network disconnects
 //TODO: sanity check duration value on now playing.
@@ -38,8 +40,7 @@ using System.Timers;
 
 namespace Free_Sharp_Player {
 	using Timer = System.Timers.Timer;
-	using Newtonsoft.Json;
-	using System.Windows.Media.Animation;
+
 
 	public partial class MainWindow : Window {
 		private Object trackLock = new Object();
@@ -54,68 +55,92 @@ namespace Free_Sharp_Player {
 		private Timer doubleClickCheck = new Timer(350);
 		private bool isDoubleClicking = false;
 
-		//Timer Updater = new Timer(1000);
+        Timer MainClock = new Timer(1000);
 
-		private StreamManager streamManager;
+        MusicStream theQueue;
 
+        private getRadioInfo radioInfo;
 		private MainModel mainModel;
 		private VolumeModel volumeModel;
 		private ExtraMenuModel extraModel;
 		private PlaylistModel playlistModel;
 
 		public MainWindow() {
-
 			InitializeComponent();
+            AllocConsole();
 
-			doubleClickCheck.Elapsed += (o, e) => {
+
+            doubleClickCheck.Elapsed += (o, e) => {
 				isDoubleClicking = false;
 			};
 
-
-			AllocConsole();
-
-			mainModel = new MainModel(this);
+            mainModel = new MainModel(this);
 			volumeModel = new VolumeModel(this);
 			extraModel = new ExtraMenuModel(this);
 			playlistModel = new PlaylistModel(this);
 
 			btn_PlayPause.IsEnabled = false;
-			//TODO: UI alert of loading.
-			new Thread(() => {
+
+            MainClock.AutoReset = true;
+            MainClock.Elapsed += (o, e) => {
+                Update(null);
+            };
+            MainClock.Start();
+
+            //TODO: UI alert of loading.
+            new Thread(() => {
 				ConnectToStream(StreamQuality.Normal);
 
-				streamManager.mainUpdateTimer.Elapsed += mainModel.Tick;
-				streamManager.mainUpdateTimer.Elapsed += volumeModel.Tick;
-				streamManager.mainUpdateTimer.Elapsed += extraModel.Tick;
-				streamManager.mainUpdateTimer.Elapsed += playlistModel.Tick;
-				streamManager.mainUpdateTimer.Elapsed += MainTick;
+                MainClock.Elapsed += mainModel.Tick;
+                MainClock.Elapsed += volumeModel.Tick;
+                MainClock.Elapsed += extraModel.Tick;
+                MainClock.Elapsed += playlistModel.Tick;
 
-				streamManager.ManualUpdate();
+                //Needed?
+                //Update(null);
 
-				Dispatcher.Invoke(new Action(() => {
+                Dispatcher.Invoke(new Action(() => {
 					btn_PlayPause.IsEnabled = true;
 				}));
 			}).Start();
 		}
 
-		public void MainTick(Object o, EventArgs e) {
-			//TODO: main song tick
 
-			//mainModel.UpdateSongProgress(playlistModel.Playing, playlistModel.Played[0], theStreamer.startTime, radioInfo);
-		}
-
-
-		public void Play() { IsPlaying = true; streamManager.Play(); }
-		public void Stop() { IsPlaying = false; streamManager.Stop(); }
+		public void Play() { IsPlaying = true; theQueue.Play(); }
+		public void Stop() { IsPlaying = false; theQueue.Stop(); }
 
 		public void SetVolume(double Volume) {
 			if (Volume < 0 || Volume > 100) throw new ArgumentOutOfRangeException("Volume", Volume, "Volume must be between 0 and 100");
 
-			if (streamManager != null)
-				streamManager.Volume = (float)Volume / 100;
+			if (theQueue != null)
+                theQueue.Volume = (float)Volume / 100;
 		}
 
-		private void ConnectToStream(StreamQuality Quality) {
+        private void Update(MusicStream.EventTuple e) {
+            radioInfo = getRadioInfo.doPost();
+
+            if (e != null) {
+                if (e.Event == EventType.SongChange) {
+                    List<lastPlayed> playedList = lastPlayed.doPost();
+
+                    Track currentTrack = getTrack.doPost(int.Parse(playedList.First().trackID)).track[0];
+                    currentTrack.localLastPlayed = DateTime.Now;
+
+                    lock (trackLock) {
+                        mainModel.UpdateSong(currentTrack);
+                        playlistModel.UpdateSong(currentTrack);
+                    }
+                }
+            }
+
+            lock (radioLock) {
+                mainModel.UpdateInfo(radioInfo);
+                extraModel.UpdateInfo(radioInfo);
+                playlistModel.UpdateInfo(radioInfo);
+            }
+        }
+
+        private void ConnectToStream(StreamQuality Quality) {
 			String address = "";
 			bool Connected = false;
 
@@ -138,27 +163,17 @@ namespace Free_Sharp_Player {
 
 
 				try {
-					streamManager = new StreamManager(address);
+                    theQueue = new MusicStream(address, Convert.ToInt32(Configs.Get("MaxBufferLenSec")), Convert.ToInt32(Configs.Get("MaxTotalBufferdSongSec"))
+                        , Convert.ToInt32(Configs.Get("MinBufferLenSec")), Convert.ToDouble(Configs.Get("Volume")));
 
-					streamManager.NewCurrentTrack += (Track track) => {
-						lock (trackLock) {
-							mainModel.UpdateSong(track);
-							playlistModel.UpdateSong(track);
-						}
-					};
-
-					streamManager.OnRadioUpdate += (getRadioInfo info, List<lastPlayed> played, List<Track> queued) => {
-						lock (radioLock) {
-							mainModel.UpdateInfo(info);
-							playlistModel.UpdateLists(played, queued);
-							extraModel.UpdateInfo(info);
-							playlistModel.UpdateInfo(info);
-
-						}
-					};
+                    theQueue.OnStreamEvent += (MusicStream.EventTuple e) => {
+                        Update(e);
+                    };
 
 					Connected = true;
-				} catch (Exception) { }
+				} catch (Exception e) {
+                    Console.WriteLine(e.Message);
+                }
 			}
 
 		}
@@ -174,7 +189,7 @@ namespace Free_Sharp_Player {
 		}
 
 		private void Window_Closed(object sender, EventArgs e) {
-			streamManager.Stop();
+			theQueue.Stop();
 			Application.Current.Shutdown();
 		}
 

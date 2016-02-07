@@ -39,8 +39,8 @@
       <HintPath>..\packages\NAudio.1.7.3\lib\net35\NAudio.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -65,7 +65,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Configs.cs" />
-    <Compile Include="ConsoleRunner.cs" />
     <Compile Include="DataPackages\JSONObjects\getRequests.cs" />
     <Compile Include="DataPackages\JSONObjects\getRadioInfo.cs" />
     <Compile Include="DataPackages\JSONObjects\getTrack.cs" />
@@ -76,8 +75,7 @@
     <Compile Include="DataPackages\Track.cs" />
     <Compile Include="DataPackages\PlaylistData.cs" />
     <Compile Include="HttpPostRequest.cs" />
-    <Compile Include="Streaming\StreamManager.cs" />
-    <Compile Include="Streaming\StreamQueue.cs" />
+    <Compile Include="Streaming\MusicStream.cs" />
     <Compile Include="UI\GridLengthAnimation.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -87,7 +85,6 @@
     <Compile Include="UI\PropChanged.cs" />
     <Compile Include="Streaming\ReadFullyStream.cs" />
     <Compile Include="Streaming\ShoutcastStream.cs" />
-    <Compile Include="Streaming\MP3Stream.cs" />
     <Compile Include="UI\ViewModels\VolumeModel.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="UI\ValueConverters.cs" />
