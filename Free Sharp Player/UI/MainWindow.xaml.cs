@@ -2,47 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Net;
-using System.Net.Sockets;
-using System.IO;
 using System.Collections.Specialized;
 using System.Threading;
-using NAudio;
-using NAudio.Wave;
-using System.Diagnostics;
-using System.Timers;
-using Newtonsoft.Json;
-using System.Windows.Media.Animation;
-
-//TODO: hanlde network disconnects
-//TODO: sanity check duration value on now playing.
-//tODO: make icons for times show up on main bar when epxaneded? (or not
-//make extra menu apear on right click of anything.
-//replace extra icon with app icon?
-//how to handle requester?
-//Elipse song names in playlist/queue (wiht alpha gradient?)
-//add calculated song progress bar somehwre in playing (and time to?)
-//make votes easier to see?
-//prevent player from going of screen when dragged (rest like that pandora client)
-//when playlist expands, move the player away from the screen edge the needed amount (possibly back when collapses).
-
 
 namespace Free_Sharp_Player {
-	using Timer = System.Timers.Timer;
+    using Timer = System.Timers.Timer;
 
 
-	public partial class MainWindow : Window {
+    public partial class MainWindow : Window {
 		private Object trackLock = new Object();
 		private Object radioLock = new Object();
 
@@ -67,8 +37,9 @@ namespace Free_Sharp_Player {
 
 		public MainWindow() {
 			InitializeComponent();
-            AllocConsole();
+            btn_PlayPause.IsEnabled = false;
 
+            AllocConsole();
 
             doubleClickCheck.Elapsed += (o, e) => {
 				isDoubleClicking = false;
@@ -79,7 +50,6 @@ namespace Free_Sharp_Player {
 			extraModel = new ExtraMenuModel(this);
 			playlistModel = new PlaylistModel(this);
 
-			btn_PlayPause.IsEnabled = false;
 
             MainClock.AutoReset = true;
             MainClock.Elapsed += (o, e) => {
@@ -117,6 +87,7 @@ namespace Free_Sharp_Player {
 		}
 
         private void Update(MusicStream.EventTuple e) {
+            Thread.Sleep(2000);
             radioInfo = getRadioInfo.doPost();
 
             if (e != null) {
@@ -129,6 +100,15 @@ namespace Free_Sharp_Player {
                     lock (trackLock) {
                         mainModel.UpdateSong(currentTrack);
                         playlistModel.UpdateSong(currentTrack);
+                    }
+                } else if (e.Event == EventType.StateChange) {
+                    //The only time we're reciving this event is when the state changes
+                    //to Buffering and back to Playing.
+
+                    if (e.State == StreamState.Buffering) {
+
+                    } else {
+
                     }
                 }
             }

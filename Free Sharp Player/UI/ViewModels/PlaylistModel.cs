@@ -77,15 +77,16 @@ namespace Free_Sharp_Player {
 		}
 
 		public void Tick(Object o, EventArgs e) {
+            List<lastPlayed> tempPlayed = lastPlayed.doPost();
+            getRequests tempQueue = getRequests.doPost();
+
             window.Dispatcher.Invoke(new Action(() => {
                 lock (theLock) {
                     Played.Clear();
-                    List<lastPlayed> tempPlayed = lastPlayed.doPost();
                     if (tempPlayed != null)
                         tempPlayed.ForEach(Played.Add);
 
                     Queue.Clear();
-                    getRequests tempQueue = getRequests.doPost();
                     if (tempQueue != null && tempQueue.track != null)
                         tempQueue.track.ForEach(Queue.Add);
 

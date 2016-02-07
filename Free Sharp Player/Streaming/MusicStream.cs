@@ -1,33 +1,27 @@
 ﻿using NAudio.Wave;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace Free_Sharp_Player {
-	using Timer = System.Timers.Timer;
+    using Timer = System.Timers.Timer;
 
-	public enum EventType { None, SongChange, Disconnect, StateChange }
-    public enum StreamState { Disconnected, Buffering, Stopped, Paused, Playing }
+    public enum EventType { None, SongChange, StateChange }
+    public enum StreamState { Buffering, Stopped, Paused, Playing }
 
 
 	public class MusicStream {
         #region Public Properties
-        //public int PosInQueue { get; set; } //change pos function
         public double MaxBufferdTime { get; set; }	    //Maxnimum time to buffer before we stop downloading
 		public double MinBufferdTime { get; set; }	    //Minimum time buffered to play (before stream starts buffering again)
 		public double MaxTimeInQueue { get; set; }	    //Maximum TOTAL time that can be stored in the queue.
 		public double BufferedTime { get; set; }	    //Time currently buffered to play
 		public double TotalTimeInQueue { get; set; }    //Total size of the queue currently
 		public double NumSecToPlay { get; set; }
+        public StreamState State { get; private set; }
 
-		public float Volume { get {
+        public float Volume { get {
                 return volumeProvider.Volume;
             }
             set {
@@ -35,7 +29,6 @@ namespace Free_Sharp_Player {
                     volumeProvider.Volume = value;
             }
         }
-		public StreamState State { get; private set;}
 
 		public delegate void EventTriggered(EventTuple e);
 		public event EventTriggered OnStreamEvent;
@@ -109,16 +102,17 @@ namespace Free_Sharp_Player {
         private void StreamMp3(object state) {
             endOfStream = false;
             ReadFullyStream readFullyStream = null;
-            Timer timeout = new Timer();
-            String newTitle = null;
-            bool changeNextFrame = false;
-            int numFramesLoaded = 0;
 
-            timeout.Interval = 5000; //TODO: make this configurable
+            Timer timeout = new Timer(Convert.ToDouble(Configs.Get("StreamTimeoutSec")) * 1000);
             timeout.AutoReset = false;
             timeout.Elapsed += (o, e) => {
                 AddFrame(null, false);
             };
+
+            String newTitle = null;
+            bool changeNextFrame = false;
+            int numFramesLoaded = 0;
+
 
             try {
                 using (ShoutcastStream theStream = new ShoutcastStream(address)) {
@@ -138,7 +132,6 @@ namespace Free_Sharp_Player {
                             timeout.Start();
 
                             try {
-
                                 frame = Mp3Frame.LoadFromStream(readFullyStream);
                                 timeout.Stop();
 
@@ -157,8 +150,7 @@ namespace Free_Sharp_Player {
 
                         }
 
-                    } while (State != StreamState.Stopped);
-                    //TODO: Handle stream errors (Aborts + crashes)
+                    } while (State != StreamState.Stopped && State != StreamState.Paused);
                 }
             } catch (ThreadAbortException) {
                 Util.Print(ConsoleColor.Yellow, "Warning", ": Stream thread aborted!");
@@ -169,7 +161,6 @@ namespace Free_Sharp_Player {
                 }
             }
         }
-
 
         private void AddFrame(Mp3Frame frame, bool changed = false, String streamTitle = null) {
 			lock (addLock) {
@@ -270,19 +261,20 @@ namespace Free_Sharp_Player {
 		}
 
 		private void PurgeQueue() {
-				while (head != null) {
-					var temp = head.Next;
-					if (temp != null)
-						temp.Prev = null;
+			while (head != null) {
+				var temp = head.Next;
+				if (temp != null)
+					temp.Prev = null;
 
-                    head.Delete();
-					head = temp;
-				}
-				tail = null;
-				playHead = null;
-		}
+                head.Delete();
+				head = temp;
+			}
+			tail = null;
+			playHead = null;
+            TotalTimeInQueue = 0;
+        }
 
-		private StreamFrame GetFrame() {
+        private StreamFrame GetFrame() {
             StreamFrame ret = playHead;
 
             BufferedTime -= playHead.FrameLengthSec;
@@ -292,64 +284,59 @@ namespace Free_Sharp_Player {
 		}
 
 		public void Play() {
-			if (State != StreamState.Stopped ) return;
-            State = StreamState.Playing;
+            if (State == StreamState.Stopped || State == StreamState.Paused) {
+                State = StreamState.Playing;
 
-            if (streamThread == null || !streamThread.IsAlive) {
-                streamThread = new Thread(StreamMp3);
-                streamThread.Start();
+                if (streamThread == null || !streamThread.IsAlive) {
+                    streamThread = new Thread(StreamMp3);
+                    streamThread.Start();
+                }
+            }
+        }
+
+        public void Pause() {
+            if(State == StreamState.Playing || State == StreamState.Buffering) {
+                State = StreamState.Paused;
+
+                if (streamThread != null) {
+                    streamThread.Abort();
+                    streamThread = null;
+                }
             }
         }
 
 		public void Stop() {
-			if (State != StreamState.Playing) return;
-            State = StreamState.Stopped;
+            if (State == StreamState.Playing || State == StreamState.Paused || State == StreamState.Buffering) {
+                State = StreamState.Stopped;
 
-            if (streamThread != null) {
-                streamThread.Abort();
-                streamThread = null;
+                if (streamThread != null) {
+                    streamThread.Abort();
+                    streamThread = null;
+                }
+
+                lock (playLock) {
+                    PurgeQueue();
+                    waveOut.Stop();
+                }
             }
-
-            PurgeQueue();
-
-			lock (playLock) {
-
-				BufferedTime = 0;
-				TotalTimeInQueue = 0;
-
-				if (waveOut != null) {
-					waveOut.Stop();
-					waveOut.Dispose();
-					waveOut = null;
-				}
-
-				if (bufferedWaveProvider != null) {
-					bufferedWaveProvider.ClearBuffer();
-					bufferedWaveProvider = null;
-				}
-
-				if (decompressor != null) {
-					decompressor.Dispose();
-					decompressor = null;
-				}
-			}
 		}
 
 		private void PlayFrame(Object o, EventArgs e) {
 			lock (playLock) {
-				try {
+				//try {
 					//Check if queue has shit in it.
 					if (playHead == null) return;
 					//Dont play if we're not playing.
-					if (State == StreamState.Stopped) return;
+					if (State == StreamState.Stopped || State == StreamState.Paused) return;
 
 					//Don't play if we're buffering.
 					if (BufferedTime < MinBufferdTime) {
-						if (State != StreamState.Buffering && OnStreamEvent != null)
-                            OnStreamEvent(new EventTuple(EventType.StateChange, State));
+                        if (State != StreamState.Buffering) {
+                            if (OnStreamEvent != null)
+                                OnStreamEvent(new EventTuple(EventType.StateChange, State));
 
-                        State = StreamState.Buffering;
-
+                            State = StreamState.Buffering;
+                        }
 						return;
 					}
 
@@ -382,9 +369,9 @@ namespace Free_Sharp_Player {
 
                         StreamFrame temp = GetFrame();
                         if (temp.Event != EventType.None && OnStreamEvent != null) {
-                            if (temp.Event == EventType.Disconnect) {
-                                State = StreamState.Disconnected;
-                            } else if (temp.Event != EventType.Disconnect) {
+                            if (temp.Event == EventType.StateChange) {
+                                State = StreamState.Buffering;
+                            } else if (temp.Event != EventType.StateChange) {
                                 State = StreamState.Playing;
                             }
                             
@@ -402,9 +389,9 @@ namespace Free_Sharp_Player {
 
 					playTimer.Start();
 
-				} catch (NullReferenceException ex) { //happens when restarting the stream.
-					Util.DumpException(ex);
-				}
+				//} catch (NullReferenceException ex) { //happens when restarting the stream.
+				///	Util.DumpException(ex);
+				//}
 			}
 		}
 
@@ -422,13 +409,13 @@ namespace Free_Sharp_Player {
 					//this.bufferedWaveProvider.BufferedDuration = 250;
 				}
 
-				try {
+				//try {
 					int decompressed = decompressor.DecompressFrame(frame, buffer, 0);
 					bufferedWaveProvider.AddSamples(buffer, 0, decompressed);
-				}  catch (NAudio.MmException e) {
+				//}  catch (NAudio.MmException e) {
 					//TODO: Handle stream exception
-					Util.DumpException(e);
-				}
+				//	Util.DumpException(e);
+				//}
 			}
 		}
 
@@ -549,8 +536,12 @@ namespace Free_Sharp_Player {
                 Next = null;
                 Prev = null;
                 Frame = toAdd;
+
+                //Since it doesnt make any sence to have anything BUT a disconnect event 
+                //represented in our queue, we can leave this just as a "StateChanged" event
+                //without specifying the actual state.
                 if (Frame == null)
-                    Event = EventType.Disconnect;
+                    Event = EventType.StateChange;
                 else
                     Event = EventType.None;
             }

@@ -25,6 +25,7 @@ namespace Free_Sharp_Player {
 			{ "MaxBufferLenSec", 30},
 			{ "MinBufferLenSec", 3},
             { "MaxTotalBufferdSongSec", 300},
+            { "StreamTimeoutSec", 5},
 
             { "Volume", 0.5 }
 		};
