@@ -9,11 +9,27 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Free_Sharp_Player</RootNamespace>
     <AssemblyName>Free Sharp Player</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <FodyPath>..\packages\Fody.1.14.0</FodyPath>
+    <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,10 +51,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NAudio, Version=1.7.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NAudio.1.7.3\lib\net35\NAudio.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -66,18 +78,7 @@
     </ApplicationDefinition>
     <Compile Include="Attributes.cs" />
     <Compile Include="Configs.cs" />
-    <Compile Include="DataPackages\JSONObjects\getRequests.cs" />
-    <Compile Include="DataPackages\JSONObjects\getRadioInfo.cs" />
-    <Compile Include="DataPackages\JSONObjects\getTrack.cs" />
-    <Compile Include="DataPackages\JSONObjects\getLastPlayed.cs" />
-    <Compile Include="DataPackages\JSONObjects\setRequests.cs" />
-    <Compile Include="DataPackages\JSONObjects\setVote.cs" />
-    <Compile Include="DataPackages\JSONObjects\getVoteStatus.cs" />
-    <Compile Include="DataPackages\Track.cs" />
-    <Compile Include="DataPackages\PlaylistData.cs" />
     <Compile Include="Enums.cs" />
-    <Compile Include="HttpPostRequest.cs" />
-    <Compile Include="Streaming\MusicStream.cs" />
     <Compile Include="UI\BasicRequestUI.xaml.cs">
       <DependentUpon>BasicRequestUI.xaml</DependentUpon>
     </Compile>
@@ -91,11 +92,9 @@
     <Compile Include="UI\ViewModels\MainModel.cs" />
     <Compile Include="UI\ViewModels\PlaylistModel.cs" />
     <Compile Include="UI\PropChanged.cs" />
-    <Compile Include="Streaming\ReadFullyStream.cs" />
-    <Compile Include="Streaming\ShoutcastStream.cs" />
     <Compile Include="UI\ViewModels\VolumeModel.cs" />
-    <Compile Include="Util.cs" />
     <Compile Include="UI\ValueConverters.cs" />
+    <Compile Include="Util.cs" />
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -139,6 +138,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -170,6 +170,28 @@
     <Resource Include="Resources\songchange.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Music Streaming Lib\Music Streaming Lib.csproj">
+      <Project>{cb0c0c62-0cc2-49d0-bae6-699285cd2d58}</Project>
+      <Name>Music Streaming Lib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Plugin - Base\Plugin - Base.csproj">
+      <Project>{ac6e097b-0287-43e3-b478-e0093fb00b0c}</Project>
+      <Name>Plugin - Base</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

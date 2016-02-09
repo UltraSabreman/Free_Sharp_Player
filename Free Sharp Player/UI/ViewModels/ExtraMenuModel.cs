@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using Streamer;
 
 namespace Free_Sharp_Player {
 	class ExtraMenuModel : ViewModelNotifier {

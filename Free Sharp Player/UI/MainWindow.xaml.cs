@@ -18,8 +18,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Collections.Specialized;
 using System.Threading;
-using NAudio;
-using NAudio.Wave;
+using Streamer;
 using System.Diagnostics;
 using System.Timers;
 using Newtonsoft.Json;
@@ -93,21 +92,7 @@ namespace Free_Sharp_Player {
 
 			while (!Connected) {
 
-				getRadioInfo temp = getRadioInfo.doPost();
-
-				using (WebClient wb = new WebClient()) {
-					NameValueCollection data = new NameValueCollection();
-					String tempAddr = temp.servers.medQuality.Split("?".ToCharArray())[0];
-					data["sid"] = temp.servers.medQuality.Split("=".ToCharArray())[1];//(Quality == StreamQuality.Normal ? "1" : (Quality == StreamQuality.Low ? "3" : "2"));
-
-					Byte[] response = wb.UploadValues(tempAddr, "POST", data);
-
-					string[] responseData = System.Text.Encoding.UTF8.GetString(response, 0, response.Length).Split("\n".ToCharArray(), StringSplitOptions.None);
-
-					//Todo: timeout, check for valid return data, find the adress in more dynamic way.
-					address = responseData[2].Split("=".ToCharArray())[1];
-				}
-
+				
 
                 theQueue = new MusicStream(address, Convert.ToInt32(Configs.Get("MaxBufferLenSec")), Convert.ToInt32(Configs.Get("MaxTotalBufferdSongSec"))
                     , Convert.ToInt32(Configs.Get("MinBufferLenSec")), Convert.ToDouble(Configs.Get("Volume")));

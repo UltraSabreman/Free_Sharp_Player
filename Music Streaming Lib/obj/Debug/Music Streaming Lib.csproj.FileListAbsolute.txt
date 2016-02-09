@@ -1,0 +1,7 @@
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Music Streaming Lib\obj\Debug\Music Streaming Lib.csprojResolveAssemblyReference.cache
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Music Streaming Lib\bin\Debug\Music Streaming Lib.dll
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Music Streaming Lib\bin\Debug\Music Streaming Lib.pdb
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Music Streaming Lib\bin\Debug\NAudio.dll
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Music Streaming Lib\bin\Debug\NAudio.xml
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Music Streaming Lib\obj\Debug\Music Streaming Lib.dll
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Music Streaming Lib\obj\Debug\Music Streaming Lib.pdb

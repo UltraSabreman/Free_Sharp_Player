@@ -16,6 +16,7 @@ using System.IO;
 using System.ComponentModel;
 using System.Threading;
 using System.Windows.Threading;
+using Streamer;
 
 namespace Free_Sharp_Player {
 	public class DynamicBufferBar : Control {

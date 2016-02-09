@@ -5,12 +5,13 @@ using System.Net.Configuration;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Windows;
+using System.Windows.Media.Animation;
 
 namespace Free_Sharp_Player {
-	using Newtonsoft.Json;
-	using Newtonsoft.Json.Linq;
-	using System.Windows;
-	using System.Windows.Media.Animation;
+
 	using DataDict = Dictionary<String, Object>;
 	static class Util {
 		public static void Print() { Print(null); }
@@ -120,18 +121,6 @@ namespace Free_Sharp_Player {
 		}
 
 
-		public static Dictionary<String, String> StringToDict(String msg) {
-			if (msg == null) return null;
-
-			var outd = new Dictionary<String, String>();
-
-			var test = JsonConvert.DeserializeObject(msg) as JObject;
-			foreach (JProperty p in test.Properties())
-				outd[p.Name] = p.Value.ToString();
-
-
-			return outd;
-		}
 
 		public static bool ToggleAllowUnsafeHeaderParsing(bool enable) {
 			//Get the assembly that contains the internal class

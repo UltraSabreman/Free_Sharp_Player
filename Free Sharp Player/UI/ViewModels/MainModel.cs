@@ -1,5 +1,5 @@
-﻿using NAudio.Wave;
-using System;
+﻿using System;
+using Streamer;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
@@ -39,7 +39,7 @@ namespace Free_Sharp_Player {
 		MouseButtonEventHandler VolumeOutClick;
 		MouseButtonEventHandler ExtrasOutClick;
 
-        Timer ticker = new Timer(100);
+        Timer ticker = new Timer(10);
 
         public MainModel(MainWindow win, MusicStream manger) {
 			window = win;

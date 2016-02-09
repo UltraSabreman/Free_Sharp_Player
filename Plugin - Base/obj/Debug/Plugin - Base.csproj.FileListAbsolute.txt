@@ -1,0 +1,7 @@
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Plugin - Base\bin\Debug\Plugin - Base.dll
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Plugin - Base\bin\Debug\Plugin - Base.pdb
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Plugin - Base\obj\Debug\Plugin - Base.csprojResolveAssemblyReference.cache
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Plugin - Base\obj\Debug\Plugin - Base.dll
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Plugin - Base\obj\Debug\Plugin - Base.pdb
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Plugin - Base\bin\Debug\Newtonsoft.Json.dll
+C:\Users\byelo\Documents\Code\Free_Sharp_Player\Plugin - Base\bin\Debug\Newtonsoft.Json.xml
