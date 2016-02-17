@@ -5,9 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Plugin_Base;
 
-namespace Plugin_Canterlot_Hill {
+namespace Plugin {
     class APICalls : BaseAPICalls  {
-
         public static SetVote SetVoteCall(int Vote, String TrackID = null) {
             var payload = new Dictionary<String, String>() {
                 {"action", "setVote" },
@@ -83,7 +82,7 @@ namespace Plugin_Canterlot_Hill {
             return HTTPGet<GetRadioInfo>(payload);
         }
 
-        public static List<GetLastPlayed> doPost() {
+        public static List<GetLastPlayed> GetPlayedTracksCall() {
             var payload = new Dictionary<String, String> {
                 {"action", "getLastPlayed"},
             };

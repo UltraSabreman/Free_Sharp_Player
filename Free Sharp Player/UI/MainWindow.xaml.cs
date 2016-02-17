@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Timers;
 using Newtonsoft.Json;
 using System.Windows.Media.Animation;
+using Plugin_Base;
 
 /*
  * TODO: 
@@ -41,9 +42,6 @@ namespace Free_Sharp_Player {
 		private Object trackLock = new Object();
 		private Object radioLock = new Object();
 
-		[DllImport("kernel32")]
-		static extern bool AllocConsole();
-
 		public bool IsPlaying { get; private set; }
 
 		private Timer doubleClickCheck = new Timer(350);
@@ -59,8 +57,6 @@ namespace Free_Sharp_Player {
 		private PlaylistModel playlistModel;
 
 		public MainWindow() {
-			AllocConsole();
-
 			InitializeComponent();
 			btn_PlayPause.IsEnabled = false;
 
@@ -91,8 +87,8 @@ namespace Free_Sharp_Player {
 			bool Connected = false;
 
 			while (!Connected) {
-
-				
+                var temp = App.Plugins.First().GetStreamInformation(Plugin_Base.Quality.Medium);
+                address = temp.StreamAddress;
 
                 theQueue = new MusicStream(address, Convert.ToInt32(Configs.Get("MaxBufferLenSec")), Convert.ToInt32(Configs.Get("MaxTotalBufferdSongSec"))
                     , Convert.ToInt32(Configs.Get("MinBufferLenSec")), Convert.ToDouble(Configs.Get("Volume")));
@@ -108,11 +104,13 @@ namespace Free_Sharp_Player {
 
         private void Update(MusicStream.EventTuple e) {
             Thread.Sleep(2000);
-            getRadioInfo radioInfo = getRadioInfo.doPost();
+            //TODO: Integrate Plugin
+            //getRadioInfo radioInfo = getRadioInfo.doPost();
 
             if (e != null) {
                 if (e.Event == EventType.SongChange) {
-                    List<getLastPlayed> playedList = getLastPlayed.doPost();
+                    //TODO: Integrate Plugin
+                    /*List<Track> playedList = getLastPlayed.doPost();
 
                     Track currentTrack = getTrack.doPost(playedList.First().trackID).track[0];
                     //currentTrack.localLastPlayed = DateTime.Now;
@@ -120,7 +118,7 @@ namespace Free_Sharp_Player {
                     lock (trackLock) {
                         extraModel.UpdateSong(currentTrack);
                         mainModel.UpdateSong(currentTrack);
-                    }
+                    }*/
                 } else if (e.Event == EventType.StateChange) {
                     //The only time we're reciving this event is when the state changes
                     //to Buffering and back to Playing.
@@ -134,7 +132,8 @@ namespace Free_Sharp_Player {
             }
 
             lock (radioLock) {
-                mainModel.UpdateInfo(radioInfo);
+                //TODO: Integrate Plugin
+                //mainModel.UpdateInfo(radioInfo);
             }
 
             mainModel.OnTick();

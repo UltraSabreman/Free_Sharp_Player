@@ -1,14 +1,8 @@
-﻿using Newtonsoft.Json;
-using Plugin_Base.DataPackages;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace Plugin_Canterlot_Hill {
+namespace Plugin {
 
-	public class GetRequests : BaseDataPackage {
+    public class GetRequests {
 		public List<CanterlotTrack> track;
 		public int number_of_tracks;
 

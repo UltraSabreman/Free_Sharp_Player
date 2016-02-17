@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Collections.ObjectModel;
+using Plugin_Base;
 
 namespace Free_Sharp_Player {
 	public partial class BasicRequestUI : Window {
@@ -25,12 +26,13 @@ namespace Free_Sharp_Player {
 			TrackList = new ObservableCollection<Track>();
 		}
 
+        //TODO: integrate plugins
 		private void DoSearch(object sender, TextChangedEventArgs e) {
 			TextBox box = (sender as TextBox);
 			if (box == null || box.Text == null || box.Text.Length < 3) return;
 			String text = box.Text;
 
-			getTrack get = null;
+			/*getTrack get = null;
 			if (box.Name == "NameBox")
 				get = getTrack.doPost(null, null, text, null, null); //by Artist
 			else
@@ -41,19 +43,19 @@ namespace Free_Sharp_Player {
 			TrackList.Clear();
 			foreach (Track t in get.track)
 				TrackList.Add(t);
-
+                */
 		}
 
 		private void Button_Click(object sender, RoutedEventArgs e) {
 			String trackID = (sender as Button).Tag as String;
 
 
-			try {
+			/*try {
 				var ret = setRequests.doPost(trackID);
 			} catch (Exception) { 
 				var but = MessageBox.Show("The request erroed out.\n\nHit OK to go back, CANCEL to exit", "Request Error", MessageBoxButton.OKCancel, MessageBoxImage.Error, MessageBoxResult.OK);
 				if (but == MessageBoxResult.OK) return;
-			}
+			}*/
 			this.Close();
 		}
 

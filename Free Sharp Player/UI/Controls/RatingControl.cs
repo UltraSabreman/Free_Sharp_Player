@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Plugin_Base;
 
 namespace Free_Sharp_Player {
 	public class RatingControl : Control {
@@ -122,8 +123,8 @@ namespace Free_Sharp_Player {
 		}
 
 		private void ChangeVoteMode() {
-			if (IsEnabled && BoundTrack != null && !String.IsNullOrEmpty(BoundTrack.rating)) {
-				Votes = BoundTrack.rating;
+			if (IsEnabled && BoundTrack != null) {
+				Votes = BoundTrack.Rating.ToString();
 				voteCount = int.Parse(Votes);
 			} else {
 				Votes = "---";
@@ -159,7 +160,9 @@ namespace Free_Sharp_Player {
 			}
 
 			Votes = voteCount.ToString();
-			setVote.doPost(myVote, BoundTrack.trackID);
+
+            //TODO: Integrate Plugin
+			//setVote.doPost(myVote, BoundTrack.trackID);
 			Update();
 		}
 
@@ -177,19 +180,22 @@ namespace Free_Sharp_Player {
 			}
 
 			Votes = voteCount.ToString();
-			setVote.doPost(myVote, BoundTrack.trackID);
-			Update();
+            //TODO: Integrate Plugin
+            //setVote.doPost(myVote, BoundTrack.trackID);
+            Update();
 		}
 
 		public void Update() {
 			new Thread(() => {
-				Track tempTrack = getTrack.GetSingleTrack(boundTrack.trackID);
+                //TODO: Integrate Plugin
+                Track tempTrack = null;// getTrack.GetSingleTrack(boundTrack.trackID);
 				if (tempTrack != null) {
-					String rating = tempTrack.rating;
+					String rating = tempTrack.Rating.ToString();
 					voteCount = int.Parse(rating);
 
-					var status = getVoteStatus.doPost(boundTrack.trackID);
-					myVote = (status.vote != null ? (int)status.vote : 0);
+                    //TODO: Integrate Plugin
+                    var status = -1;// getVoteStatus.doPost(boundTrack.trackID);
+                    myVote = -1;// (status.vote != null ? (int)status.vote : 0);
 
 					Dispatcher.Invoke(new Action(() => {
 						Votes = rating;

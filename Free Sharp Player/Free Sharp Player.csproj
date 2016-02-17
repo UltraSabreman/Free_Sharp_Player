@@ -36,7 +36,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\Build\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -85,9 +85,6 @@
     <Compile Include="UI\Controls\DynamicBufferBar.cs" />
     <Compile Include="UI\Controls\MarqueeTextBlock.cs" />
     <Compile Include="UI\Controls\RatingControl.cs" />
-    <Compile Include="UI\TestWindow.xaml.cs">
-      <DependentUpon>TestWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UI\ViewModels\ExtraMenuModel.cs" />
     <Compile Include="UI\ViewModels\MainModel.cs" />
     <Compile Include="UI\ViewModels\PlaylistModel.cs" />
@@ -115,10 +112,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="UI\TestWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -175,6 +168,7 @@
     <ProjectReference Include="..\Music Streaming Lib\Music Streaming Lib.csproj">
       <Project>{cb0c0c62-0cc2-49d0-bae6-699285cd2d58}</Project>
       <Name>Music Streaming Lib</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Plugin - Base\Plugin - Base.csproj">
       <Project>{ac6e097b-0287-43e3-b478-e0093fb00b0c}</Project>
@@ -192,6 +186,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Plugins\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

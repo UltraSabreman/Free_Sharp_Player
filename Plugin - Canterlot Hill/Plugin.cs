@@ -1,61 +1,67 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Plugin_Base;
 using System.Collections.Specialized;
 using System.Net;
 
-namespace Plugin_Canterlot_Hill {
-    class Plugin : BasePlugin {
-        private String Address = "http://api.canterlothill.com/v1/";
+namespace Plugin {
+    class PluginCanterlotHill : PluginBase {
         private CanterlotStreamStatus Status = new CanterlotStreamStatus();
+        private Quality streamQuality = Quality.None;
+
+        public PluginCanterlotHill() {
+            APICalls.Address = "http://api.canterlothill.com/v1/";
+        }
 
         public PluginInfo GetPluginCapabilities() {
             return new CanterlotPluginInfo() {
-                CanFetchCurrentTrack = true,
+                CanFetchCurrentTrack = false,
                 CanFetchFutureTracks = false,
-                CanFetchPlayedTracks = false,
+                CanFetchPlayedTracks = true,
                 CanRequestTracks = false,
-                CanVoteOnTracks = false
+                CanVoteOnCurrentTrack = false,
+                CanVoteOnAnyTrack = false
             };
         }
 
-        public void Initilize(Quality StreamQuality = Quality.Normal) {
-            APICalls.Address = Address;
-
+        public StreamStatus GetStreamInformation(Quality StreamQuality = Quality.Medium) {
             GetRadioInfo temp = APICalls.GetRadioInfoCall();
-            Status.IsLive = temp.autoDJ == "0";
-            Status.Listeners = Int32.Parse(temp.listeners);
-            Status.StreamTitle = temp.title;
-            Status.Rating = Int32.Parse(temp.rating);
-            Status.IsUp = temp.up;
+
+            if (StreamQuality != streamQuality) {
+                streamQuality = StreamQuality;
+
+                using (WebClient wb = new WebClient()) {
+                    NameValueCollection data = new NameValueCollection();
 
 
-            using (WebClient wb = new WebClient()) {
-                NameValueCollection data = new NameValueCollection();
-                String tempAddr = temp.servers.medQuality.Split("?".ToCharArray())[0];
-                data["sid"] = temp.servers.medQuality.Split("=".ToCharArray())[(int)StreamQuality];
+                    int actualQuality = 0;
+                    if (streamQuality == Quality.Medium)
+                        actualQuality = 3;
+                    else if (streamQuality == Quality.Medium)
+                        actualQuality = 1;
+                    else if (streamQuality == Quality.High)
+                        actualQuality = 2;
 
-                Byte[] response = wb.UploadValues(tempAddr, "POST", data);
+                    String tempAddr = temp.servers.medQuality.Split("?".ToCharArray())[0];
+                    data["sid"] = actualQuality.ToString();// temp.servers.medQuality.Split("=".ToCharArray())[1];
 
-                string[] responseData = System.Text.Encoding.UTF8.GetString(response, 0, response.Length).Split("\n".ToCharArray(), StringSplitOptions.None);
+                    Byte[] response = wb.UploadValues(tempAddr, "POST", data);
 
-                //Todo: timeout, check for valid return data, find the adress in more dynamic way.
-                Status.StreamAddress = responseData[2].Split("=".ToCharArray())[1];
+                    string[] responseData = System.Text.Encoding.UTF8.GetString(response, 0, response.Length).Split("\n".ToCharArray(), StringSplitOptions.None);
+
+                    //Todo: timeout, check for valid return data, find the adress in more dynamic way.
+                    Status.StreamAddress = responseData[2].Split("=".ToCharArray())[1];
+                }
+
             }
 
-        }
-
-
-        public StreamStatus GetStreamInformation() {
-            GetRadioInfo temp = APICalls.GetRadioInfoCall();
+            temp = APICalls.GetRadioInfoCall();
             Status.IsLive = temp.autoDJ == "0";
             Status.Listeners = Int32.Parse(temp.listeners);
             Status.StreamTitle = temp.title;
             Status.Rating = Int32.Parse(temp.rating);
             Status.IsUp = temp.up;
+
             return Status;
         }
 
@@ -70,7 +76,16 @@ namespace Plugin_Canterlot_Hill {
         }
 
         public List<Track> GetPlayedTracks() {
-            throw new NotImplementedException();
+            List<GetLastPlayed>  trackList = APICalls.GetPlayedTracksCall();
+            List<CanterlotTrack> retTrackList = new List<CanterlotTrack>();
+            foreach (GetLastPlayed temp in trackList) {
+                retTrackList.Add(new CanterlotTrack() {
+                    Artist = temp.artist,
+                    Title = temp.title,
+                    //DurationSec = temp.
+                });
+            }
+            return null;
         }
 
 
@@ -78,7 +93,7 @@ namespace Plugin_Canterlot_Hill {
             throw new NotImplementedException();
         }
 
-        public void VoteOnTrack(Track TrackToVoteOne, Vote TrackVote) {
+        public void VoteOnTrack(Vote TrackVote, Track TrackToVoteOne) {
             throw new NotImplementedException();
         }
     }
@@ -87,7 +102,8 @@ namespace Plugin_Canterlot_Hill {
         public bool CanFetchFutureTracks { get; set; }
         public bool CanFetchCurrentTrack { get; set; }
         public bool CanRequestTracks { get; set; }
-        public bool CanVoteOnTracks { get; set; }
+        public bool CanVoteOnCurrentTrack { get; set; }
+        public bool CanVoteOnAnyTrack { get; set; }
     }
 
     public class CanterlotStreamStatus : StreamStatus {

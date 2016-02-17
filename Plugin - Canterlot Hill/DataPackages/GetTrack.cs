@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Plugin_Base.DataPackages;
 
-namespace Plugin_Canterlot_Hill {
-	//The search feature.
-	public class GetTracks : BaseDataPackage {
+namespace Plugin {
+    //The search feature.
+    public class GetTracks {
 		public String total_records;
 		public int pages;
 		public List<CanterlotTrack> track;

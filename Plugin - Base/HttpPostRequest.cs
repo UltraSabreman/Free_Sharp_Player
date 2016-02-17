@@ -43,7 +43,7 @@ namespace Plugin_Base {
 					
 					try {
 						return new StreamReader(((HttpWebResponse)httpWReq.GetResponse()).GetResponseStream()).ReadToEnd();
-					} catch (Exception e) {
+					} catch (Exception) {
                         //Util.DumpException(e);
                     }
 					tries++;

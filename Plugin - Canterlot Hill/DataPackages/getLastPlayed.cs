@@ -1,13 +1,7 @@
-﻿using Newtonsoft.Json;
-using Plugin_Base.DataPackages;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 
-namespace Plugin_Canterlot_Hill {
-	public class GetLastPlayed : BaseDataPackage {
+namespace Plugin {
+    public class GetLastPlayed {
         public String last_played;
 		public String artist;
 		public String title;

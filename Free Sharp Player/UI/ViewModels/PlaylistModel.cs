@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
+using Plugin_Base;
 
 namespace Free_Sharp_Player {
     using Timer = System.Timers.Timer;
@@ -10,7 +11,7 @@ namespace Free_Sharp_Player {
     class PlaylistModel : ViewModelNotifier {
 		private Object theLock = new Object();
 	
-		public ObservableCollection<getLastPlayed> Played { get { return GetProp<ObservableCollection<getLastPlayed>>(); } set { SetProp(value); } }
+		public ObservableCollection<Track> Played { get { return GetProp<ObservableCollection<Track>>(); } set { SetProp(value); } }
 		public ObservableCollection<Track> Queue { get { return GetProp<ObservableCollection<Track>>(); } set { SetProp(value); } }
 		public bool IsOpen { get; private set; }
 
@@ -24,7 +25,7 @@ namespace Free_Sharp_Player {
 		public PlaylistModel(MainWindow win) {
 			window = win;
 
-			Played = new ObservableCollection<getLastPlayed>();
+			Played = new ObservableCollection<Track>();
 			Queue = new ObservableCollection<Track>();
 
   
@@ -55,7 +56,8 @@ namespace Free_Sharp_Player {
 
 		public void Tick(Object o = null, EventArgs e = null) {
 			new Thread(() => {
-				var played = getLastPlayed.doPost();
+                //TODO: Integrate Plugin
+                /*var played = getLastPlayed.doPost();
 				var reqs = getRequests.doPost();
 				var queued = new List<Track>();
 				if (reqs != null && reqs.number_of_tracks > 0)
@@ -68,31 +70,33 @@ namespace Free_Sharp_Player {
 						UpdateQueue(queued);
 
 						UpdateSize();
-				}));
-			}).Start();
+				}));*/
+            }).Start();
 		}
 
 		//TODO: new tracks added in bottom(needs to be on top)
-		private void UpdatePlayedList(List<getLastPlayed> newStuff) {
-			List<getLastPlayed> toRemove = new List<getLastPlayed>();
+		private void UpdatePlayedList(List<Track> newStuff) {
+			List<Track> toRemove = new List<Track>();
 
 			if (newStuff == null) return;
 			bool flag = Played.Count == 0;
 
 			int index = 0;
-			foreach (getLastPlayed lp in newStuff) {
-				var matches = Played.Where(X => X.trackID == lp.trackID);
+			foreach (Track lp in newStuff) {
+				var matches = Played.Where(X => X.TrackID == lp.TrackID);
 				if (matches.Count() == 0) {
 					if (flag)
 						Played.Add(lp);
 					else
 						Played.Insert(index++, lp);
-				} else
-					matches.ElementAt(0).Update(lp);
-			}
+				}
+                //TODO: Integrate Plugin
+                //else
+                //matches.ElementAt(0).Update(lp);
+            }
 
-			foreach (getLastPlayed lp in Played) {
-				getLastPlayed match = newStuff.Find(X => X.trackID == lp.trackID);
+            foreach (Track lp in Played) {
+                Track match = newStuff.Find(X => X.TrackID == lp.TrackID);
 				if (match == null)
 					toRemove.Add(lp);
 			}
@@ -109,18 +113,20 @@ namespace Free_Sharp_Player {
 
 			int index = 0;
 			foreach (Track lp in newStuff) {
-				var matches = Queue.Where(X => X.trackID == lp.trackID);
+				var matches = Queue.Where(X => X.TrackID == lp.TrackID);
 				if (matches.Count() == 0) {
 					if (flag)
 						Queue.Add(lp);
 					else
 						Queue.Insert(index++, lp);
-				} else
-					matches.ElementAt(0).Update(lp);
-			}
+				}
+                //TODO: Integrate Plugin
+                //else
+                //matches.ElementAt(0).Update(lp);
+            }
 
-			foreach (Track lp in Queue) {
-				Track match = newStuff.Find(X => X.trackID == lp.trackID);
+            foreach (Track lp in Queue) {
+				Track match = newStuff.Find(X => X.TrackID == lp.TrackID);
 				if (match == null)
 					toRemove.Add(lp);
 			}

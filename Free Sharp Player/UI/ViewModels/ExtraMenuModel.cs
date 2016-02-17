@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using Streamer;
+using Plugin_Base;
 
 namespace Free_Sharp_Player {
 	class ExtraMenuModel : ViewModelNotifier {
@@ -41,30 +42,37 @@ namespace Free_Sharp_Player {
 
 
 		private void btn_Like_Click(object sender, RoutedEventArgs e) {
-			CurrentSong.MyVote = (CurrentSong.MyVote == 1 ? -1 : 1);
+            //TODO: Integrate Plugin
+            //CurrentSong.MyVote = (CurrentSong.MyVote == 1 ? -1 : 1);
 
-			int rating = int.Parse(CurrentSong.rating) + CurrentSong.MyVote;
-			Votes = rating.ToString();
+            //TODO: Integrate Plugin
+            int rating = 0;// int.Parse(CurrentSong.rating) + CurrentSong.MyVote;
+            Votes = rating.ToString();
 
-			setVote.doPost(CurrentSong.MyVote, CurrentSong.trackID);
+            //TODO: Integrate Plugin
+            //setVote.doPost(CurrentSong.MyVote, CurrentSong.trackID);
 		}
 
 		private void btn_Dislike_Click(object sender, RoutedEventArgs e) {
-			CurrentSong.MyVote += (CurrentSong.MyVote - 1 < -1 ? 1 : -1);
+            //TODO: Integrate Plugin
+            //CurrentSong.MyVote += (CurrentSong.MyVote - 1 < -1 ? 1 : -1);
 
-			int rating = int.Parse(CurrentSong.rating) + CurrentSong.MyVote;
-			Votes = rating.ToString();
+            //int rating = int.Parse(CurrentSong.rating) + CurrentSong.MyVote;
+			//Votes = rating.ToString();
 
-			setVote.doPost(CurrentSong.MyVote, CurrentSong.trackID);
+            //TODO: Integrate Plugin
+            //setVote.doPost(CurrentSong.MyVote, CurrentSong.trackID);
 
-		}
+        }
 
-		public void UpdateSong(Track song) {
+        public void UpdateSong(Track song) {
 			CurrentSong = song;
 		}
 
 		public void UpdateRating(Object o, EventArgs e) {
-			if (CurrentSong == null || String.IsNullOrEmpty(CurrentSong.trackID) || CurrentSong.trackID == "0") {
+            //TODO: Integrate Plugin
+
+            /*if (CurrentSong == null || String.IsNullOrEmpty(CurrentSong.trackID) || CurrentSong.trackID == "0") {
 				Votes = "---";
 				return;
 			}
@@ -76,10 +84,10 @@ namespace Free_Sharp_Player {
 
 			window.Dispatcher.Invoke(new Action(() => {
 				Votes = rating;
-			}));
-		}
+			}));*/
+        }
 
-		private void btn_Request_Click(object sender, RoutedEventArgs e) {
+        private void btn_Request_Click(object sender, RoutedEventArgs e) {
 			BasicRequestUI ui = new BasicRequestUI();
 			ui.Show();
 		}

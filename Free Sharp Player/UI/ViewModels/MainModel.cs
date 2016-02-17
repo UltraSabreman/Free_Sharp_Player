@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using Plugin_Base;
 
 namespace Free_Sharp_Player {
     using Timer = System.Timers.Timer;
@@ -81,27 +82,30 @@ namespace Free_Sharp_Player {
                 currentSong = song;
                 if (currentSong != null) {
                     window.Dispatcher.Invoke(new Action(() => {
-                        TheTitle = currentSong.WholeTitle;
+                        //TODO: Integrate Plugin
+                        TheTitle = "";// currentSong.WholeTitle;
                     }));
 
 
-                    getVoteStatus tempStatus = getVoteStatus.doPost();
+                    //TODO: Integrate Plugin
+                    /*getVoteStatus tempStatus = getVoteStatus.doPost();
                     if (currentSong != null) {
                         currentSong.MyVote = (int)(tempStatus.vote ?? 0);
-                    }
+                    }*/
                 }
             }).Start();
 
 		}
 
-        public void UpdateInfo(getRadioInfo info) {
-            if (info != null)
-                isLive = int.Parse(info.autoDJ) == 0;
-            else
-                isLive = false;
-        }
+        //TODO: Integrate Plugin
+        /* public void UpdateInfo(getRadioInfo info) {
+             if (info != null)
+                 isLive = int.Parse(info.autoDJ) == 0;
+             else
+                 isLive = false;
+         }*/
 
-		public void OnTick() {
+        public void OnTick() {
 			new Thread(() => {
 				lock (theLock) {
 					MaxBufferSize = streamManager.MaxTimeInQueue;
@@ -117,7 +121,7 @@ namespace Free_Sharp_Player {
 
 
 					//TODO: more colors/states.
-					if (isLive || currentSong == null || !window.IsPlaying || currentSong.duration == null) {
+					if (isLive || currentSong == null || !window.IsPlaying || currentSong.DurationSec == -1) {
 						window.Dispatcher.Invoke(new Action(() => {
 							SongLength = -1;
 							SongMaxLength = 1;
@@ -127,9 +131,10 @@ namespace Free_Sharp_Player {
 						}));
 						return;
 					}
-					
-					//TODO: song progress fix timing issue
-					TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
+
+                    //TODO: song progress fix timing issue
+                    //TODO: Integrate Plugin
+                    /*TimeSpan SongDuration = TimeSpan.Parse(currentSong.duration);
 					TimeSpan duration = DateTime.Now - (currentSong.localLastPlayed + new TimeSpan(0,0,0, (int)streamManager.BufferedTime, 0));
 
 					window.Dispatcher.Invoke(new Action(() => {
@@ -146,10 +151,11 @@ namespace Free_Sharp_Player {
 							SongMaxLength = 1;
 							isLive = true;
 						} else {*/
-							SongMaxLength = SongDuration.TotalSeconds;
+                        /*
+                    SongMaxLength = SongDuration.TotalSeconds;
 							SongLength = (duration.TotalSeconds / SongDuration.TotalSeconds) * SongMaxLength;
 						//}
-					}));
+					}));*/
 				}
 			}).Start();
 		}
