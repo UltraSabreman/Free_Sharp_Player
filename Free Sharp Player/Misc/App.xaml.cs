@@ -26,15 +26,17 @@ namespace Free_Sharp_Player {
             AllocConsole();
 
             if (Directory.Exists("Plugins")) {
-                var dllFileNames = Directory.GetFiles("Plugins", "*.dll");
-                foreach (String name in dllFileNames) {
-                    AssemblyName an = AssemblyName.GetAssemblyName(name);
-                    Assembly assembly = Assembly.Load(an);
-                    if (assembly != null) {
-                        foreach (Type t in assembly.GetTypes()) {
-                            if (!t.IsInterface && !t.IsAbstract && t.GetInterface("PluginBase") != null) {
-                                Plugins.Add(Activator.CreateInstance(t) as PluginBase);
-                                Console.WriteLine("Plugin Added: " + t.ToString());
+                foreach (String dir in Directory.GetDirectories("Plugins")) {
+                    var dllFileNames = Directory.GetFiles(dir, "*.dll");
+                    foreach (String name in dllFileNames) {
+                        AssemblyName an = AssemblyName.GetAssemblyName(name);
+                        Assembly assembly = Assembly.Load(an);
+                        if (assembly != null) {
+                            foreach (Type t in assembly.GetTypes()) {
+                                if (!t.IsInterface && !t.IsAbstract && t.GetInterface("PluginBase") != null) {
+                                    Plugins.Add(Activator.CreateInstance(t) as PluginBase);
+                                    Console.WriteLine("Plugin Added: " + t.ToString());
+                                }
                             }
                         }
                     }
