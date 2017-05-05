@@ -1,3 +1,9 @@
 C:\Users\byelo\Documents\Code\Free_Sharp_Player\Build\Plugins\Plugin - Canterlot Hill.dll
 C:\Users\byelo\Documents\Code\Free_Sharp_Player\Build\Plugins\Plugin - Canterlot Hill.pdb
 C:\Users\byelo\Documents\Code\Free_Sharp_Player\Plugin - Canterlot Hill\obj\Debug\Plugin - Canterlot Hill.csprojResolveAssemblyReference.cache
+D:\Code\Free_Sharp_Player\Plugin - Canterlot Hill\obj\Debug\Plugin - Canterlot Hill.csprojResolveAssemblyReference.cache
+D:\Code\Free_Sharp_Player\Build\Plugins\CanterlotHill\Plugin - Canterlot Hill.dll.config
+D:\Code\Free_Sharp_Player\Build\Plugins\CanterlotHill\Plugin - Canterlot Hill.dll
+D:\Code\Free_Sharp_Player\Build\Plugins\CanterlotHill\Plugin - Canterlot Hill.pdb
+D:\Code\Free_Sharp_Player\Plugin - Canterlot Hill\obj\Debug\Plugin - Canterlot Hill.dll
+D:\Code\Free_Sharp_Player\Plugin - Canterlot Hill\obj\Debug\Plugin - Canterlot Hill.pdb

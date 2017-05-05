@@ -17,7 +17,7 @@ namespace Plugin {
             if (!String.IsNullOrEmpty(TrackID))
                 payload["trackID"] = Uri.EscapeUriString(TrackID);
 
-            return HTTPGet<SetVote>(payload);
+            return HTTPGet<SetVote>(payload, Address);
         }
 
 
@@ -27,7 +27,7 @@ namespace Plugin {
                 {"trackID", Uri.EscapeUriString(trackID)}
             };
 
-            return HTTPGet<SetRequests>(payload);
+            return HTTPGet<SetRequests>(payload, Address);
         }
 
         public static GetVoteStatus GetVoteStatusCall(String trackid = null) {
@@ -37,7 +37,7 @@ namespace Plugin {
 
             if (!String.IsNullOrEmpty(trackid)) payload["trackID"] = Uri.EscapeUriString(trackid);
 
-            return HTTPGet<GetVoteStatus>(payload);
+            return HTTPGet<GetVoteStatus>(payload, Address);
         }
 
         public static GetTracks GetTracksCall(String trackId, String track, String artist, int? rating, String ratingEq, int page = 1, int limit = 20) {
@@ -62,7 +62,7 @@ namespace Plugin {
                 }
             }
 
-            return HTTPGet<GetTracks>(payload);
+            return HTTPGet<GetTracks>(payload, Address);
         }
 
 
@@ -71,15 +71,17 @@ namespace Plugin {
                 {"action", "getRequest"},
             };
 
-            return HTTPGet<GetRequests>(payload);
+            return HTTPGet<GetRequests>(payload, Address);
         }
 
         public static GetRadioInfo GetRadioInfoCall() {
-            var payload = new Dictionary<String, String> {
-                {"action", "getRadioInfo"},
+            var payload = new Dictionary<String, String>
+            {
+                //{"action", "getRadioInfo"},
             };
+            string newAddress = "nowplaying/index/station/" + "ponyvillefm";
 
-            return HTTPGet<GetRadioInfo>(payload);
+            return HTTPGet<GetRadioInfo>(payload, Address + newAddress);
         }
 
         public static List<GetLastPlayed> GetPlayedTracksCall() {
@@ -87,7 +89,7 @@ namespace Plugin {
                 {"action", "getLastPlayed"},
             };
 
-            var temp = HTTPGet<List<GetLastPlayed>>(payload);
+            var temp = HTTPGet<List<GetLastPlayed>>(payload, Address);
 
             foreach (var l in temp) {
                 TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");

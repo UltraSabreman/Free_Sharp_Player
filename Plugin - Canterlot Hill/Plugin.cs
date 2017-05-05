@@ -4,13 +4,25 @@ using Plugin_Base;
 using System.Collections.Specialized;
 using System.Net;
 
+/*
+ * Long as fuck todo list to get this shit to work:
+ * Make a generic request for all stations under the ponyvile live umpbrella. Can do more with this later, for now we just need the shortcode.
+ *  - Needs seperate ui
+ *  - Must rember choice for future launches
+ *  - Must have a "bypass this dialog and go to station" check box. 
+ *  - Must be able to bring up this dialog normally
+ * Convert pluging to fetch information from ponyville live API
+ *  - Do some research to find out if there are hidden API calls that are dissabled. I remember there being some (**DOCUMENT THIS**)
+ * Figure out a good way to "dispose" of request UI/code untill the API is avalible for it.
+ */
+
 namespace Plugin {
-    class PluginCanterlotHill : PluginBase {
+    class PluginPonyvilleFM : PluginBase {
         private CanterlotStreamStatus Status = new CanterlotStreamStatus();
         private Quality streamQuality = Quality.None;
 
-        public PluginCanterlotHill() {
-            APICalls.Address = "http://api.canterlothill.com/v1/";
+        public PluginPonyvilleFM() {
+            APICalls.Address = "http://ponyvillelive.com/api/";
         }
 
         public PluginInfo GetPluginCapabilities() {
@@ -51,16 +63,17 @@ namespace Plugin {
 
                     //Todo: timeout, check for valid return data, find the adress in more dynamic way.
                     Status.StreamAddress = responseData[2].Split("=".ToCharArray())[1];
+                    Status.StreamAddress = "http://192.99.131.205:8000/stream.mp3";
                 }
 
             }
 
-            temp = APICalls.GetRadioInfoCall();
-            Status.IsLive = temp.autoDJ == "0";
-            Status.Listeners = Int32.Parse(temp.listeners);
-            Status.StreamTitle = temp.title;
-            Status.Rating = Int32.Parse(temp.rating);
-            Status.IsUp = temp.up;
+            //temp = APICalls.GetRadioInfoCall();
+            Status.IsLive = true;// temp.autoDJ == "0";
+            Status.Listeners = 1337;// Int32.Parse(temp.listeners);
+            Status.StreamTitle = "Somebody once told me, the world was gonna roll me";// temp.title;
+            Status.Rating = 69;// Int32.Parse(temp.rating);
+            Status.IsUp = true;// temp.up;
 
             return Status;
         }

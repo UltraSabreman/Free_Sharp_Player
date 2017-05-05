@@ -5,3 +5,12 @@ C:\Users\byelo\Documents\Code\Free_Sharp_Player\Music Streaming Lib\bin\Debug\NA
 C:\Users\byelo\Documents\Code\Free_Sharp_Player\Music Streaming Lib\obj\Debug\Music Streaming Lib.csprojResolveAssemblyReference.cache
 C:\Users\byelo\Documents\Code\Free_Sharp_Player\Music Streaming Lib\obj\Debug\Music Streaming Lib.dll
 C:\Users\byelo\Documents\Code\Free_Sharp_Player\Music Streaming Lib\obj\Debug\Music Streaming Lib.pdb
+D:\Code\Free_Sharp_Player\Music Streaming Lib\bin\Debug\Music Streaming Lib.dll
+D:\Code\Free_Sharp_Player\Music Streaming Lib\bin\Debug\Music Streaming Lib.pdb
+D:\Code\Free_Sharp_Player\Music Streaming Lib\bin\Debug\NAudio.dll
+D:\Code\Free_Sharp_Player\Music Streaming Lib\bin\Debug\NAudio.xml
+D:\Code\Free_Sharp_Player\Music Streaming Lib\obj\Debug\Music Streaming Lib.csprojResolveAssemblyReference.cache
+D:\Code\Free_Sharp_Player\Music Streaming Lib\obj\Debug\Music Streaming Lib.dll
+D:\Code\Free_Sharp_Player\Music Streaming Lib\obj\Debug\Music Streaming Lib.pdb
+D:\Code\Free_Sharp_Player\Music Streaming Lib\bin\Debug\Newtonsoft.Json.dll
+D:\Code\Free_Sharp_Player\Music Streaming Lib\bin\Debug\Newtonsoft.Json.xml

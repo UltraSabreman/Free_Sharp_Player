@@ -10,9 +10,12 @@ namespace Plugin_Base {
     public class BaseAPICalls {
         public static String Address = "";
 
-        protected static T HTTPGet<T>(Dictionary<String, String> Payload) where T : class {
+        protected static T HTTPGet<T>(Dictionary<String, String> Payload, String ActualAddress) where T : class {
             //TODO: is this to complicated?
-            String result = HttpPostRequest.PostRequest(Payload, Address);
+            String result = HttpPostRequest.PostRequest(Payload, ActualAddress);
+
+            var test = JsonConvert.DeserializeObject(StringToDict(result)["result"]);
+            Console.Write(test.ToString());
 
             return JsonConvert.DeserializeObject(StringToDict(result)["data"], typeof(T)) as T;
         }
